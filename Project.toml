@@ -1,0 +1,5 @@
+[deps]
+Franklin = "713c75ef-9fc9-4b05-94a9-213340da978e"
+IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
+NodeJS = "2bd173c7-0d6d-553b-b6af-13a54713934c"
+PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"

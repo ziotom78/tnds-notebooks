@@ -1,0 +1,637 @@
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/libs/katex/katex.min.css"> <link rel=stylesheet  href="/libs/highlight/github.min.css"> <link rel=stylesheet  href="/css/franklin.css"> <link rel=stylesheet  href="/css/poole_hyde.css"> <style> html {font-size: 17px;} .franklin-content {position: relative; padding-left: 8%; padding-right: 5%; line-height: 1.35em;} @media (min-width: 940px) { .franklin-content {width: 100%; margin-left: auto; margin-right: auto;} } @media (max-width: 768px) { .franklin-content {padding-left: 6%; padding-right: 6%;} } </style> <link rel=icon  href="/assets/favicon.png"> <title>Lezione 8</title> <div class=sidebar > <div class="container sidebar-sticky"> <div class=sidebar-about > <h1><a href="/">TNDS</a></h1> <p class=lead >Prof. M.&nbsp;Tomasi</p> </div> <nav class=sidebar-nav > <a class="sidebar-nav-item " href="/">Home</a> <a class="sidebar-nav-item " href="/lezione07/">Lezione 07</a> <a class="sidebar-nav-item active" href="/lezione08/">Lezione 08</a> </nav> <p>&copy; Maurizio Tomasi.</p> </div> </div> <div class="content container"> <div class=franklin-content > <p><div class=franklin-toc ><ol><li><a href="#iterare_sui_tempi">Iterare sui tempi</a><li><a href="#esercizio_80_algebra_vettoriale">Esercizio 8.0: Algebra vettoriale</a><li><a href="#esercizio_81_metodo_di_eulero">Esercizio 8.1: metodo di Eulero</a><li><a href="#esercizio_82_soluzione_con_runge-kutta">Esercizio 8.2: Soluzione con Runge-Kutta</a><li><a href="#esercizio_83">Esercizio 8.3</a><li><a href="#esercizio_84">Esercizio 8.4</a></ol></div> </p> <p>In questa lezione implementeremo dei programmi per risolvere equazioni differenziali. Come per la lezione della volta scorsa, mostro qui qual è il risultato atteso per gli esercizi, usando Julia.</p> <p>Importiamo alcune librerie che ci saranno molto utili per svolgere gli esercizi:</p> <pre><code class=language-julia >using Plots
+using Printf</code></pre><pre><code class="plaintext code-output">ArgumentError: Package Plots not found in current path:
+- Run `import Pkg; Pkg.add("Plots")` to install the Plots package.
+
+</code></pre> <h2 id=iterare_sui_tempi ><a href="#iterare_sui_tempi" class=header-anchor >Iterare sui tempi</a></h2> <p>In tutti gli esercizi di oggi si richiede di iterare sul tempo \(t\), perché la soluzione numerica delle equazioni differenziali richiede di partire dalla condizione iniziale al tempo \(t = t_0\) e procedere a incrementi di \(h\) finché non si raggiunge il tempo finale \(t_f\):</p> <pre><code class=language-cpp >std::vector&lt;double&gt; current&#123;...&#125;;  // Condizione iniziale
+while &#40;...&#41; &#123;
+    // Sovrascrive &quot;current&quot; al tempo t con &quot;current&quot; al tempo t &#43; h
+    current &#61; evolve&#40;current, t, h&#41;;
+    t &#43;&#61; h;
+&#125;</code></pre> <p>È importante scrivere bene la condizione nel ciclo <code>while</code>, perché è una cosa che gli studenti sbagliano spesso&#33; Il problema sta negli errori di arrotondamento, che sono dovuti al modo in cui il computer memorizza i numeri <em>floating-point</em> e sono quindi identici sia in C&#43;&#43; che in Julia.</p> <p>Vediamo quindi in cosa consiste il problema usando Julia &#40;in C&#43;&#43; sarebbe lo stesso&#41;. Creiamo una variabile <code>t &#61; 0</code> che poi incrementiamo in passi di <code>h &#61; 0.1</code> secondi: in questo modo simuliamo quello che farebbe il ciclo per risolvere una equazione differenziale</p> <pre><code class=language-julia >t &#61; 0
+h &#61; 0.1
+t &#43;&#61; h</code></pre><pre><code class="plaintext code-output">0.1</code></pre>
+<p>Nulla di sorprendente… Incrementiamo ancora una volta:</p>
+<pre><code class=language-julia >t &#43;&#61; h</code></pre><pre><code class="plaintext code-output">0.2</code></pre>
+<p>Sembra ancora tutto regolare. Proviamo allora ad incrementare <code>t</code> per dieci volte:</p>
+<pre><code class=language-julia ># Esegue per &#96;nruns&#96; volte l&#39;incremento &#96;increment&#96;, partendo da &#96;start&#96;
+function simulate&#40;nruns, start, increment&#41;
+    t &#61; start
+    for i in 1:nruns
+        t &#43;&#61; increment
+    end
+    println&#40;&quot;Incrementando di &#36;increment per &#36;nruns volte, il risultato è &#36;t&quot;&#41;
+end
+
+simulate&#40;10, 0, h&#41;</code></pre><pre><code class="plaintext code-output">Incrementando di 0.1 per 10 volte, il risultato è 0.9999999999999999
+</code></pre>
+<p>Sorpresa&#33; Con 10 incrementi si è rivelato un piccolo errore di arrotondamento che era nascosto già nel primo passaggio: il numero <code>0.1</code> non è rappresentabile nel formato <em>floating-point</em> usato dai calcolatori moderni, che usano lo <a href="https://en.wikipedia.org/wiki/IEEE_754">standard IEE 754</a>. L&#39;errore si è accumulato, passaggio dopo passaggio, diventando visibile solo al decimo passaggio.</p>
+<p>Considerate ora un codice come questo, che vorrebbe iterare per <code>t</code> che va da <code>0</code> a <code>1</code> in step di <code>h &#61; 0.1</code>:</p>
+<pre><code class=language-julia >function simulate&#40;t0, tf, increment&#41;
+    t &#61; t0
+
+    println&#40;&quot;Inizia la simulazione, da t &#61; &#36;t0 a t &#61; &#36;tf in passi di &#36;increment&quot;&#41;
+
+    # Itera finché non abbiamo raggiunto il tempo finale
+    while t &lt; tf
+        println&#40;&quot;  t &#61; &#36;t&quot;&#41;
+        t &#43;&#61; increment
+    end
+
+    println&#40;&quot;Simulazione terminata a t &#61; &#36;t&quot;&#41;
+end
+
+simulate&#40;0.0, 1.0, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t = 0.0 a t = 1.0 in passi di 0.1
+  t = 0.0
+  t = 0.1
+  t = 0.2
+  t = 0.30000000000000004
+  t = 0.4
+  t = 0.5
+  t = 0.6
+  t = 0.7
+  t = 0.7999999999999999
+  t = 0.8999999999999999
+  t = 0.9999999999999999
+Simulazione terminata a t = 1.0999999999999999
+</code></pre>
+<p>Il codice si è arrestato al tempo \(t \approx 1.1\) anziché al tempo \(t = 1\)&#33; Questa implementazione di <code>while</code> è molto comune nei compiti scritti dei vostri colleghi degli anni scorsi, ma è ovviamente <strong>sbagliata</strong>. Il modo giusto per implementare questo genere di ciclo è di calcolare il numero di iterazioni &#40;come un intero&#41; e poi fare un ciclo for usando solo variabili intere:</p>
+<pre><code class=language-julia >function simulate_method1&#40;t0, tf, increment&#41;
+    println&#40;&quot;Inizia la simulazione, da t &#61; &#36;t0 a t &#61; &#36;tf in passi di &#36;increment&quot;&#41;
+
+    # Calcola il numero di iterazioni prima di iniziare il ciclo vero e proprio
+    nsteps &#61; round&#40;Int, &#40;tf - t0&#41; / h&#41;
+    t &#61; t0
+    for i &#61; 1:nsteps
+        println&#40;&quot;  t &#61; &#36;t&quot;&#41;
+        t &#43;&#61; h
+    end
+    println&#40;&quot;Simulazione terminata a t &#61; &#36;t&quot;&#41;
+end
+
+simulate_method1&#40;0, 1, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t = 0 a t = 1 in passi di 0.1
+  t = 0
+  t = 0.1
+  t = 0.2
+  t = 0.30000000000000004
+  t = 0.4
+  t = 0.5
+  t = 0.6
+  t = 0.7
+  t = 0.7999999999999999
+  t = 0.8999999999999999
+Simulazione terminata a t = 0.9999999999999999
+</code></pre>
+<p>In questo caso il ciclo si è arrestato al valore \(t \approx 1\), con un errore \(\delta t \sim 10^{-16}\) che è assolutamente trascurabile: l&#39;implementazione quindi è corretta.</p>
+<p>Un secondo metodo è quello di calcolare da capo il valore di <code>t</code> ad ogni iterazione:</p>
+<pre><code class=language-julia >function simulate_method2&#40;t0, tf, increment&#41;
+    println&#40;&quot;Inizia la simulazione, da t &#61; &#36;t0 a t &#61; &#36;tf in passi di &#36;increment&quot;&#41;
+
+    # Calcola il numero di iterazioni prima di iniziare il ciclo vero e proprio
+    nsteps &#61; round&#40;Int, &#40;tf - t0&#41; / h&#41;
+    t &#61; t0
+    for i &#61; 1:nsteps
+        println&#40;&quot;  t &#61; &#36;t&quot;&#41;
+        t &#61; t0 &#43; i * h
+    end
+    println&#40;&quot;Simulazione terminata a t &#61; &#36;t&quot;&#41;
+end
+
+simulate_method2&#40;0, 1, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t = 0 a t = 1 in passi di 0.1
+  t = 0
+  t = 0.1
+  t = 0.2
+  t = 0.30000000000000004
+  t = 0.4
+  t = 0.5
+  t = 0.6000000000000001
+  t = 0.7000000000000001
+  t = 0.8
+  t = 0.9
+Simulazione terminata a t = 1.0
+</code></pre>
+<p>Non c&#39;è una grande differenza tra i due metodi, quindi sentitevi liberi di implementare quello che volete &#40;potete implementarne uno in un esercizio, e l&#39;altro nell&#39;esercizio successivo, così fate pratica con entrambi&#41;.</p>
+<h2 id=esercizio_80_algebra_vettoriale ><a href="#esercizio_80_algebra_vettoriale" class=header-anchor >Esercizio 8.0: Algebra vettoriale</a></h2>
+<p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.0">carminati-esercizi-08.html</a>.</p>
+<p>In Julia non è necessario implementare le operazioni aritmetiche su vettori, perché sono già implementate: basta porre un punto <code>.</code> davanti all&#39;operatore perché questo venga automaticamente propagato sugli elementi di vettori:</p>
+<pre><code class=language-julia >&#91;1, 2, 4&#93; .&#43; &#91;3, 7, -5&#93;</code></pre><pre><code class="plaintext code-output">3-element Vector{Int64}:
+  4
+  9
+ -1</code></pre>
+<h2 id=esercizio_81_metodo_di_eulero ><a href="#esercizio_81_metodo_di_eulero" class=header-anchor >Esercizio 8.1: metodo di Eulero</a></h2>
+<p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.1">carminati-esercizi-08.html</a>.</p>
+<p>Qui non implementiamo una classe con metodo <code>Passo</code> come suggerito nel testo dell&#39;esercizio, perché in Julia non esiste l&#39;equivalente delle classi del C&#43;&#43;. Scriviamo invece una funzione <code>euler</code> che restituisce una matrice a \(N + 1\) colonne, dove \(N\) è il numero di equazioni: la prima colonna contiene il tempo, le altre colonne le soluzioni delle \(N\) variabili.</p>
+<p>In Julia non c&#39;è bisogno di definire una classe base <code>FunzioneVettorialeBase</code> da cui derivare altre classi come <code>OscillatoreArmonico</code> eccetera: basta passare la funzione nel parametro <code>fn</code> &#40;primo argomento&#41;. È un meccanismo simile a quello visto nella lezione precedente usando i template, anche se in Julia la risoluzione dei template avviene a <em>runtime</em> anziché in fase di compilazione come in C&#43;&#43;.</p>
+<pre><code class=language-julia >function euler&#40;fn, x0, startt, endt, h&#41;
+    # La scrittura startt:h:endt indica il vettore
+    #
+    #     &#91;startt, startt &#43; h, startt &#43; 2h, startt &#43; 3h, …, startt &#43; N * h&#93;
+    #
+    # dove N è il più grande intero tale che
+    #
+    #     startt &#43; N * h ≤ endt
+    timerange &#61; startt:h:endt
+    result &#61; Array&#123;Float64&#125;&#40;undef, length&#40;timerange&#41;, 1 &#43; length&#40;x0&#41;&#41;
+    cur &#61; x0
+    for &#40;i, t&#41; in enumerate&#40;timerange&#41;
+        result&#91;i, 1&#93; &#61; t
+        result&#91;i, 2:end&#93; &#61; cur
+        cur .&#43;&#61; fn&#40;t, cur&#41; * h
+    end
+
+    result
+end</code></pre><pre><code class="plaintext code-output">euler (generic function with 1 method)</code></pre>
+<p>Definiamo ora una funzione che descriva l&#39;oscillatore armonico del problema 8.1.</p>
+<pre><code class=language-julia >oscillatore&#40;time, x&#41; &#61; &#91;x&#91;2&#93;, -x&#91;1&#93;&#93;  # ω0 &#61; 1</code></pre><pre><code class="plaintext code-output">oscillatore (generic function with 1 method)</code></pre>
+<p>Invochiamo <code>oscillatore</code> usando come condizione iniziale \((x, v) =
+(0, 1)\) e integrando nell&#39;intervallo \(0 \leq t \leq 70\,\text{s}\), usando come passo \(h = 10^{-1}\). La funzione restituisce una matrice a tre colonne, contenenti il tempo, la posizione e la velocità.</p>
+<pre><code class=language-julia >h &#61; 0.1
+result &#61; euler&#40;oscillatore, &#91;0., 1.&#93;, 0.0, 70.0, h&#41;;</code></pre>
+<p>Questi sono i primi step &#40;tempo, posizione e velocità&#41;:</p>
+<pre><code class=language-julia >result&#91;1:10, :&#93;</code></pre><pre><code class="plaintext code-output">10×3 Matrix{Float64}:
+ 0.0  0.0       1.0
+ 0.1  0.1       1.0
+ 0.2  0.2       0.99
+ 0.3  0.299     0.97
+ 0.4  0.396     0.9401
+ 0.5  0.49001   0.9005
+ 0.6  0.58006   0.851499
+ 0.7  0.66521   0.793493
+ 0.8  0.744559  0.726972
+ 0.9  0.817256  0.652516</code></pre>
+<p>Questi sono invece gli ultimi:</p>
+<pre><code class=language-julia >result&#91;&#40;end - 10&#41;:end, :&#93;</code></pre><pre><code class="plaintext code-output">11×3 Matrix{Float64}:
+ 69.0  -10.4335   29.1545
+ 69.1   -7.51806  30.1979
+ 69.2   -4.49827  30.9497
+ 69.3   -1.4033   31.3995
+ 69.4    1.73665  31.5398
+ 69.5    4.89063  31.3662
+ 69.6    8.02725  30.8771
+ 69.7   11.115    30.0744
+ 69.8   14.1224   28.9629
+ 69.9   17.0187   27.5506
+ 70.0   19.7737   25.8488</code></pre>
+<p>Il risultato sopra dovrebbe esservi utile per scrivere dei test nel vostro codice C&#43;&#43; usando <code>assert</code>:</p>
+<pre><code class=language-cpp >#include &quot;EquazioniDifferenziali.hpp&quot;
+#include &lt;cstdio&gt;
+#include &lt;cassert&gt;
+#include &lt;cmath&gt;
+
+bool is_close&#40;double a, double b, double epsilon &#61; 1e-8&#41; &#123;
+    return std::fabs&#40;a - b&#41; &lt; epsilon;
+&#125;
+
+void test_euler&#40;&#41; &#123;
+  Eulero eulero;
+  OscillatoreArmonico oa&#123;1.0&#125;;
+  const double lastt&#123;70.0&#125;;
+  const double h&#123;0.1&#125;;
+  const int steps&#123;static_cast&lt;int&gt;&#40;lasttt / h &#43; 0.5&#41;&#125;;
+  std::vector&lt;double&gt; pos&#123;0.0, 1.0&#125;;
+
+  for &#40;int idx&#123;&#125;; idx &lt; steps; &#43;&#43;idx&#41; &#123;
+    pos &#61; eulero.Passo&#40;t, pos, h, &amp;oa&#41;;
+  &#125;
+
+  assert&#40;is_close&#40;pos&#91;0&#93;, 19.773746013860173&#41;&#41;;
+  assert&#40;is_close&#40;pos&#91;1&#93;, 25.848774751522960&#41;&#41;;
+&#125;</code></pre>
+<p>Notate che il ciclo <code>for</code> è implementato calcolando preventivamente il numero di passi in <code>steps</code>: è quello che sopra avevamo chiamato il «Metodo 1» &#40;<code>simulate_method1</code>&#41;.</p>
+<p>Per studiare il funzionamento di <code>euler</code>, consideriamo la simulazione nell&#39;intervallo usato sopra, \(0 \leq t \leq
+70\,\text{s}\).</p>
+<p>Per maggiore eleganza rispetto a quanto fatto sopra, dichiariamo la variabile <code>lastt</code> &#40;nel vostro codice dovreste definirla come un <code>const double</code>, ma in un notebook destinato all&#39;uso interattivo come questo non è mai consigliato definire costanti&#41;.</p>
+<pre><code class=language-julia >lastt &#61; 70.0;</code></pre>
+<p>Nello stabilire il passo di integrazione occorre fare un&#39;osservazione <strong>molto importante</strong>: se vogliamo paragonare la soluzione calcolata da euler, possiamo semplicemente paragonare l&#39;ultimo valore di <code>pos.GetComponente&#40;0&#41;</code> col valore \(\sin(70)\). Ma questo funziona se effettivamente il valore della variabile \(t\) durante l&#39;ultima iterazione del ciclo <code>for</code> è uguale a 70, e questo vale solo se \(\Delta t = 70\,\text{s}\) è esattamente divisibile per \(h\). Non scegliete quindi a caso i valori di \(h\), ma definiteli in funzione del numero di passi che volete far compiere.</p>
+<p>Nel codice Julia definiamo <code>nsteps</code> come un vettore di valori della forma \(7\times 10^k\), con \(k \in [2, 2.2, 2.4, 2.6, \ldots, 3.8,
+4]\): in questo modo gli estremi sono 700 e 70000, pari ad \(h =
+10^{-1}\) e \(h = 10^{-3}\). Il valore di <code>nsteps</code> deve ovviamente essere sempre arrotondato ad un intero &#40;mediante round&#41;.</p>
+<pre><code class=language-julia >nsteps &#61; 7 * round.&#40;Int, exp10.&#40;2:0.2:4&#41;&#41;</code></pre><pre><code class="plaintext code-output">11-element Vector{Int64}:
+   700
+  1106
+  1757
+  2786
+  4417
+  7000
+ 11095
+ 17584
+ 27867
+ 44170
+ 70000</code></pre>
+<p>In <code>deltat</code> memorizziamo invece i passi temporali &#40;ossia, i valori di \(h\)&#41; che studieremo più sotto. Come spiegato per l&#39;esercizio 8.0, in Julia l&#39;operatore <code>./</code> è come l&#39;operatore <code>/</code> di divisione, ma viene applicato uno ad uno ad ogni elemento dell&#39;array, e risparmia la noia di dover implementare un ciclo <code>for</code>.</p>
+<pre><code class=language-julia >deltat &#61; lastt ./ nsteps</code></pre><pre><code class="plaintext code-output">11-element Vector{Float64}:
+ 0.1
+ 0.06329113924050633
+ 0.0398406374501992
+ 0.02512562814070352
+ 0.01584786053882726
+ 0.01
+ 0.006309148264984227
+ 0.003980891719745223
+ 0.0025119316754584277
+ 0.001584786053882726
+ 0.001</code></pre>
+<p>Creiamo ora un&#39;animazione che confronti la soluzione analitica esatta \(f(x) = \sin x\) con la soluzione calcolata col metodo <code>euler</code>. In Julia è semplicissimo creare animazioni: basta usare la macro <code>@animate</code> del pacchetto <a href="https://github.com/JuliaPlots/Plots.jl/">Plots</a>, e poi salvare il risultato in un file GIF.</p>
+<pre><code class=language-julia >anim &#61; @animate for h in deltat
+    result &#61; euler&#40;oscillatore, &#91;0., 1.&#93;, 0.0, 70.0, h&#41;
+    plot&#40;result&#91;:, 1&#93;, result&#91;:, 2&#93;,
+         title &#61; @sprintf&#40;&quot;h &#61; &#37;.5f&quot;, h&#41;,
+         label&#61;&quot;Eulero&quot;, ylim&#61;&#40;-2, 2&#41;,
+         xlabel&#61;&quot;Tempo &#91;s&#93;&quot;, ylabel&#61;&quot;Posizione &#91;m&#93;&quot;&#41;
+    plot&#33;&#40;result&#91;:, 1&#93;, sin.&#40;result&#91;:, 1&#93;&#41;, label &#61; &quot;Risultato atteso&quot;&#41;
+end
+
+gif&#40;anim, joinpath&#40;@OUTPUT, &quot;euler.gif&quot;&#41;, fps &#61; 1&#41;;</code></pre><pre><code class="plaintext code-output">LoadError: UndefVarError: @animate not defined
+in expression starting at none:1
+</code></pre>
+<p><span style="color:red;">// Image matching '/assets/lezione08/code/euler.gif' not found. //</span></p>
+<p>Vediamo che l&#39;errore è estremamente significativo se \(h = 10^{-2}\). Facciamo un confronto più quantitativo confrontando il valore della posizione all&#39;istante \(t=70\,\text{s}\) con quello teorico.</p>
+<pre><code class=language-julia >lastpos &#61; &#91;euler&#40;oscillatore, &#91;0., 1.&#93;, 0.0, lastt, h&#41;&#91;end, 2&#93; for h in deltat&#93;
+error_euler &#61; abs.&#40;lastpos .- sin&#40;lastt&#41;&#41;
+
+@printf&#40;&quot;&#37;-14s\t&#37;-14s\n&quot;, &quot;δt &#91;s&#93;&quot;, &quot;x&#40;70&#41; &#91;m&#93;&quot;&#41;
+for i in 1:length&#40;deltat&#41;
+    @printf&#40;&quot;&#37;.12f\t&#37;.12f\n&quot;, deltat&#91;i&#93;, lastpos&#91;i&#93;&#41;
+end</code></pre><pre><code class="plaintext code-output">LoadError: UndefVarError: @printf not defined
+in expression starting at none:2
+</code></pre>
+<p>I numeri sopra vi saranno preziosi per fare test sul vostro codice usando <code>assert</code>. Creiamo ora un plot che mostri l&#39;andamento dell&#39;errore in funzione del passo \(h\), come mostrato sul sito.</p>
+<pre><code class=language-julia >plot&#40;deltat, error_euler,
+     xscale &#61; :log10, yscale &#61; :log10,
+     xlabel &#61; &quot;Passo d&#39;integrazione&quot;,
+     ylabel &#61; @sprintf&#40;&quot;Errore a t &#61; &#37;.1f&quot;, lastt&#41;,
+     label &#61; &quot;&quot;&#41;
+scatter&#33;&#40;deltat, error_euler, label &#61; &quot;&quot;&#41;</code></pre><pre><code class="plaintext code-output">LoadError: UndefVarError: @sprintf not defined
+in expression starting at none:4
+</code></pre>
+<p><span style="color:red;">// Image matching '/assets/lezione08/code/euler_error.svg' not found. //</span></p>
+<h2 id=esercizio_82_soluzione_con_runge-kutta ><a href="#esercizio_82_soluzione_con_runge-kutta" class=header-anchor >Esercizio 8.2: Soluzione con Runge-Kutta</a></h2>
+<p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.2">carminati-esercizi-08.html</a>.</p>
+<p>La funzione <code>rungekutta</code> implementa l&#39;integrazione di Runge-Kutta usando lo stesso approccio della funzione <code>euler</code> vista sopra: è quindi un po&#39; diverso dal modo in cui la implementerete voi.</p>
+<pre><code class=language-julia >function rungekutta&#40;fn, x0, startt, endt, h&#41;
+    timerange &#61; startt:h:endt
+    result &#61; Array&#123;Float64&#125;&#40;undef, length&#40;timerange&#41;, 1 &#43; length&#40;x0&#41;&#41;
+    cur &#61; copy&#40;x0&#41;
+    for &#40;i, t&#41; in enumerate&#40;timerange&#41;
+        result&#91;i, 1&#93; &#61; t
+        result&#91;i, 2:end&#93; &#61; cur
+
+        k1 &#61; fn&#40;t,          cur&#41;
+        k2 &#61; fn&#40;t &#43; h / 2., cur .&#43; k1 .* h / 2.0&#41;
+        k3 &#61; fn&#40;t &#43; h / 2., cur .&#43; k2 .* h / 2.0&#41;
+        k4 &#61; fn&#40;t &#43; h,      cur .&#43; k3 .* h&#41;
+
+        cur .&#43;&#61; &#40;k1 .&#43; 2k2 .&#43; 2k3 .&#43; k4&#41; .* h / 6
+    end
+
+    result
+end</code></pre><pre><code class="plaintext code-output">rungekutta (generic function with 1 method)</code></pre>
+<p>Il funzionamento di <code>rungekutta</code> è però il medesimo di <code>euler</code>: le due funzioni accettano gli stessi parametri e restituiscono matrici a tre colonne.</p>
+<pre><code class=language-julia >result &#61; rungekutta&#40;oscillatore, &#91;0., 1.&#93;, 0.0, 70.0, 0.1&#41;;</code></pre>
+<p>Come sopra, consideriamo la posizione e la velocità all&#39;inizio della simulazione:</p>
+<pre><code class=language-julia >result&#91;1:10, :&#93;</code></pre><pre><code class="plaintext code-output">10×3 Matrix{Float64}:
+ 0.0  0.0        1.0
+ 0.1  0.0998333  0.995004
+ 0.2  0.198669   0.980067
+ 0.3  0.29552    0.955337
+ 0.4  0.389418   0.921061
+ 0.5  0.479425   0.877583
+ 0.6  0.564642   0.825336
+ 0.7  0.644217   0.764843
+ 0.8  0.717356   0.696707
+ 0.9  0.783326   0.621611</code></pre>
+<p>Questi sono i dati alla fine della simulazione:</p>
+<pre><code class=language-julia >result&#91;&#40;end - 10&#41;:end, :&#93;</code></pre><pre><code class="plaintext code-output">11×3 Matrix{Float64}:
+ 69.0  -0.114841   0.993379
+ 69.1  -0.0150951  0.999881
+ 69.2   0.0848018  0.996393
+ 69.3   0.183851   0.982949
+ 69.4   0.281064   0.959684
+ 69.5   0.375468   0.92683
+ 69.6   0.466121   0.884716
+ 69.7   0.552116   0.833761
+ 69.8   0.632595   0.774476
+ 69.9   0.706754   0.707453
+ 70.0   0.77385    0.633361</code></pre>
+<p>Possiamo usare questi valori per scrivere una funzione <code>test_runge_kutta</code>, simile a <code>test_euler</code> &#40;v. sopra&#41;:</p>
+<pre><code class=language-cpp >void test_runge_kutta&#40;&#41; &#123;
+  RungeKutta rk;
+  OscillatoreArmonico oa&#123;1.0&#125;;
+  const double lastt&#123;70.0&#125;;
+  const double h&#123;0.1&#125;;
+  const int passi&#123;static_cast&lt;double&gt;&#40;lasttt / h &#43; 0.5&#41;&#125;;
+  std::vector&lt;double&gt; pos&#123;0.0, 1.0&#125;;
+
+  for &#40;int idx&#123;&#125;; idx &lt; passi; &#43;&#43;idx&#41; &#123;
+    pos &#61; rk.Passo&#40;t, pos, h, &amp;oa&#41;;
+  &#125;
+
+  assert&#40;is_close&#40;pos&#91;0&#93;, 0.7738501114078689&#41;&#41;;
+  assert&#40;is_close&#40;pos&#91;1&#93;, 0.6333611095194112&#41;&#41;;
+&#125;</code></pre>
+<p>Nel caso di Runge-Kutta, l&#39;animazione è molto meno interessante: la convergenza è eccellente anche per \(h = 10^{-1}\).</p>
+<pre><code class=language-julia >anim &#61; @animate for h in deltat
+    cur_result &#61; rungekutta&#40;oscillatore, &#91;0., 1.&#93;, 0.0, 70.0, h&#41;
+    plot&#40;cur_result&#91;:, 1&#93;, cur_result&#91;:, 2&#93;,
+         title &#61; @sprintf&#40;&quot;h &#61; &#37;.5f&quot;, h&#41;,
+         label&#61;&quot;Eulero&quot;, ylim&#61;&#40;-2, 2&#41;,
+         xlabel&#61;&quot;Tempo &#91;s&#93;&quot;, ylabel&#61;&quot;Posizione &#91;m&#93;&quot;&#41;
+    plot&#33;&#40;cur_result&#91;:, 1&#93;, sin.&#40;cur_result&#91;:, 1&#93;&#41;, label &#61; &quot;Risultato atteso&quot;&#41;
+end
+
+gif&#40;anim, joinpath&#40;@OUTPUT, &quot;rk.gif&quot;&#41;, fps &#61; 1&#41;;</code></pre><pre><code class="plaintext code-output">LoadError: UndefVarError: @animate not defined
+in expression starting at none:1
+</code></pre>
+<p><span style="color:red;">// Image matching '/assets/lezione08/code/rk.gif' not found. //</span></p>
+<p>Confrontiamo il grafico dell&#39;errore di Runge-Kutta con quello di Eulero, per rendere evidente la differenza nella velocità di convergenza.</p>
+<pre><code class=language-julia >lastpos &#61; &#91;rungekutta&#40;oscillatore, &#91;0., 1.&#93;, 0.0, lastt, h&#41;&#91;end, 2&#93; for h in deltat&#93;
+error_rk &#61; abs.&#40;lastpos .- sin&#40;lastt&#41;&#41;</code></pre><pre><code class="plaintext code-output">11-element Vector{Float64}:
+ 4.0570150020236007e-5
+ 6.301458916779801e-6
+ 9.680016646029799e-7
+ 1.5096724137464435e-7
+ 2.3677510618824726e-8
+ 3.7318509393813315e-9
+ 5.891128695978409e-10
+ 9.315614946103778e-11
+ 1.4744427900836854e-11
+ 2.3335777754596165e-12
+ 3.597122599785507e-13</code></pre>
+<p>Questa è la corrispondenza tra \(\delta t\) e la posizione finale &#40;a \(t = 70\,\text{s}\)&#41;:</p>
+<pre><code class=language-julia >@printf&#40;&quot;&#37;-14s\t&#37;-14s\n&quot;, &quot;δt &#91;s&#93;&quot;, &quot;x&#40;70&#41; &#91;m&#93;&quot;&#41;
+for i in 1:length&#40;deltat&#41;
+    @printf&#40;&quot;&#37;.12f\t&#37;.12f\n&quot;, deltat&#91;i&#93;, lastpos&#91;i&#93;&#41;
+end</code></pre><pre><code class="plaintext code-output">LoadError: UndefVarError: @printf not defined
+in expression starting at none:1
+</code></pre>
+<p>Creiamo un plot che mostri visivamente la differenza tra i due metodi:</p>
+<pre><code class=language-julia >plot&#40;deltat, error_euler, label &#61; &quot;&quot;&#41;
+scatter&#33;&#40;deltat, error_euler, label &#61; &quot;Eulero&quot;&#41;
+
+plot&#33;&#40;deltat, error_rk,
+     xscale &#61; :log10, yscale &#61; :log10,
+     xlabel &#61; &quot;Passo d&#39;integrazione&quot;,
+     ylabel &#61; @sprintf&#40;&quot;Errore a t &#61; &#37;.1f&quot;, lastt&#41;,
+     label &#61; &quot;&quot;&#41;
+scatter&#33;&#40;deltat, error_rk, label &#61; &quot;Runge-Kutta&quot;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: plot not defined
+</code></pre>
+<p><span style="color:red;">// Image matching '/assets/lezione08/code/euler_rk_comparison.svg' not found. //</span></p>
+<h2 id=esercizio_83 ><a href="#esercizio_83" class=header-anchor >Esercizio 8.3</a></h2>
+<p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.3">carminati-esercizi-08.html</a>.</p>
+<p>Questo esercizio richiede di studiare il comportamento di un pendolo di lunghezza \(l\) sottoposto ad un&#39;accelerazione di gravità \(g\). Impostiamo un paio di costanti.</p>
+<pre><code class=language-julia >rodlength &#61; 1.
+g &#61; 9.81</code></pre><pre><code class="plaintext code-output">9.81</code></pre>
+<p>La funzione <code>pendulum</code> definisce i due membri dell&#39;equazione differenziale di secondo grado.</p>
+<pre><code class=language-julia >pendulum&#40;t, x&#41; &#61; &#91;x&#91;2&#93;, -g / rodlength * sin&#40;x&#91;1&#93;&#41;&#93;</code></pre><pre><code class="plaintext code-output">pendulum (generic function with 1 method)</code></pre>
+<p>Prima di effettuare lo studio richiesto dall&#39;esercizio, è buona norma studiare il comportamento della soluzione in un caso particolare. Usiamo <code>rungekutta</code> per analizzare il caso in cui \(\theta_0 = \pi / 3\):</p>
+<pre><code class=language-julia >oscillations &#61; rungekutta&#40;pendulum, &#91;π / 3, 0.&#93;, 0.0, 3.0, 0.01&#41;
+oscillations&#91;1:10, :&#93;</code></pre><pre><code class="plaintext code-output">10×3 Matrix{Float64}:
+ 0.0   1.0472    0.0
+ 0.01  1.04677  -0.0849501
+ 0.02  1.0455   -0.169859
+ 0.03  1.04338  -0.254683
+ 0.04  1.04041  -0.339382
+ 0.05  1.03659  -0.423913
+ 0.06  1.03193  -0.508232
+ 0.07  1.02643  -0.592295
+ 0.08  1.02008  -0.676057
+ 0.09  1.01291  -0.759471</code></pre>
+<p>Visualizziamo anche le ultime righe:</p>
+<pre><code class=language-julia >oscillations&#91;&#40;end - 10&#41;:end, :&#93;</code></pre><pre><code class="plaintext code-output">11×3 Matrix{Float64}:
+ 2.9   -0.609502  -2.50541
+ 2.91  -0.634272  -2.44826
+ 2.92  -0.658461  -2.38917
+ 2.93  -0.682049  -2.32823
+ 2.94  -0.705019  -2.26552
+ 2.95  -0.727354  -2.20111
+ 2.96  -0.749036  -2.13509
+ 2.97  -0.770051  -2.06754
+ 2.98  -0.790382  -1.99853
+ 2.99  -0.810017  -1.92814
+ 3.0   -0.828941  -1.85645</code></pre>
+<p>È interessante studiare il pendolo creando un&#39;animazione. Noi useremo il pacchetto <a href="https://github.com/JuliaGraphics/Luxor.jl">Luxor</a>, che consente di creare disegni ed animazioni partendo da forme geometriche primitive. &#40;Se volete creare qualcosa del genere in C&#43;&#43;, potete usare la libreria <a href="https://github.com/ziotom78/monet">Monet</a>&#41;. Per installare Luxor da Internet, usate come al solito i comandi di Pkg:</p>
+<pre><code class=language-julia >using Pkg
+Pkg.add&#40;&quot;Luxor&quot;&#41;</code></pre>
+<p>Quando è installato, possiamo importarlo come al solito:</p>
+<pre><code class=language-julia >import Luxor</code></pre><pre><code class="plaintext code-output">ArgumentError: Package Luxor not found in current path:
+- Run `import Pkg; Pkg.add("Luxor")` to install the Luxor package.
+
+</code></pre>
+<p>In Luxor, il disegno avviene su una superficie quadrata di dimensione 500×500, con il centro del quadrato collocato alla coordinata &#40;0,0&#41;. Noi disegnamo il pendolo come una linea che parte dal centro e alla cui estremità è disegnato un cerchio. &#40;Notate che Julia offre il comando <code>sincos</code>, che calcola simultaneamente il valore del seno e del coseno di un angolo&#41;.</p>
+<pre><code class=language-julia >function plot_pendulum&#40;angle&#41;
+    radius &#61; 200
+    y, x &#61; radius .* sincos&#40;π / 2 &#43; angle&#41;
+
+    Luxor.sethue&#40;&quot;black&quot;&#41;
+    Luxor.line&#40;Luxor.Point&#40;0, 0&#41;, Luxor.Point&#40;x, y&#41;, :stroke&#41;
+    Luxor.circle&#40;Luxor.Point&#40;x, y&#41;, 10, :fill&#41;
+end</code></pre><pre><code class="plaintext code-output">plot_pendulum (generic function with 1 method)</code></pre>
+<p>Abbiamo già calcolato la soluzione dell&#39;equazione in un caso particolare, e il risultato è nella matrice <code>oscillations</code>. Il comando <code>size</code> restituisce le dimensioni di vettori, matrici e tensori. Nel caso di <code>oscillations</code> ci sono ovviamente 3 colonne, ma il numero di righe &#40;corrispondente agli step temporali&#41; dipende dal passo \(h\) e dalla lunghezza della simulazione. Vediamo di quanti step si tratta:</p>
+<pre><code class=language-julia >size&#40;oscillations, 1&#41;</code></pre><pre><code class="plaintext code-output">301</code></pre>
+<p>Creeremo ora un&#39;immagine GIF animata chiamando ripetutamente il comando <code>plot_pendulum</code>. Notate la comodità di Luxor: in poche righe è possibile creare un&#39;intera animazione e salvarla su disco.</p>
+<pre><code class=language-julia >anim &#61; Luxor.Movie&#40;500, 500, &quot;Pendulum&quot;&#41;
+
+function animframe&#40;scene, framenumber&#41;
+    Luxor.background&#40;&quot;white&quot;&#41;
+    plot_pendulum&#40;oscillations&#91;framenumber, 2&#93;&#41;
+end
+
+Luxor.animate&#40;anim, &#91;Luxor.Scene&#40;anim, animframe, 1:size&#40;oscillations, 1&#41;&#41;&#93;,
+    creategif&#61;true, pathname&#61;joinpath&#40;@OUTPUT, &quot;pendulum.gif&quot;&#41;&#41;;</code></pre><pre><code class="plaintext code-output">UndefVarError: Luxor not defined
+</code></pre>
+<p><span style="color:red;">// Image matching '/assets/lezione08/code/pendulum.gif' not found. //</span></p>
+<p>Adesso che abbiamo visto che l&#39;equazione del pendolo viene integrata correttamente, dobbiamo passare al calcolo del periodo di oscillazione. Come suggerito sul sito, bisogna considerare il momento in cui la velocità angolare inverte il segno. Osserviamo allora il grafico della velocità &#40;seconda componente del sistema di equazioni differenziali&#41;.</p>
+<pre><code class=language-julia >plot&#40;oscillations&#91;:, 1&#93;, oscillations&#91;:, 3&#93;,
+     label &#61; &quot;&quot;,
+     xlabel &#61; &quot;Tempo &#91;s&#93;&quot;,
+     ylabel &#61; &quot;Velocità angolare &#91;rad/s&#93;&quot;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: plot not defined
+</code></pre>
+<p><span style="color:red;">// Image matching '/assets/lezione08/code/oscillations1.svg' not found. //</span></p>
+<p>Possiamo farci un&#39;idea del punto in cui avviene l&#39;inversione usando i filtri offerti da Julia:</p>
+<pre><code class=language-julia >oscillations&#91;abs.&#40;oscillations&#91;:, 3&#93;&#41; .&lt; 0.1, :&#93;</code></pre><pre><code class="plaintext code-output">6×3 Matrix{Float64}:
+ 0.0    1.0472    0.0
+ 0.01   1.04677  -0.0849501
+ 1.07  -1.04702  -0.0546879
+ 1.08  -1.04714   0.030267
+ 2.15   1.04716   0.0244223
+ 2.16   1.04698  -0.0605321</code></pre>
+<p>Qui è evidente il problema accennato sul sito: non esiste alcun punto in cui la velocità angolare sia esattamente zero, perché stiamo usando un passo discreto per integrare l&#39;equazione.</p>
+<pre><code class=language-julia >scatter&#40;oscillations&#91;:, 1&#93;, oscillations&#91;:, 3&#93;,
+        label &#61; &quot;&quot;,
+        xlim &#61; &#40;1.0, 1.2&#41;,
+        xlabel &#61; &quot;Tempo &#91;s&#93;&quot;,
+        ylabel &#61; &quot;Velocità angolare &#91;rad/s&#93;&quot;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: scatter not defined
+</code></pre>
+<p><span style="color:red;">// Image matching '/assets/lezione08/code/oscillations2.svg' not found. //</span></p>
+<p>Implementiamo quindi una funzione per cercare l&#39;inversione di segno in un vettore. &#40;È buona cosa che anche voi implementiate una funzione del genere nel vostro codice C&#43;&#43;&#41;.</p>
+<pre><code class=language-julia >function search_inversion&#40;vect&#41;
+    prevval &#61; vect&#91;1&#93;
+    for i in 2:length&#40;vect&#41;
+        if prevval * vect&#91;i&#93; &lt; 0
+            return i - 1
+        end
+        prevval &#61; vect&#91;i&#93;
+    end
+
+    println&#40;&quot;No inversion found, run the simulation for a longer time&quot;&#41;
+
+    # Return a negative &#40;impossible&#41; index
+    -1
+end</code></pre><pre><code class="plaintext code-output">search_inversion (generic function with 1 method)</code></pre>
+<p>La funzione restituisce l&#39;indice dell&#39;ultimo elemento del vettore <em>prima</em> dell&#39;inversione. Nella vostra versione in C&#43;&#43; quindi la funzione dovrà restituire un intero. Verifichiamone il funzionamento su un vettore &#40;ricordando che in Julia gli elementi dei vettori si contano da 1 anziché da 0 come in C&#43;&#43;&#33;&#41;.</p>
+<pre><code class=language-julia >search_inversion&#40;&#91;4, 3, 1, -2, -5&#93;&#41;</code></pre><pre><code class="plaintext code-output">3</code></pre>
+<p>La formula per l&#39;interpolazione lineare \(t = t(\omega)\) tra due punti \((t_A, \omega_A)\) e \((t_B, \omega_B)\) si ricava imponendo che \(t(\omega_A) = t_A\) e che \(t(\omega_B) = t_B\). Il risultato è</p>
+\[
+t(\omega) = t_A + \frac{t_A - t_B}{\omega_A - \omega_B}\bigl(\omega - \omega_A\bigr).
+\]
+<p>Nel nostro caso bisogna quindi implementare il calcolo della formula nel caso in cui \(\omega = 0\), e <strong>raddoppiare il risultato</strong>: lo facciamo nella funzione <code>period</code>, che accetta come parametro la matrice a tre colonne prodotta da <code>euler</code> o <code>rungekutta</code>, e che sfrutta la funzione <code>invtime</code> che fornisce il valore del tempo all&#39;istante della inversione. Implementiamo una serie di sotto-funzioni, in modo che sia più facile verificare il comportamento di ciascuna.</p>
+<pre><code class=language-julia >interp&#40;ptA, ptB, x&#41; &#61; ptA&#91;1&#93; &#43; &#40;ptA&#91;1&#93; - ptB&#91;1&#93;&#41; / &#40;ptA&#91;2&#93; - ptB&#91;2&#93;&#41; * &#40;x - ptA&#91;2&#93;&#41;
+interp&#40;ptA, ptB&#41; &#61; interp&#40;ptA, ptB, 0&#41;</code></pre><pre><code class="plaintext code-output">interp (generic function with 2 methods)</code></pre>
+<p>Eseguiamo una volta <code>interp</code>: il valore restituito è utile per scrivere nel vostro codice un test con <code>assert</code>&#33;</p>
+<pre><code class=language-julia >interp&#40;&#40;-0.4, -0.7&#41;, &#40;0.5, 0.8&#41;, 0.3&#41;</code></pre><pre><code class="plaintext code-output">0.19999999999999996</code></pre>
+<p>La funzione <code>invtime</code> mette insieme <code>search_inversion</code> e <code>interp</code> per restituire l&#39;istante temporale in cui avviene l&#39;inversione del segno del vettore <code>vec</code>:</p>
+<pre><code class=language-julia >function invtime&#40;time, vec&#41;
+    idx &#61; search_inversion&#40;vec&#41;
+    timeA, timeB &#61; time&#91;idx:idx &#43; 1&#93;
+    vecA, vecB &#61; vec&#91;idx:idx &#43; 1&#93;
+
+    abs&#40;interp&#40;&#40;timeA, vecA&#41;, &#40;timeB, vecB&#41;&#41;&#41;
+end</code></pre><pre><code class="plaintext code-output">invtime (generic function with 1 method)</code></pre>
+<p>Siccome in questo esercizio assumiamo sempre di iniziare dalla posizione \(\theta = 0\), il valore del periodo è semplicemente il doppio del tempo necessario per osservare l&#39;inversione &#40;nell&#39;esercizio 9.4 questo <strong>non sarà più vero</strong>, ricordatevelo&#33;&#41;.</p>
+<pre><code class=language-julia >period&#40;oscillations&#41; &#61; 2 * invtime&#40;oscillations&#91;:, 1&#93;, oscillations&#91;:, 3&#93;&#41;</code></pre><pre><code class="plaintext code-output">period (generic function with 1 method)</code></pre>
+<p>Chiamando <code>period</code> su una matrice restituita da <code>euler</code> o da <code>rungekutta</code> si ottiene quindi il periodo di oscillazione.</p>
+<pre><code class=language-julia >period&#40;oscillations&#41;</code></pre><pre><code class="plaintext code-output">2.152874570427233</code></pre>
+<p>Confrontiamola col periodo ideale di un pendolo sottoposto a piccole oscillazioni.</p>
+<pre><code class=language-julia >ideal_period &#61; 2π / √&#40;g / rodlength&#41;</code></pre><pre><code class="plaintext code-output">2.006066680710647</code></pre>
+<p>Creiamo ora il grafico analogo a quello riportato nel testo dell&#39;esercizio.</p>
+<pre><code class=language-julia >angles &#61; 0.1:0.1:3.0
+ampl &#61; &#91;period&#40;rungekutta&#40;pendulum, &#91;angle, 0.&#93;, 0.0, 3.0, 0.01&#41;&#41; for angle in angles&#93;
+plot&#40;angles, ampl, label&#61;&quot;&quot;, xlabel&#61;&quot;Angolo &#91;rad&#93;&quot;, ylabel&#61;&quot;Periodo &#91;s&#93;&quot;&#41;
+scatter&#33;&#40;angles, ampl, label&#61;&quot;&quot;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: plot not defined
+</code></pre>
+<p><span style="color:red;">// Image matching '/assets/lezione08/code/period-vs-angle.svg' not found. //</span></p>
+<p>Ecco alcuni dei valori in una tabella che associa ampiezza &#40;in radianti&#41; e periodo &#40;in secondi&#41;. In questo modo potrete confrontarli con l&#39;output del vostro programma, magari mediante alcuni test con <code>assert</code> &#40;usate ad esempio il primo e l&#39;ultimo&#41;.</p>
+<pre><code class=language-julia >&#91;angles ampl&#93;</code></pre><pre><code class="plaintext code-output">30×2 Matrix{Float64}:
+ 0.1  2.00732
+ 0.2  2.01109
+ 0.3  2.01741
+ 0.4  2.02631
+ 0.5  2.03787
+ 0.6  2.05216
+ 0.7  2.06928
+ 0.8  2.08938
+ 0.9  2.1126
+ 1.0  2.13914
+ 1.1  2.16921
+ 1.2  2.20308
+ 1.3  2.24107
+ 1.4  2.28356
+ 1.5  2.33099
+ 1.6  2.3839
+ 1.7  2.44294
+ 1.8  2.50892
+ 1.9  2.58282
+ 2.0  2.66587
+ 2.1  2.75966
+ 2.2  2.86625
+ 2.3  2.98837
+ 2.4  3.12979
+ 2.5  3.29593
+ 2.6  3.49491
+ 2.7  3.73983
+ 2.8  4.05387
+ 2.9  4.48458
+ 3.0  5.15807</code></pre>
+<h2 id=esercizio_84 ><a href="#esercizio_84" class=header-anchor >Esercizio 8.4</a></h2>
+<p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.4">carminati-esercizi-08.html</a>.</p>
+<p>Come sopra, definiamo i parametri numerici del problema.</p>
+<pre><code class=language-julia >ω0 &#61; 10;
+α &#61; 1.0 / 30;</code></pre>
+<p>Trattandosi di un esercizio complesso, definiamo una funzione che invochi <code>rungekutta</code> con dei parametri sensati. Notate la sintassi <code>do...end</code>, che in Julia permette di passare come primo argomento di una funzione &#40;nel nostro caso appunto <code>rungekutta</code>&#41; una seconda funzione. Questa sintassi è molto comoda per casi come il nostro.</p>
+<pre><code class=language-julia >function forcedpendulum&#40;ω; init&#61;&#91;0., 0.&#93;, startt&#61;0., endt&#61;15. / α, deltat&#61;0.01&#41;
+    rungekutta&#40;init, startt, endt, deltat&#41; do t, x
+        &#91;x&#91;2&#93;, -ω0^2 * x&#91;1&#93; - α * x&#91;2&#93; &#43; sin&#40;ω * t&#41;&#93;
+    end
+end</code></pre><pre><code class="plaintext code-output">forcedpendulum (generic function with 1 method)</code></pre>
+<p>Il valore di ritorno di <code>forcedpendulum</code> è come al solito una matrice a tre colonne. Il plot mostra come il pendolo forzato con smorzante arrivi presto ad una situazione di equilibrio:</p>
+<pre><code class=language-julia >oscillations &#61; forcedpendulum&#40;8.&#41;
+plot&#40;oscillations&#91;:, 1&#93;, oscillations&#91;:, 2&#93;, label&#61;&quot;&quot;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: plot not defined
+</code></pre>
+<p><span style="color:red;">// Image matching '/assets/lezione08/code/forced-pendulum.svg' not found. //</span></p>
+<p>Rispetto all&#39;esercizio precedente, dobbiamo calcolare qui non il periodo bensì l&#39;ampiezza di oscillazione &#40;che nell&#39;esercizio precedente era fissata dalla condizione iniziale&#41;. Come prima, anche qui non possiamo avere la garanzia che l&#39;integrazione con RK passerà dall&#39;istante in cui il valore della velocità si annulla esattamente. Il modo migliore di procedere è quindi il seguente:</p>
+<ol>
+<li><p>Iteriamo RK per un tempo ragionevole in modo da toglierci dalla regione iniziale di instabilità; qui integro fino al tempo \(15/\alpha\);</p>
+
+<li><p>A questo punto il codice cerca nuovamente una inversione nel segno della velocità;</p>
+
+<li><p>Trovata l&#39;inversione, sappiamo che il massimo avviene in qualche istante che sta tra \(t\) e \(t + h\). Troviamo questo istante \(t_\text{inv}\) con una interpolazione lineare tra il punto \((t,
+   \omega_0)\) e \((t + h, \omega_1)\)</p>
+
+<li><p>Eseguiamo di nuovo RK partendo dal tempo \(t\), ma questa volta non usiamo come incremento \(h\) bensì \(t_\text{inv} - t\)</p>
+
+<li><p>Se abbiamo fatto le cose per bene, dopo una <em>singola</em> esecuzione di RK ci troviamo in corrispondenza del massimo. Stampare la velocità in questo punto dovrebbe quindi mostrare un numero pressoché nullo</p>
+
+<li><p>Se effettivamente la velocità è praticamente nulla &#40;diciamo \(\left|v\right| \leq 10^{-6}\,\text{rad/s}\), il valore della posizione in questo punto corrisponde all&#39;ampiezza.</p>
+
+</ol>
+<pre><code class=language-julia >function forced_amplitude&#40;ω, oscillations&#41;
+    # Per comodità estraggo la prima colonna della matrice &#40;quella che
+    # contiene i tempi&#41; nel vettore &quot;timevec&quot;
+    timevec &#61; oscillations&#91;:, 1&#93;
+
+    # Questa maschera serve per trascurare le oscillazioni nella prima
+    # parte della simulazione, ossia le prime righe della matrice.
+    # Di fatto quindi ci concentriamo solo sulla &quot;coda&quot; della soluzione,
+    # ossia le ultime righe della matrice
+    mask &#61; timevec .&gt; 10 / α
+    oscill_tail &#61; oscillations&#91;mask, :&#93;
+
+    # Calcolo il tempo in corrispondenza della prima inversione
+    # nella &quot;coda&quot; della soluzione
+    idx0 &#61; search_inversion&#40;oscill_tail&#91;:, 3&#93;&#41;
+    ptA &#61; oscill_tail&#91;idx0, &#91;1, 3&#93;&#93;
+    ptB &#61; oscill_tail&#91;idx0 &#43; 1, &#91;1, 3&#93;&#93;
+    t0 &#61; interp&#40;ptA, ptB&#41;
+    δt &#61; t0 - oscill_tail&#91;idx0, 1&#93;
+    newsol &#61; forcedpendulum&#40;ω,
+        init&#61;oscill_tail&#91;idx0, 2:3&#93;,
+        startt&#61;oscill_tail&#91;idx0, 1&#93;,
+        endt&#61;oscill_tail&#91;idx0, 1&#93; &#43; 1.1 * δt,
+        deltat&#61;δt&#41;
+
+    @printf&#40;&quot;t0 &#61; &#37;.4f, angle &#61; &#37;.4f, speed &#61; &#37;.4f, t0 &#43; δt &#61; &#37;.4f, angle &#61; &#37;.4f, speed &#61; &#37;.4f\n&quot;,
+        newsol&#91;1, 1&#93;, newsol&#91;1, 2&#93;, newsol&#91;1,3&#93;, newsol&#91;2, 1&#93;, newsol&#91;2, 2&#93;, newsol&#91;2, 3&#93;&#41;
+    abs&#40;newsol&#91;2, 2&#93;&#41;
+end</code></pre><pre><code class="plaintext code-output">LoadError: UndefVarError: @printf not defined
+in expression starting at none:26
+</code></pre>
+<p>Chiamiamo la funzione <code>forced_amplitude</code> su un caso specifico: questo è un numero buono per essere usato in un <code>assert</code>. Notate che nel secondo punto &#40;corrispondente al tempo \(t + \delta t\)&#41; la velocità è nulla.</p>
+<pre><code class=language-julia >forced_amplitude&#40;9.5, forcedpendulum&#40;9.5&#41;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: forced_amplitude not defined
+</code></pre>
+<p>Ricreiamo ora il grafico presente sul sito del corso. La funzione <code>forced_amplitude</code> stampa a video i due punti su cui esegue di nuovo il RK: potete verificare che il secondo punto è effettivamente quello di massimo, perché la velocità è pressoché nulla. Usate i numeri scritti qui sotto per verificare che il vostro codice sia corretto.</p>
+<pre><code class=language-julia ># Aggiungiamo 0.01 agli estremi &#40;9 e 11&#41; per evitare la condizione di risonanza
+freq &#61; 9.01:0.1:11.01
+println&#40;&quot;The frequencies to be sampled are: &#36;&#40;collect&#40;freq&#41;&#41;&quot;&#41;
+ampl &#61; &#91;forced_amplitude&#40;ω, forcedpendulum&#40;ω&#41;&#41; for ω in freq&#93;
+plot&#40;freq, ampl,
+     label&#61;&quot;&quot;, xlabel&#61;&quot;Frequenza &#91;rad/s&#93;&quot;, ylabel&#61;&quot;Ampiezza&quot;&#41;
+scatter&#33;&#40;freq, ampl, label&#61;&quot;&quot;&#41;</code></pre><pre><code class="plaintext code-output">The frequencies to be sampled are: [9.01, 9.11, 9.21, 9.31, 9.41, 9.51, 9.61, 9.71, 9.81, 9.91, 10.01, 10.11, 10.21, 10.31, 10.41, 10.51, 10.61, 10.71, 10.81, 10.91, 11.01]
+UndefVarError: forced_amplitude not defined
+</code></pre>
+<p><span style="color:red;">// Image matching '/assets/lezione08/code/forced-pendulum-resonance.svg' not found. //</span></p>
+
+<div class=page-foot >
+  <div class=copyright >
+    &copy; Maurizio Tomasi. Last modified: November 22, 2021. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+  </div>
+</div>
+</div>
+    </div>  
+    
+        <script src="/libs/katex/katex.min.js"></script>
+<script src="/libs/katex/auto-render.min.js"></script>
+<script>renderMathInElement(document.body)</script>
+
+    
+    
+        <script src="/libs/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();hljs.configure({tabReplace: '    '});</script>
