@@ -1,4 +1,4 @@
-<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/libs/katex/katex.min.css"> <link rel=stylesheet  href="/libs/highlight/github.min.css"> <link rel=stylesheet  href="/css/franklin.css"> <link rel=stylesheet  href="/css/poole_hyde.css"> <style> html {font-size: 17px;} .franklin-content {position: relative; padding-left: 8%; padding-right: 5%; line-height: 1.35em;} @media (min-width: 940px) { .franklin-content {width: 100%; margin-left: auto; margin-right: auto;} } @media (max-width: 768px) { .franklin-content {padding-left: 6%; padding-right: 6%;} } </style> <link rel=icon  href="/assets/favicon.png"> <title>Lezione 8</title> <div class=sidebar > <div class="container sidebar-sticky"> <div class=sidebar-about > <h1><a href="/">TNDS</a></h1> <p class=lead >Prof. M.&nbsp;Tomasi</p> </div> <nav class=sidebar-nav > <a class="sidebar-nav-item " href="/">Home</a> <a class="sidebar-nav-item " href="/lezione07/">Lezione 07</a> <a class="sidebar-nav-item active" href="/lezione08/">Lezione 08</a> </nav> <p>&copy; Maurizio Tomasi.</p> </div> </div> <div class="content container"> <div class=franklin-content > <p><div class=franklin-toc ><ol><li><a href="#iterare_sui_tempi">Iterare sui tempi</a><li><a href="#esercizio_80_algebra_vettoriale">Esercizio 8.0: Algebra vettoriale</a><li><a href="#esercizio_81_metodo_di_eulero">Esercizio 8.1: metodo di Eulero</a><li><a href="#esercizio_82_soluzione_con_runge-kutta">Esercizio 8.2: Soluzione con Runge-Kutta</a><li><a href="#esercizio_83">Esercizio 8.3</a><li><a href="#esercizio_84">Esercizio 8.4</a></ol></div> </p> <p>In questa lezione implementeremo dei programmi per risolvere equazioni differenziali. Come per la lezione della volta scorsa, mostro qui qual è il risultato atteso per gli esercizi, usando Julia.</p> <p>Importiamo alcune librerie che ci saranno molto utili per svolgere gli esercizi:</p> <pre><code class=language-julia >using Plots
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/tnds-notebooks/libs/katex/katex.min.css"> <link rel=stylesheet  href="/tnds-notebooks/libs/highlight/github.min.css"> <link rel=stylesheet  href="/tnds-notebooks/css/franklin.css"> <link rel=stylesheet  href="/tnds-notebooks/css/poole_hyde.css"> <style> html {font-size: 17px;} .franklin-content {position: relative; padding-left: 8%; padding-right: 5%; line-height: 1.35em;} @media (min-width: 940px) { .franklin-content {width: 100%; margin-left: auto; margin-right: auto;} } @media (max-width: 768px) { .franklin-content {padding-left: 6%; padding-right: 6%;} } </style> <link rel=icon  href="/tnds-notebooks/assets/favicon.png"> <title>Lezione 8</title> <div class=sidebar > <div class="container sidebar-sticky"> <div class=sidebar-about > <h1><a href="/tnds-notebooks/">TNDS</a></h1> <p class=lead >Prof. M.&nbsp;Tomasi</p> </div> <nav class=sidebar-nav > <a class="sidebar-nav-item " href="/tnds-notebooks/">Home</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione07/">Lezione 07</a> <a class="sidebar-nav-item active" href="/tnds-notebooks/lezione08/">Lezione 08</a> </nav> <p>&copy; Maurizio Tomasi.</p> </div> </div> <div class="content container"> <div class=franklin-content > <p><div class=franklin-toc ><ol><li><a href="#iterare_sui_tempi">Iterare sui tempi</a><li><a href="#esercizio_80_algebra_vettoriale">Esercizio 8.0: Algebra vettoriale</a><li><a href="#esercizio_81_metodo_di_eulero">Esercizio 8.1: metodo di Eulero</a><li><a href="#esercizio_82_soluzione_con_runge-kutta">Esercizio 8.2: Soluzione con Runge-Kutta</a><li><a href="#esercizio_83">Esercizio 8.3</a><li><a href="#esercizio_84">Esercizio 8.4</a></ol></div> </p> <p>In questa lezione implementeremo dei programmi per risolvere equazioni differenziali. Come per la lezione della volta scorsa, mostro qui qual è il risultato atteso per gli esercizi, usando Julia.</p> <p>Importiamo alcune librerie che ci saranno molto utili per svolgere gli esercizi:</p> <pre><code class=language-julia >using Plots
 using Printf</code></pre> <h2 id=iterare_sui_tempi ><a href="#iterare_sui_tempi" class=header-anchor >Iterare sui tempi</a></h2> <p>In tutti gli esercizi di oggi si richiede di iterare sul tempo \(t\), perché la soluzione numerica delle equazioni differenziali richiede di partire dalla condizione iniziale al tempo \(t = t_0\) e procedere a incrementi di \(h\) finché non si raggiunge il tempo finale \(t_f\):</p> <pre><code class=language-cpp >std::vector&lt;double&gt; current&#123;...&#125;;  // Condizione iniziale
 while &#40;...&#41; &#123;
     // Sovrascrive &quot;current&quot; al tempo t con &quot;current&quot; al tempo t &#43; h
@@ -238,7 +238,7 @@ void test_euler&#40;&#41; &#123;
 end
 
 gif&#40;anim, joinpath&#40;@OUTPUT, &quot;euler.gif&quot;&#41;, fps &#61; 1&#41;;</code></pre>
-<img src="/assets/lezione08/code/output/euler.gif" alt="">
+<img src="/tnds-notebooks/assets/lezione08/code/output/euler.gif" alt="">
 <p>Vediamo che l&#39;errore è estremamente significativo se \(h = 10^{-2}\). Facciamo un confronto più quantitativo confrontando il valore della posizione all&#39;istante \(t=70\,\text{s}\) con quello teorico.</p>
 <pre><code class=language-julia >lastpos &#61; &#91;euler&#40;oscillatore, &#91;0., 1.&#93;, 0.0, lastt, h&#41;&#91;end, 2&#93; for h in deltat&#93;
 error_euler &#61; abs.&#40;lastpos .- sin&#40;lastt&#41;&#41;
@@ -266,7 +266,7 @@ end</code></pre><pre><code class="plaintext code-output">δt [s]        	x(70) [
      ylabel &#61; @sprintf&#40;&quot;Errore a t &#61; &#37;.1f&quot;, lastt&#41;,
      label &#61; &quot;&quot;&#41;
 scatter&#33;&#40;deltat, error_euler, label &#61; &quot;&quot;&#41;</code></pre>
-<img src="/assets/lezione08/code/output/euler_error.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione08/code/output/euler_error.svg" alt="">
 <h2 id=esercizio_82_soluzione_con_runge-kutta ><a href="#esercizio_82_soluzione_con_runge-kutta" class=header-anchor >Esercizio 8.2: Soluzione con Runge-Kutta</a></h2>
 <p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.2">carminati-esercizi-08.html</a>.</p>
 <p>La funzione <code>rungekutta</code> implementa l&#39;integrazione di Runge-Kutta usando lo stesso approccio della funzione <code>euler</code> vista sopra: è quindi un po&#39; diverso dal modo in cui la implementerete voi.</p>
@@ -342,7 +342,7 @@ end</code></pre><pre><code class="plaintext code-output">rungekutta (generic fun
 end
 
 gif&#40;anim, joinpath&#40;@OUTPUT, &quot;rk.gif&quot;&#41;, fps &#61; 1&#41;;</code></pre>
-<img src="/assets/lezione08/code/output/rk.gif" alt="">
+<img src="/tnds-notebooks/assets/lezione08/code/output/rk.gif" alt="">
 <p>Confrontiamo il grafico dell&#39;errore di Runge-Kutta con quello di Eulero, per rendere evidente la differenza nella velocità di convergenza.</p>
 <pre><code class=language-julia >lastpos &#61; &#91;rungekutta&#40;oscillatore, &#91;0., 1.&#93;, 0.0, lastt, h&#41;&#91;end, 2&#93; for h in deltat&#93;
 error_rk &#61; abs.&#40;lastpos .- sin&#40;lastt&#41;&#41;</code></pre><pre><code class="plaintext code-output">11-element Vector{Float64}:
@@ -384,7 +384,7 @@ plot&#33;&#40;deltat, error_rk,
      ylabel &#61; @sprintf&#40;&quot;Errore a t &#61; &#37;.1f&quot;, lastt&#41;,
      label &#61; &quot;&quot;&#41;
 scatter&#33;&#40;deltat, error_rk, label &#61; &quot;Runge-Kutta&quot;&#41;</code></pre>
-<img src="/assets/lezione08/code/output/euler_rk_comparison.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione08/code/output/euler_rk_comparison.svg" alt="">
 <h2 id=esercizio_83 ><a href="#esercizio_83" class=header-anchor >Esercizio 8.3</a></h2>
 <p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.3">carminati-esercizi-08.html</a>.</p>
 <p>Questo esercizio richiede di studiare il comportamento di un pendolo di lunghezza \(l\) sottoposto ad un&#39;accelerazione di gravità \(g\). Impostiamo un paio di costanti.</p>
@@ -444,13 +444,13 @@ end
 
 Luxor.animate&#40;anim, &#91;Luxor.Scene&#40;anim, animframe, 1:size&#40;oscillations, 1&#41;&#41;&#93;,
     creategif&#61;true, pathname&#61;joinpath&#40;@OUTPUT, &quot;pendulum.gif&quot;&#41;&#41;;</code></pre>
-<img src="/assets/lezione08/code/output/pendulum.gif" alt="">
+<img src="/tnds-notebooks/assets/lezione08/code/output/pendulum.gif" alt="">
 <p>Adesso che abbiamo visto che l&#39;equazione del pendolo viene integrata correttamente, dobbiamo passare al calcolo del periodo di oscillazione. Come suggerito sul sito, bisogna considerare il momento in cui la velocità angolare inverte il segno. Osserviamo allora il grafico della velocità &#40;seconda componente del sistema di equazioni differenziali&#41;.</p>
 <pre><code class=language-julia >plot&#40;oscillations&#91;:, 1&#93;, oscillations&#91;:, 3&#93;,
      label &#61; &quot;&quot;,
      xlabel &#61; &quot;Tempo &#91;s&#93;&quot;,
      ylabel &#61; &quot;Velocità angolare &#91;rad/s&#93;&quot;&#41;</code></pre>
-<img src="/assets/lezione08/code/output/oscillations1.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione08/code/output/oscillations1.svg" alt="">
 <p>Possiamo farci un&#39;idea del punto in cui avviene l&#39;inversione usando i filtri offerti da Julia:</p>
 <pre><code class=language-julia >oscillations&#91;abs.&#40;oscillations&#91;:, 3&#93;&#41; .&lt; 0.1, :&#93;</code></pre><pre><code class="plaintext code-output">6×3 Matrix{Float64}:
  0.0    1.0472    0.0
@@ -465,7 +465,7 @@ Luxor.animate&#40;anim, &#91;Luxor.Scene&#40;anim, animframe, 1:size&#40;oscilla
         xlim &#61; &#40;1.0, 1.2&#41;,
         xlabel &#61; &quot;Tempo &#91;s&#93;&quot;,
         ylabel &#61; &quot;Velocità angolare &#91;rad/s&#93;&quot;&#41;</code></pre>
-<img src="/assets/lezione08/code/output/oscillations2.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione08/code/output/oscillations2.svg" alt="">
 <p>Implementiamo quindi una funzione per cercare l&#39;inversione di segno in un vettore. &#40;È buona cosa che anche voi implementiate una funzione del genere nel vostro codice C&#43;&#43;&#41;.</p>
 <pre><code class=language-julia >function search_inversion&#40;vect&#41;
     prevval &#61; vect&#91;1&#93;
@@ -511,7 +511,7 @@ end</code></pre><pre><code class="plaintext code-output">invtime (generic functi
 ampl &#61; &#91;period&#40;rungekutta&#40;pendulum, &#91;angle, 0.&#93;, 0.0, 3.0, 0.01&#41;&#41; for angle in angles&#93;
 plot&#40;angles, ampl, label&#61;&quot;&quot;, xlabel&#61;&quot;Angolo &#91;rad&#93;&quot;, ylabel&#61;&quot;Periodo &#91;s&#93;&quot;&#41;
 scatter&#33;&#40;angles, ampl, label&#61;&quot;&quot;&#41;</code></pre>
-<img src="/assets/lezione08/code/output/period-vs-angle.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione08/code/output/period-vs-angle.svg" alt="">
 <p>Ecco alcuni dei valori in una tabella che associa ampiezza &#40;in radianti&#41; e periodo &#40;in secondi&#41;. In questo modo potrete confrontarli con l&#39;output del vostro programma, magari mediante alcuni test con <code>assert</code> &#40;usate ad esempio il primo e l&#39;ultimo&#41;.</p>
 <pre><code class=language-julia >&#91;angles ampl&#93;</code></pre><pre><code class="plaintext code-output">30×2 Matrix{Float64}:
  0.1  2.00732
@@ -558,7 +558,7 @@ end</code></pre><pre><code class="plaintext code-output">forcedpendulum (generic
 <p>Il valore di ritorno di <code>forcedpendulum</code> è come al solito una matrice a tre colonne. Il plot mostra come il pendolo forzato con smorzante arrivi presto ad una situazione di equilibrio:</p>
 <pre><code class=language-julia >oscillations &#61; forcedpendulum&#40;8.&#41;
 plot&#40;oscillations&#91;:, 1&#93;, oscillations&#91;:, 2&#93;, label&#61;&quot;&quot;&#41;</code></pre>
-<img src="/assets/lezione08/code/output/forced-pendulum.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione08/code/output/forced-pendulum.svg" alt="">
 <p>Rispetto all&#39;esercizio precedente, dobbiamo calcolare qui non il periodo bensì l&#39;ampiezza di oscillazione &#40;che nell&#39;esercizio precedente era fissata dalla condizione iniziale&#41;. Come prima, anche qui non possiamo avere la garanzia che l&#39;integrazione con RK passerà dall&#39;istante in cui il valore della velocità si annulla esattamente. Il modo migliore di procedere è quindi il seguente:</p>
 <ol>
 <li><p>Iteriamo RK per un tempo ragionevole in modo da toglierci dalla regione iniziale di instabilità; qui integro fino al tempo \(15/\alpha\);</p>
@@ -637,7 +637,7 @@ t0 = 300.0600, angle = -0.0595, speed = -0.0197, t0 + δt = 300.0628, angle = -0
 t0 = 300.1900, angle = -0.0529, speed = -0.0100, t0 + δt = 300.1916, angle = -0.0529, speed = 0.0000
 t0 = 300.0300, angle = 0.0471, speed = 0.0158, t0 + δt = 300.0328, angle = 0.0471, speed = -0.0000
 </code></pre>
-<img src="/assets/lezione08/code/output/forced-pendulum-resonance.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione08/code/output/forced-pendulum-resonance.svg" alt="">
 
 <div class=page-foot >
   <div class=copyright >
@@ -647,11 +647,11 @@ t0 = 300.0300, angle = 0.0471, speed = 0.0158, t0 + δt = 300.0328, angle = 0.04
 </div>
     </div>  
     
-        <script src="/libs/katex/katex.min.js"></script>
-<script src="/libs/katex/auto-render.min.js"></script>
+        <script src="/tnds-notebooks/libs/katex/katex.min.js"></script>
+<script src="/tnds-notebooks/libs/katex/auto-render.min.js"></script>
 <script>renderMathInElement(document.body)</script>
 
     
     
-        <script src="/libs/highlight/highlight.pack.js"></script>
+        <script src="/tnds-notebooks/libs/highlight/highlight.pack.js"></script>
 <script>hljs.initHighlightingOnLoad();hljs.configure({tabReplace: '    '});</script>

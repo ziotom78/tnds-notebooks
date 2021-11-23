@@ -1,4 +1,4 @@
-<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/libs/katex/katex.min.css"> <link rel=stylesheet  href="/libs/highlight/github.min.css"> <link rel=stylesheet  href="/css/franklin.css"> <link rel=stylesheet  href="/css/poole_hyde.css"> <style> html {font-size: 17px;} .franklin-content {position: relative; padding-left: 8%; padding-right: 5%; line-height: 1.35em;} @media (min-width: 940px) { .franklin-content {width: 100%; margin-left: auto; margin-right: auto;} } @media (max-width: 768px) { .franklin-content {padding-left: 6%; padding-right: 6%;} } </style> <link rel=icon  href="/assets/favicon.png"> <title>Lezione 7</title> <div class=sidebar > <div class="container sidebar-sticky"> <div class=sidebar-about > <h1><a href="/">TNDS</a></h1> <p class=lead >Prof. M.&nbsp;Tomasi</p> </div> <nav class=sidebar-nav > <a class="sidebar-nav-item " href="/">Home</a> <a class="sidebar-nav-item active" href="/lezione07/">Lezione 07</a> <a class="sidebar-nav-item " href="/lezione08/">Lezione 08</a> </nav> <p>&copy; Maurizio Tomasi.</p> </div> </div> <div class="content container"> <div class=franklin-content > <p><div class=franklin-toc ><ol><li><a href="#installazione_di_julia">Installazione di Julia</a><li><a href="#introduzione">Introduzione</a><li><a href="#metodo_del_mid-point">Metodo del mid-point</a><li><a href="#errore_del_metodo_mid-point">Errore del metodo mid-point</a><li><a href="#metodo_di_simpson">Metodo di Simpson</a><li><a href="#metodo_dei_trapezoidi">Metodo dei trapezoidi</a><li><a href="#ricerca_della_precisione">Ricerca della precisione</a></ol></div> </p> <p>In questo documento mostro come implementare gli algoritmi di integrazione numerica visti durante la lezione 7. È una utile traccia per capire quali risultati dovete aspettarvi, perché fornisce i numeri da usare negli assert del vostro codice.</p> <p>Invece di fornire gli esempi di codice in C&#43;&#43;, ho scelto di usare il linguaggio <a href="https://julialang.org/">Julia</a>, per i seguenti motivi:</p> <ul> <li><p>Non fornendo codici C&#43;&#43;, vi obbligo ad implementare tutto da soli;</p> <li><p>Il linguaggio Julia è molto semplice da leggere, e non richiede</p> <li><p>competenze particolari per essere compreso;</p> <li><p>Essendo questo un notebook, include sia le spiegazioni che gli</p> <li><p>esempi di codice e gli output.</p> </ul> <p>Tenete conto in Julia non esiste incapsulamento, e l&#39;ereditarietà e il polimorfismo sono implementati in maniera diversa dal C&#43;&#43;, quindi il modo in cui sono implementati i codici è profondamente diverso. Essendo un linguaggio pensato per applicazioni scientifiche, la notazione di Julia è molto «matematica», e non dovrebbe essere difficile per voi capire cosa faccia il codice.</p> <h2 id=installazione_di_julia ><a href="#installazione_di_julia" class=header-anchor >Installazione di Julia</a></h2> <p>Questo documento è un documento creato con Julia e i pacchetti <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a> e <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a>.</p> <p>Julia è un linguaggio di programmazione moderno pensato soprattutto per la scrittura di codici numerici e scientifici. È più semplice del C&#43;&#43; ma, a differenza di altri linguaggi «facili» come Python, è estremamente potente. Non è consigliabile installare Julia sui computer del laboratorio, a causa dello scarso spazio disponibile nelle home. Le istruzioni in questo paragrafo possono esservi utili se desiderate installare Julia sul vostro computer.</p> <p>Scaricate l&#39;eseguibile per il vostro ambiente dal sito https://julialang.org/ &#40;al momento la versione più recente è la 1.6, ma la 1.7 è prevista a breve&#41;. Avviate poi Julia &#40;da Linux eseguite julia, mentre sotto Windows e Mac OS X dovrebbe essere presente un&#39;icona&#41;, ed installate alcuni pacchetti che saranno utili per questa lezione e la prossima.</p> <pre><code class=language-julia >import Pkg
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/tnds-notebooks/libs/katex/katex.min.css"> <link rel=stylesheet  href="/tnds-notebooks/libs/highlight/github.min.css"> <link rel=stylesheet  href="/tnds-notebooks/css/franklin.css"> <link rel=stylesheet  href="/tnds-notebooks/css/poole_hyde.css"> <style> html {font-size: 17px;} .franklin-content {position: relative; padding-left: 8%; padding-right: 5%; line-height: 1.35em;} @media (min-width: 940px) { .franklin-content {width: 100%; margin-left: auto; margin-right: auto;} } @media (max-width: 768px) { .franklin-content {padding-left: 6%; padding-right: 6%;} } </style> <link rel=icon  href="/tnds-notebooks/assets/favicon.png"> <title>Lezione 7</title> <div class=sidebar > <div class="container sidebar-sticky"> <div class=sidebar-about > <h1><a href="/tnds-notebooks/">TNDS</a></h1> <p class=lead >Prof. M.&nbsp;Tomasi</p> </div> <nav class=sidebar-nav > <a class="sidebar-nav-item " href="/tnds-notebooks/">Home</a> <a class="sidebar-nav-item active" href="/tnds-notebooks/lezione07/">Lezione 07</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione08/">Lezione 08</a> </nav> <p>&copy; Maurizio Tomasi.</p> </div> </div> <div class="content container"> <div class=franklin-content > <p><div class=franklin-toc ><ol><li><a href="#installazione_di_julia">Installazione di Julia</a><li><a href="#introduzione">Introduzione</a><li><a href="#metodo_del_mid-point">Metodo del mid-point</a><li><a href="#errore_del_metodo_mid-point">Errore del metodo mid-point</a><li><a href="#metodo_di_simpson">Metodo di Simpson</a><li><a href="#metodo_dei_trapezoidi">Metodo dei trapezoidi</a><li><a href="#ricerca_della_precisione">Ricerca della precisione</a></ol></div> </p> <p>In questo documento mostro come implementare gli algoritmi di integrazione numerica visti durante la lezione 7. È una utile traccia per capire quali risultati dovete aspettarvi, perché fornisce i numeri da usare negli assert del vostro codice.</p> <p>Invece di fornire gli esempi di codice in C&#43;&#43;, ho scelto di usare il linguaggio <a href="https://julialang.org/">Julia</a>, per i seguenti motivi:</p> <ul> <li><p>Non fornendo codici C&#43;&#43;, vi obbligo ad implementare tutto da soli;</p> <li><p>Il linguaggio Julia è molto semplice da leggere, e non richiede</p> <li><p>competenze particolari per essere compreso;</p> <li><p>Essendo questo un notebook, include sia le spiegazioni che gli</p> <li><p>esempi di codice e gli output.</p> </ul> <p>Tenete conto in Julia non esiste incapsulamento, e l&#39;ereditarietà e il polimorfismo sono implementati in maniera diversa dal C&#43;&#43;, quindi il modo in cui sono implementati i codici è profondamente diverso. Essendo un linguaggio pensato per applicazioni scientifiche, la notazione di Julia è molto «matematica», e non dovrebbe essere difficile per voi capire cosa faccia il codice.</p> <h2 id=installazione_di_julia ><a href="#installazione_di_julia" class=header-anchor >Installazione di Julia</a></h2> <p>Questo documento è un documento creato con Julia e i pacchetti <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a> e <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a>.</p> <p>Julia è un linguaggio di programmazione moderno pensato soprattutto per la scrittura di codici numerici e scientifici. È più semplice del C&#43;&#43; ma, a differenza di altri linguaggi «facili» come Python, è estremamente potente. Non è consigliabile installare Julia sui computer del laboratorio, a causa dello scarso spazio disponibile nelle home. Le istruzioni in questo paragrafo possono esservi utili se desiderate installare Julia sul vostro computer.</p> <p>Scaricate l&#39;eseguibile per il vostro ambiente dal sito https://julialang.org/ &#40;al momento la versione più recente è la 1.6, ma la 1.7 è prevista a breve&#41;. Avviate poi Julia &#40;da Linux eseguite julia, mentre sotto Windows e Mac OS X dovrebbe essere presente un&#39;icona&#41;, ed installate alcuni pacchetti che saranno utili per questa lezione e la prossima.</p> <pre><code class=language-julia >import Pkg
 Pkg.add&#40;&quot;Plots&quot;&#41;
 Pkg.add&#40;&quot;IJulia&quot;&#41;</code></pre> <p>Una volta eseguiti i comandi, potete aprire notebook esistenti e crearne di nuovi con questo codice:</p> <pre><code class=language-julia >using IJulia
 jupyterlab&#40;dir&#61;&quot;.&quot;&#41;</code></pre> <p>Appena eseguita l&#39;istruzione, dovrebbe aprirsi il vostro browser Internet &#40;Firefox, Safari, …&#41; e mostrare la pagina di Jupyter-Lab, l&#39;interfaccia che consente di gestire i notebook.</p> <h2 id=introduzione ><a href="#introduzione" class=header-anchor >Introduzione</a></h2> <p>Iniziamo col caricare due librerie che ci serviranno. In Julia si caricano librerie col comando <code>import</code> &#40;l&#39;analogo di <code>#include</code> in C&#43;&#43;&#41;:</p> <pre><code class=language-julia >import Statistics
@@ -78,7 +78,7 @@ Secondo integrale: 0.9564934239032155
 errors &#61; &#91;abs&#40;midpoint&#40;sin, 0, pi, n&#41; - 2&#41; for n in steps&#93;
 
 plot&#40;steps, errors, xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre>
-<img src="/assets/lezione07/code/output/midpoint-error.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione07/code/output/midpoint-error.svg" alt="">
 <p>Il grafico precedente non è chiaro perché ci sono escursioni di alcuni ordini di grandezza sia per la variabile \(x\) che per la variabile \(y\). Usiamo allora un grafico bilogaritmico, in cui si rappresentano i punti \((x', y') = (\log x, \log y)\) anziché \((x,
 y)\). Questo è l&#39;ideale per i grafici di leggi del tipo \(y =
 x^\alpha\), come si vede da questi conti:</p>
@@ -94,7 +94,7 @@ y' &= \alpha x' + \log C,
 <pre><code class=language-julia >plot&#40;steps, errors,
      xscale &#61; :log10, yscale &#61; :log10,
      xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre>
-<img src="/assets/lezione07/code/output/midpoint-error-log.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione07/code/output/midpoint-error-log.svg" alt="">
 <p>Nel vostro codice vorrete probabilmente usare ROOT per creare un grafico come questo. Siccome la realizzazione di grafici in ROOT può essere complessa, il mio consiglio è quello di stampare dapprima i numeri in un file &#40;oppure a video, reindirizzando l&#39;output da linea di comando con il carattere <code>&gt;</code>&#41;, e solo una volta che sembrano ragionevoli procedere a creare il plot.</p>
 <p>Se invece di ROOT volete usare <a href="https://github.com/ziotom78/gplotpp">gplot&#43;&#43;</a>, scaricate il file <a href="https://raw.githubusercontent.com/ziotom78/gplotpp/master/gplot&#37;2B&#37;2B.h">gplot&#43;&#43;.h</a> &#40;facendo click col tasto destro sul link&#41; e usate un codice del genere:</p>
 <pre><code class=language-cpp >std::vector&lt;double&gt; steps&#123;10, 50, 100, 500, 1000&#125;;
@@ -186,7 +186,7 @@ Quarto caso:  0.9564491489761575
 plot&#40;steps, errors,
      xscale &#61; :log10, yscale &#61; :log10,
      xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre>
-<img src="/assets/lezione07/code/output/simpson-error.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione07/code/output/simpson-error.svg" alt="">
 <p>Verifichiamo che la pendenza sia quella attesa: l&#39;errore \(\epsilon\) dovrebbe essere tale che \(\epsilon \propto h^{-4}\).</p>
 <pre><code class=language-julia >error_slope&#40;steps, errors&#41;</code></pre><pre><code class="plaintext code-output">-4.002400383183911</code></pre>
 <h2 id=metodo_dei_trapezoidi ><a href="#metodo_dei_trapezoidi" class=header-anchor >Metodo dei trapezoidi</a></h2>
@@ -214,7 +214,7 @@ Quarto caso:  0.956360580669458
 plot&#40;steps, errors,
      xscale &#61; :log10, yscale &#61; :log10,
      xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre>
-<img src="/assets/lezione07/code/output/trapezoids-error.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione07/code/output/trapezoids-error.svg" alt="">
 <p>Calcoliamo anche la pendenza della curva \(\epsilon \propto h^\alpha\):</p>
 <pre><code class=language-julia >error_slope&#40;steps, errors&#41;</code></pre><pre><code class="plaintext code-output">-2.000357703753135</code></pre>
 <p>Tracciamo ora un grafico comparativo dei due metodi.</p>
@@ -227,7 +227,7 @@ plot&#33;&#40;steps, compute_errors&#40;trapezoids, steps&#41;,
       label &#61; &quot;Trapezoidi&quot;&#41;
 plot&#33;&#40;steps, compute_errors&#40;simpson, steps&#41;,
       label &#61; &quot;Simpson&quot;&#41;</code></pre>
-<img src="/assets/lezione07/code/output/error-comparison.svg" alt="">
+<img src="/tnds-notebooks/assets/lezione07/code/output/error-comparison.svg" alt="">
 <p>Notate che il metodo del mid-point e dei trapezi hanno la stessa legge di scala, ma non si sovrappongono: la costante \(C\) nella legge di scala \(\epsilon = Cn^{-\alpha}\) è diversa &#40;e quindi è diversa l&#39;intercetta \(q = \log C\) nel grafico bilogaritmico&#41;.</p>
 <h2 id=ricerca_della_precisione ><a href="#ricerca_della_precisione" class=header-anchor >Ricerca della precisione</a></h2>
 <p>L&#39;esercizio 7.2 è diverso dagli esercizi 7.0 e 7.1, perché richiede di iterare il calcolo finché non si raggiunge una precisione fissata. Usiamo il suggerimento del testo per non dover ricalcolare da capo il valore approssimato dell&#39;integrale.</p>
@@ -280,7 +280,7 @@ plot&#40;prec, errors,
      xlabel &#61; &quot;Precisione impostata&quot;,
      ylabel &#61; &quot;Precisione ottenuta&quot;&#41;
 plot&#33;&#40;prec, prec, label &#61; &quot;Caso teorico peggiore&quot;&#41;</code></pre>
-<p><img src="/assets/lezione07/code/output/trapezoids-vs-theory.svg" alt="">ù</p>
+<p><img src="/tnds-notebooks/assets/lezione07/code/output/trapezoids-vs-theory.svg" alt="">ù</p>
 
 <div class=page-foot >
   <div class=copyright >
@@ -290,11 +290,11 @@ plot&#33;&#40;prec, prec, label &#61; &quot;Caso teorico peggiore&quot;&#41;</co
 </div>
     </div>  
     
-        <script src="/libs/katex/katex.min.js"></script>
-<script src="/libs/katex/auto-render.min.js"></script>
+        <script src="/tnds-notebooks/libs/katex/katex.min.js"></script>
+<script src="/tnds-notebooks/libs/katex/auto-render.min.js"></script>
 <script>renderMathInElement(document.body)</script>
 
     
     
-        <script src="/libs/highlight/highlight.pack.js"></script>
+        <script src="/tnds-notebooks/libs/highlight/highlight.pack.js"></script>
 <script>hljs.initHighlightingOnLoad();hljs.configure({tabReplace: '    '});</script>
