@@ -158,7 +158,7 @@ pratica con entrambi).
 ## Esercizio 8.0: Algebra vettoriale
 
 Testo dell'esercizio:
-[carminati-esercizi-08.html](carminati-esercizi-08.html#esercizio-8.0).
+[carminati-esercizi-08.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.0).
 
 In Julia non è necessario implementare le operazioni aritmetiche su
 vettori, perché sono già implementate: basta porre un punto `.`
@@ -172,7 +172,7 @@ sugli elementi di vettori:
 ## Esercizio 8.1: metodo di Eulero
 
 Testo dell'esercizio:
-[carminati-esercizi-08.html](carminati-esercizi-08.html#esercizio-8.1).
+[carminati-esercizi-08.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.1).
 
 Qui non implementiamo una classe con metodo `Passo` come suggerito
 nel testo dell'esercizio, perché in Julia non esiste l'equivalente
@@ -377,7 +377,7 @@ savefig(joinpath(@OUTPUT, "euler_error.svg")) # hide
 ## Esercizio 8.2: Soluzione con Runge-Kutta
 
 Testo dell'esercizio:
-[carminati-esercizi-08.html](carminati-esercizi-08.html#esercizio-8.2).
+[carminati-esercizi-08.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.2).
 
 La funzione `rungekutta` implementa l'integrazione di Runge-Kutta
 usando lo stesso approccio della funzione `euler` vista sopra: è
@@ -507,7 +507,7 @@ savefig(joinpath(@OUTPUT, "euler_rk_comparison.svg")) # hide
 ## Esercizio 8.3
 
 Testo dell'esercizio:
-[carminati-esercizi-08.html](carminati-esercizi-08.html#esercizio-8.3).
+[carminati-esercizi-08.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.3).
 
 Questo esercizio richiede di studiare il comportamento di un pendolo
 di lunghezza $l$ sottoposto ad un'accelerazione di gravità $g$.
@@ -854,7 +854,7 @@ alcuni test con `assert` (usate ad esempio il primo e l'ultimo).
 
 ## Esercizio 8.4
 
-Testo dell'esercizio: [carminati-esercizi-08.html](carminati-esercizi-08.html#esercizio-8.4).
+Testo dell'esercizio: [carminati-esercizi-08.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.4).
 
 Come sopra, definiamo i parametri numerici del problema.
 

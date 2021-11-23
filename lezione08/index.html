@@ -113,14 +113,14 @@ Simulazione terminata a t = 1.0
 </code></pre>
 <p>Non c&#39;è una grande differenza tra i due metodi, quindi sentitevi liberi di implementare quello che volete &#40;potete implementarne uno in un esercizio, e l&#39;altro nell&#39;esercizio successivo, così fate pratica con entrambi&#41;.</p>
 <h2 id=esercizio_80_algebra_vettoriale ><a href="#esercizio_80_algebra_vettoriale" class=header-anchor >Esercizio 8.0: Algebra vettoriale</a></h2>
-<p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.0">carminati-esercizi-08.html</a>.</p>
+<p>Testo dell&#39;esercizio: <a href="https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.0">carminati-esercizi-08.html</a>.</p>
 <p>In Julia non è necessario implementare le operazioni aritmetiche su vettori, perché sono già implementate: basta porre un punto <code>.</code> davanti all&#39;operatore perché questo venga automaticamente propagato sugli elementi di vettori:</p>
 <pre><code class=language-julia >&#91;1, 2, 4&#93; .&#43; &#91;3, 7, -5&#93;</code></pre><pre><code class="plaintext code-output">3-element Vector{Int64}:
   4
   9
  -1</code></pre>
 <h2 id=esercizio_81_metodo_di_eulero ><a href="#esercizio_81_metodo_di_eulero" class=header-anchor >Esercizio 8.1: metodo di Eulero</a></h2>
-<p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.1">carminati-esercizi-08.html</a>.</p>
+<p>Testo dell&#39;esercizio: <a href="https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.1">carminati-esercizi-08.html</a>.</p>
 <p>Qui non implementiamo una classe con metodo <code>Passo</code> come suggerito nel testo dell&#39;esercizio, perché in Julia non esiste l&#39;equivalente delle classi del C&#43;&#43;. Scriviamo invece una funzione <code>euler</code> che restituisce una matrice a \(N + 1\) colonne, dove \(N\) è il numero di equazioni: la prima colonna contiene il tempo, le altre colonne le soluzioni delle \(N\) variabili. &#40;Per i più curiosi: il modo migliore di procedere in Julia sarebbe quello di implementare un <a href="https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration">iteratore</a>&#41;.</p>
 <p>In Julia non c&#39;è bisogno di definire una classe base <code>FunzioneVettorialeBase</code> da cui derivare altre classi come <code>OscillatoreArmonico</code> eccetera: basta passare la funzione nel parametro <code>fn</code> &#40;primo argomento&#41;. È un meccanismo simile a quello visto nella lezione precedente usando i template, anche se in Julia la risoluzione dei template avviene a <em>runtime</em> anziché in fase di compilazione come in C&#43;&#43;.</p>
 <pre><code class=language-julia >function euler&#40;fn, x0, startt, endt, h&#41;
@@ -276,7 +276,7 @@ end</code></pre><pre><code class="plaintext code-output">δt [s]        	x(70) [
 scatter&#33;&#40;deltat, error_euler, label &#61; &quot;&quot;&#41;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/euler_error.svg" alt="">
 <h2 id=esercizio_82_soluzione_con_runge-kutta ><a href="#esercizio_82_soluzione_con_runge-kutta" class=header-anchor >Esercizio 8.2: Soluzione con Runge-Kutta</a></h2>
-<p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.2">carminati-esercizi-08.html</a>.</p>
+<p>Testo dell&#39;esercizio: <a href="https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.2">carminati-esercizi-08.html</a>.</p>
 <p>La funzione <code>rungekutta</code> implementa l&#39;integrazione di Runge-Kutta usando lo stesso approccio della funzione <code>euler</code> vista sopra: è quindi un po&#39; diverso dal modo in cui la implementerete voi.</p>
 <pre><code class=language-julia >function rungekutta&#40;fn, x0, startt, endt, h&#41;
     timerange &#61; startt:h:endt
@@ -397,7 +397,7 @@ plot&#33;&#40;deltat, error_rk,
 scatter&#33;&#40;deltat, error_rk, label &#61; &quot;Runge-Kutta&quot;&#41;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/euler_rk_comparison.svg" alt="">
 <h2 id=esercizio_83 ><a href="#esercizio_83" class=header-anchor >Esercizio 8.3</a></h2>
-<p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.3">carminati-esercizi-08.html</a>.</p>
+<p>Testo dell&#39;esercizio: <a href="https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.3">carminati-esercizi-08.html</a>.</p>
 <p>Questo esercizio richiede di studiare il comportamento di un pendolo di lunghezza \(l\) sottoposto ad un&#39;accelerazione di gravità \(g\). Impostiamo un paio di costanti.</p>
 <pre><code class=language-julia >rodlength &#61; 1.;
 g &#61; 9.81;</code></pre>
@@ -588,7 +588,7 @@ scatter&#33;&#40;angles, ampl, label&#61;&quot;&quot;&#41;</code></pre>
  2.9  4.48458
  3.0  5.15807</code></pre>
 <h2 id=esercizio_84 ><a href="#esercizio_84" class=header-anchor >Esercizio 8.4</a></h2>
-<p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.4">carminati-esercizi-08.html</a>.</p>
+<p>Testo dell&#39;esercizio: <a href="https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.4">carminati-esercizi-08.html</a>.</p>
 <p>Come sopra, definiamo i parametri numerici del problema.</p>
 <pre><code class=language-julia >ω0 &#61; 10;
 α &#61; 1.0 / 30;</code></pre>
