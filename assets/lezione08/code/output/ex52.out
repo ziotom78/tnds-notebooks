@@ -1,2 +1,0 @@
-LoadError: UndefVarError: @printf not defined
-in expression starting at none:26

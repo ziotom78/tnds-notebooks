@@ -13,10 +13,7 @@ Statistics.mean&#40;&#91;1, 2, 3&#93;&#41;</code></pre><pre><code class="plainte
 mean&#40;&#91;1, 2, 3&#93;&#41;</code></pre><pre><code class="plaintext code-output">2.0</code></pre>
 <p>Le librerie che ci interessano sono Plots &#40;per produrre grafici, come ROOT in C&#43;&#43;&#41; e Printf &#40;per scrivere valori formattati sullo schermo, come in C&#43;&#43; <code>setprecision</code>, <code>setw</code>, etc.&#41;</p>
 <pre><code class=language-julia >using Plots
-using Printf</code></pre><pre><code class="plaintext code-output">ArgumentError: Package Plots not found in current path:
-- Run `import Pkg; Pkg.add("Plots")` to install the Plots package.
-
-</code></pre>
+using Printf</code></pre>
 <p>Nella lezione di oggi dovremo calcolare numericamente degli integrali. Useremo come esempio la funzione \(f(x) = \sin(x)\), sapendo che</p>
 \[\int_0^\pi\sin x\,\mathrm{d}x = 2.\]
 <p>Useremo molto anche la capacità di Julia di creare liste al volo mediante la sintassi</p>
@@ -80,9 +77,8 @@ Secondo integrale: 0.9564934239032155
 <pre><code class=language-julia >steps &#61; &#91;10, 50, 100, 500, 1000&#93;
 errors &#61; &#91;abs&#40;midpoint&#40;sin, 0, pi, n&#41; - 2&#41; for n in steps&#93;
 
-plot&#40;steps, errors, xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: plot not defined
-</code></pre>
-<p><span style="color:red;">// Image matching '/assets/lezione07/code/midpoint-error.svg' not found. //</span></p>
+plot&#40;steps, errors, xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre>
+<img src="/assets/lezione07/code/output/midpoint-error.svg" alt="">
 <p>Il grafico precedente non è chiaro perché ci sono escursioni di alcuni ordini di grandezza sia per la variabile \(x\) che per la variabile \(y\). Usiamo allora un grafico bilogaritmico, in cui si rappresentano i punti \((x', y') = (\log x, \log y)\) anziché \((x,
 y)\). Questo è l&#39;ideale per i grafici di leggi del tipo \(y =
 x^\alpha\), come si vede da questi conti:</p>
@@ -97,9 +93,8 @@ y' &= \alpha x' + \log C,
 <p>che è della forma \(y' = m x' + q\), ossia una retta, dove il coefficiente angolare \(m\) è proprio \(\alpha\).</p>
 <pre><code class=language-julia >plot&#40;steps, errors,
      xscale &#61; :log10, yscale &#61; :log10,
-     xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: plot not defined
-</code></pre>
-<p><span style="color:red;">// Image matching '/assets/lezione07/code/midpoint-error-log.svg' not found. //</span></p>
+     xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre>
+<img src="/assets/lezione07/code/output/midpoint-error-log.svg" alt="">
 <p>Nel vostro codice vorrete probabilmente usare ROOT per creare un grafico come questo. Siccome la realizzazione di grafici in ROOT può essere complessa, il mio consiglio è quello di stampare dapprima i numeri in un file &#40;oppure a video, reindirizzando l&#39;output da linea di comando con il carattere <code>&gt;</code>&#41;, e solo una volta che sembrano ragionevoli procedere a creare il plot.</p>
 <p>Se invece di ROOT volete usare <a href="https://github.com/ziotom78/gplotpp">gplot&#43;&#43;</a>, scaricate il file <a href="https://raw.githubusercontent.com/ziotom78/gplotpp/master/gplot&#37;2B&#37;2B.h">gplot&#43;&#43;.h</a> &#40;facendo click col tasto destro sul link&#41; e usate un codice del genere:</p>
 <pre><code class=language-cpp >std::vector&lt;double&gt; steps&#123;10, 50, 100, 500, 1000&#125;;
@@ -190,9 +185,8 @@ Quarto caso:  0.9564491489761575
 
 plot&#40;steps, errors,
      xscale &#61; :log10, yscale &#61; :log10,
-     xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: plot not defined
-</code></pre>
-<p><span style="color:red;">// Image matching '/assets/lezione07/code/simpson-error.svg' not found. //</span></p>
+     xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre>
+<img src="/assets/lezione07/code/output/simpson-error.svg" alt="">
 <p>Verifichiamo che la pendenza sia quella attesa: l&#39;errore \(\epsilon\) dovrebbe essere tale che \(\epsilon \propto h^{-4}\).</p>
 <pre><code class=language-julia >error_slope&#40;steps, errors&#41;</code></pre><pre><code class="plaintext code-output">-4.002400383183911</code></pre>
 <h2 id=metodo_dei_trapezoidi ><a href="#metodo_dei_trapezoidi" class=header-anchor >Metodo dei trapezoidi</a></h2>
@@ -219,9 +213,8 @@ Quarto caso:  0.956360580669458
 <pre><code class=language-julia >errors &#61; compute_errors&#40;trapezoids, steps&#41;
 plot&#40;steps, errors,
      xscale &#61; :log10, yscale &#61; :log10,
-     xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: plot not defined
-</code></pre>
-<p><span style="color:red;">// Image matching '/assets/lezione07/code/trapezoids-error.svg' not found. //</span></p>
+     xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre>
+<img src="/assets/lezione07/code/output/trapezoids-error.svg" alt="">
 <p>Calcoliamo anche la pendenza della curva \(\epsilon \propto h^\alpha\):</p>
 <pre><code class=language-julia >error_slope&#40;steps, errors&#41;</code></pre><pre><code class="plaintext code-output">-2.000357703753135</code></pre>
 <p>Tracciamo ora un grafico comparativo dei due metodi.</p>
@@ -233,9 +226,8 @@ plot&#40;steps, errors,
 plot&#33;&#40;steps, compute_errors&#40;trapezoids, steps&#41;,
       label &#61; &quot;Trapezoidi&quot;&#41;
 plot&#33;&#40;steps, compute_errors&#40;simpson, steps&#41;,
-      label &#61; &quot;Simpson&quot;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: plot not defined
-</code></pre>
-<p><span style="color:red;">// Image matching '/assets/lezione07/code/error-comparison.svg' not found. //</span></p>
+      label &#61; &quot;Simpson&quot;&#41;</code></pre>
+<img src="/assets/lezione07/code/output/error-comparison.svg" alt="">
 <p>Notate che il metodo del mid-point e dei trapezi hanno la stessa legge di scala, ma non si sovrappongono: la costante \(C\) nella legge di scala \(\epsilon = Cn^{-\alpha}\) è diversa &#40;e quindi è diversa l&#39;intercetta \(q = \log C\) nel grafico bilogaritmico&#41;.</p>
 <h2 id=ricerca_della_precisione ><a href="#ricerca_della_precisione" class=header-anchor >Ricerca della precisione</a></h2>
 <p>L&#39;esercizio 7.2 è diverso dagli esercizi 7.0 e 7.1, perché richiede di iterare il calcolo finché non si raggiunge una precisione fissata. Usiamo il suggerimento del testo per non dover ricalcolare da capo il valore approssimato dell&#39;integrale.</p>
@@ -287,13 +279,12 @@ plot&#40;prec, errors,
      xscale &#61; :log10, yscale &#61; :log10,
      xlabel &#61; &quot;Precisione impostata&quot;,
      ylabel &#61; &quot;Precisione ottenuta&quot;&#41;
-plot&#33;&#40;prec, prec, label &#61; &quot;Caso teorico peggiore&quot;&#41;</code></pre><pre><code class="plaintext code-output">UndefVarError: plot not defined
-</code></pre>
-<p><p><span style="color:red;">// Image matching '/assets/lezione07/code/trapezoids-vs-theory.svg' not found. //</span></p>ù</p>
+plot&#33;&#40;prec, prec, label &#61; &quot;Caso teorico peggiore&quot;&#41;</code></pre>
+<p><img src="/assets/lezione07/code/output/trapezoids-vs-theory.svg" alt="">ù</p>
 
 <div class=page-foot >
   <div class=copyright >
-    &copy; Maurizio Tomasi. Last modified: November 22, 2021. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+    &copy; Maurizio Tomasi. Last modified: November 23, 2021. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
   </div>
 </div>
 </div>
