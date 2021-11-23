@@ -577,9 +577,19 @@ savefig(joinpath(@OUTPUT, "oscillations1.svg")) # hide
 
 oscillations[abs.(oscillations[:, 3]) .< 0.1, :]
 
-# Qui è evidente il problema accennato sul sito: non esiste alcun
-# punto in cui la velocità angolare sia esattamente zero, perché
-# stiamo usando un passo discreto per integrare l'equazione.
+# Vediamo dunque che, oltre alla velocità nulla dell'istante iniziale
+# (ovvia perché causata dalle nostre condizioni iniziali), c'è una
+# inversione al tempo $t \approx 1.07\,\text{s}$ e un'altra al tempo
+# $t \approx 2.15\,\text{s}$.
+# 
+# Dai numeri mostrati qui sopra, è evidente il problema accennato sul
+# sito: non esiste alcun punto in cui la velocità angolare sia
+# esattamente zero, perché stiamo usando un passo discreto per
+# integrare l'equazione. I due istanti esatti in cui avvengono le
+# inversioni sono rispettivamente nell'intervallo $(1.07, 1.08)$ e
+# $(2.15, 2.16)$. Facciamo un grafico ingrandito nell'intervallo
+# temporale $t = 1\ldots 1.2\,\text{s}$ per renderci meglio conto
+# della cosa:
 
 scatter(oscillations[:, 1], oscillations[:, 3],
         label = "",
@@ -592,13 +602,18 @@ savefig(joinpath(@OUTPUT, "oscillations2.svg")) # hide
 # \fig{oscillations2.svg}
 
 # Implementiamo quindi una funzione per cercare l'inversione di segno
-# in un vettore. (È buona cosa che anche voi implementiate una
-# funzione del genere nel vostro codice C++).
+# in un vettore. Essa dovrà scandire il vettore e determinare quando
+# il segno di due elementi consecutivi cambia, restituendo la
+# posizione del primo di questi due elementi. (È buona cosa che anche
+# voi implementiate una funzione del genere nel vostro codice C++).
  
 function search_inversion(vect)
     prevval = vect[1]
     for i in 2:length(vect)
-        if prevval * vect[i] < 0
+        ## Qui usiamo lo stesso trucco per trovare un cambio di segno
+        ## che avevamo già impiegato negli esercizi per la ricerca
+        ## degli zeri
+        if sign(prevval) * sign(vect[i]) < 0
             return i - 1
         end
         prevval = vect[i]
@@ -606,7 +621,8 @@ function search_inversion(vect)
     
     println("No inversion found, run the simulation for a longer time")
     
-    ## Return a negative (impossible) index
+    ## Restituisci un indice negativo (impossibile), perché non
+    ## abbiamo trovato alcuna inversione.
     -1
 end
  
