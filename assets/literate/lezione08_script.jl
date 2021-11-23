@@ -40,7 +40,8 @@ simulate(0.0, 1.0, 0.1)
 function simulate_method1(t0, tf, increment)
     println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
 
-    # Calcola il numero di iterazioni prima di iniziare il ciclo vero e proprio
+    # Calcola il numero di iterazioni prima di iniziare il ciclo vero
+    # e proprio
     nsteps = round(Int, (tf - t0) / h)
     t = t0
     for i = 1:nsteps
@@ -191,8 +192,8 @@ scatter!(deltat, error_rk, label = "Runge-Kutta")
 
 savefig(joinpath(@OUTPUT, "euler_rk_comparison.svg")) #hide
 
-rodlength = 1.
-g = 9.81
+rodlength = 1.;
+g = 9.81;
 
 pendulum(t, x) = [x[2], -g / rodlength * sin(x[1])]
 
@@ -204,7 +205,7 @@ oscillations[(end - 10):end, :]
 import Luxor
 
 function plot_pendulum(angle)
-    radius = 200
+    radius = 200  # Lunghezza del braccio del pendolo
     y, x = radius .* sincos(π / 2 + angle)
 
     Luxor.sethue("black")
