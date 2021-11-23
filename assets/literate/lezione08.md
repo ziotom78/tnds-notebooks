@@ -759,7 +759,7 @@ interp(ptA, ptB) = interp(ptA, ptB, 0)
 ```
 
 Eseguiamo una volta `interp` per trovare il valore dell'ordinata $y$
-in corrispondenza dell'ascissa $x = 0.3$ di una una retta passante
+in corrispondenza dell'ordinata $y = 0.3$ di una una retta passante
 per i punti $(-0.4, -0.7)$ e $(0.5, 0.8)$:
 
 ```julia:ex42
