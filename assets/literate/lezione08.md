@@ -34,11 +34,10 @@ errori di arrotondamento, che sono dovuti al modo in cui il computer
 memorizza i numeri *floating-point* e sono quindi identici sia in
 C++ che in Julia.
 
-Vediamo quindi in cosa consiste il problema usando Julia (in C++
-sarebbe lo stesso). Creiamo una variabile `t = 0` che poi
-incrementiamo in passi di `h = 0.1` secondi: in questo modo
-simuliamo quello che farebbe il ciclo per risolvere una equazione
-differenziale
+Vediamo quindi in cosa consiste il problema usando Julia. Creiamo
+una variabile `t = 0` che poi incrementiamo in passi di `h = 0.1`
+secondi: in questo modo simuliamo quello che farebbe il ciclo per
+risolvere una equazione differenziale
 
 ```julia:ex2
 t = 0
@@ -52,10 +51,12 @@ Nulla di sorprendente… Incrementiamo ancora una volta:
 t += h
 ```
 
-Sembra ancora tutto regolare. Proviamo allora ad incrementare `t` per dieci volte:
+Sembra ancora tutto regolare. Proviamo allora ad incrementare `t`
+per dieci volte:
 
 ```julia:ex4
-# Esegue per `nruns` volte l'incremento `increment`, partendo da `start`
+# Esegue per `nruns` volte l'incremento `increment`, partendo da
+# `start`
 function simulate(nruns, start, increment)
     t = start
     for i in 1:nruns
@@ -82,7 +83,7 @@ che va da `0` a `1` in step di `h = 0.1`:
 function simulate(t0, tf, increment)
     t = t0
 
-    println("Inizia la simulazione, da t = $t0 a t = $tf in passi di $increment")
+    println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
 
     # Itera finché non abbiamo raggiunto il tempo finale
     while t < tf
@@ -105,13 +106,14 @@ intero) e poi fare un ciclo for usando solo variabili intere:
 
 ```julia:ex6
 function simulate_method1(t0, tf, increment)
-    println("Inizia la simulazione, da t = $t0 a t = $tf in passi di $increment")
+    println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
 
     # Calcola il numero di iterazioni prima di iniziare il ciclo vero e proprio
     nsteps = round(Int, (tf - t0) / h)
     t = t0
     for i = 1:nsteps
         println("  t = $t")
+        # Incrementa come al solito
         t += h
     end
     println("Simulazione terminata a t = $t")
@@ -129,13 +131,15 @@ ogni iterazione:
 
 ```julia:ex7
 function simulate_method2(t0, tf, increment)
-    println("Inizia la simulazione, da t = $t0 a t = $tf in passi di $increment")
+    println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
 
-    # Calcola il numero di iterazioni prima di iniziare il ciclo vero e proprio
+    # Calcola il numero di iterazioni prima di iniziare il ciclo vero
+    # e proprio
     nsteps = round(Int, (tf - t0) / h)
     t = t0
     for i = 1:nsteps
         println("  t = $t")
+        # Ricalcola t partendo da t0 e da h, usando il contatore i
         t = t0 + i * h
     end
     println("Simulazione terminata a t = $t")
@@ -173,7 +177,9 @@ nel testo dell'esercizio, perché in Julia non esiste l'equivalente
 delle classi del C++. Scriviamo invece una funzione `euler` che
 restituisce una matrice a $N + 1$ colonne, dove $N$ è il numero di
 equazioni: la prima colonna contiene il tempo, le altre colonne le
-soluzioni delle $N$ variabili.
+soluzioni delle $N$ variabili. (Per i più curiosi: il modo migliore
+di procedere in Julia sarebbe quello di implementare un
+[iteratore](https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration)).
 
 In Julia non c'è bisogno di definire una classe base
 `FunzioneVettorialeBase` da cui derivare altre classi come
@@ -249,13 +255,16 @@ bool is_close(double a, double b, double epsilon = 1e-8) {
 void test_euler() {
   Eulero eulero;
   OscillatoreArmonico oa{1.0};
-  const double lastt{70.0};
+  const double lastt{70.0};      // Simula il sistema per 70 s
   const double h{0.1};
-  const int steps{static_cast<int>(lasttt / h + 0.5)};
+  const int nsteps{static_cast<int>(lasttt / h + 0.5)};
   std::vector<double> pos{0.0, 1.0};
 
-  for (int idx{}; idx < steps; ++idx) {
+  // Esegue la simulazione
+  double t{};
+  for (int idx{}; idx < nsteps; ++idx) {
     pos = eulero.Passo(t, pos, h, &oa);
+    t += h;
   }
 
   assert(is_close(pos[0], 19.773746013860173));
@@ -264,7 +273,7 @@ void test_euler() {
 ```
 
 Notate che il ciclo `for` è implementato calcolando preventivamente
-il numero di passi in `steps`: è quello che sopra avevamo chiamato
+il numero di passi in `nsteps`: è quello che sopra avevamo chiamato
 il «Metodo 1» (`simulate_method1`).
 
 Per studiare il funzionamento di `euler`, consideriamo la
@@ -423,11 +432,14 @@ void test_runge_kutta() {
   OscillatoreArmonico oa{1.0};
   const double lastt{70.0};
   const double h{0.1};
-  const int passi{static_cast<double>(lasttt / h + 0.5)};
+  const int nsteps{static_cast<double>(lasttt / h + 0.5)};
   std::vector<double> pos{0.0, 1.0};
 
-  for (int idx{}; idx < passi; ++idx) {
+  // Esegue la simulazione
+  double t{};
+  for (int idx{}; idx < nsteps; ++idx) {
     pos = rk.Passo(t, pos, h, &oa);
+    t += h;
   }
 
   assert(is_close(pos[0], 0.7738501114078689));

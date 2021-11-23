@@ -9,7 +9,8 @@ t += h
 
 t += h
 
-# Esegue per `nruns` volte l'incremento `increment`, partendo da `start`
+# Esegue per `nruns` volte l'incremento `increment`, partendo da
+# `start`
 function simulate(nruns, start, increment)
     t = start
     for i in 1:nruns
@@ -23,7 +24,7 @@ simulate(10, 0, h)
 function simulate(t0, tf, increment)
     t = t0
 
-    println("Inizia la simulazione, da t = $t0 a t = $tf in passi di $increment")
+    println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
 
     # Itera finché non abbiamo raggiunto il tempo finale
     while t < tf
@@ -37,13 +38,14 @@ end
 simulate(0.0, 1.0, 0.1)
 
 function simulate_method1(t0, tf, increment)
-    println("Inizia la simulazione, da t = $t0 a t = $tf in passi di $increment")
+    println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
 
     # Calcola il numero di iterazioni prima di iniziare il ciclo vero e proprio
     nsteps = round(Int, (tf - t0) / h)
     t = t0
     for i = 1:nsteps
         println("  t = $t")
+        # Incrementa come al solito
         t += h
     end
     println("Simulazione terminata a t = $t")
@@ -52,13 +54,15 @@ end
 simulate_method1(0, 1, 0.1)
 
 function simulate_method2(t0, tf, increment)
-    println("Inizia la simulazione, da t = $t0 a t = $tf in passi di $increment")
+    println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
 
-    # Calcola il numero di iterazioni prima di iniziare il ciclo vero e proprio
+    # Calcola il numero di iterazioni prima di iniziare il ciclo vero
+    # e proprio
     nsteps = round(Int, (tf - t0) / h)
     t = t0
     for i = 1:nsteps
         println("  t = $t")
+        # Ricalcola t partendo da t0 e da h, usando il contatore i
         t = t0 + i * h
     end
     println("Simulazione terminata a t = $t")

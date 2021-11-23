@@ -4,13 +4,14 @@ while &#40;...&#41; &#123;
     // Sovrascrive &quot;current&quot; al tempo t con &quot;current&quot; al tempo t &#43; h
     current &#61; evolve&#40;current, t, h&#41;;
     t &#43;&#61; h;
-&#125;</code></pre> <p>È importante scrivere bene la condizione nel ciclo <code>while</code>, perché è una cosa che gli studenti sbagliano spesso&#33; Il problema sta negli errori di arrotondamento, che sono dovuti al modo in cui il computer memorizza i numeri <em>floating-point</em> e sono quindi identici sia in C&#43;&#43; che in Julia.</p> <p>Vediamo quindi in cosa consiste il problema usando Julia &#40;in C&#43;&#43; sarebbe lo stesso&#41;. Creiamo una variabile <code>t &#61; 0</code> che poi incrementiamo in passi di <code>h &#61; 0.1</code> secondi: in questo modo simuliamo quello che farebbe il ciclo per risolvere una equazione differenziale</p> <pre><code class=language-julia >t &#61; 0
+&#125;</code></pre> <p>È importante scrivere bene la condizione nel ciclo <code>while</code>, perché è una cosa che gli studenti sbagliano spesso&#33; Il problema sta negli errori di arrotondamento, che sono dovuti al modo in cui il computer memorizza i numeri <em>floating-point</em> e sono quindi identici sia in C&#43;&#43; che in Julia.</p> <p>Vediamo quindi in cosa consiste il problema usando Julia. Creiamo una variabile <code>t &#61; 0</code> che poi incrementiamo in passi di <code>h &#61; 0.1</code> secondi: in questo modo simuliamo quello che farebbe il ciclo per risolvere una equazione differenziale</p> <pre><code class=language-julia >t &#61; 0
 h &#61; 0.1
 t &#43;&#61; h</code></pre><pre><code class="plaintext code-output">0.1</code></pre>
 <p>Nulla di sorprendente… Incrementiamo ancora una volta:</p>
 <pre><code class=language-julia >t &#43;&#61; h</code></pre><pre><code class="plaintext code-output">0.2</code></pre>
 <p>Sembra ancora tutto regolare. Proviamo allora ad incrementare <code>t</code> per dieci volte:</p>
-<pre><code class=language-julia ># Esegue per &#96;nruns&#96; volte l&#39;incremento &#96;increment&#96;, partendo da &#96;start&#96;
+<pre><code class=language-julia ># Esegue per &#96;nruns&#96; volte l&#39;incremento &#96;increment&#96;, partendo da
+# &#96;start&#96;
 function simulate&#40;nruns, start, increment&#41;
     t &#61; start
     for i in 1:nruns
@@ -26,7 +27,7 @@ simulate&#40;10, 0, h&#41;</code></pre><pre><code class="plaintext code-output">
 <pre><code class=language-julia >function simulate&#40;t0, tf, increment&#41;
     t &#61; t0
 
-    println&#40;&quot;Inizia la simulazione, da t &#61; &#36;t0 a t &#61; &#36;tf in passi di &#36;increment&quot;&#41;
+    println&#40;&quot;Inizia la simulazione, da t&#61;&#36;t0 a &#36;tf con h&#61;&#36;increment&quot;&#41;
 
     # Itera finché non abbiamo raggiunto il tempo finale
     while t &lt; tf
@@ -37,7 +38,7 @@ simulate&#40;10, 0, h&#41;</code></pre><pre><code class="plaintext code-output">
     println&#40;&quot;Simulazione terminata a t &#61; &#36;t&quot;&#41;
 end
 
-simulate&#40;0.0, 1.0, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t = 0.0 a t = 1.0 in passi di 0.1
+simulate&#40;0.0, 1.0, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t=0.0 a 1.0 con h=0.1
   t = 0.0
   t = 0.1
   t = 0.2
@@ -53,19 +54,20 @@ Simulazione terminata a t = 1.0999999999999999
 </code></pre>
 <p>Il codice si è arrestato al tempo \(t \approx 1.1\) anziché al tempo \(t = 1\)&#33; Questa implementazione di <code>while</code> è molto comune nei compiti scritti dei vostri colleghi degli anni scorsi, ma è ovviamente <strong>sbagliata</strong>. Il modo giusto per implementare questo genere di ciclo è di calcolare il numero di iterazioni &#40;come un intero&#41; e poi fare un ciclo for usando solo variabili intere:</p>
 <pre><code class=language-julia >function simulate_method1&#40;t0, tf, increment&#41;
-    println&#40;&quot;Inizia la simulazione, da t &#61; &#36;t0 a t &#61; &#36;tf in passi di &#36;increment&quot;&#41;
+    println&#40;&quot;Inizia la simulazione, da t&#61;&#36;t0 a &#36;tf con h&#61;&#36;increment&quot;&#41;
 
     # Calcola il numero di iterazioni prima di iniziare il ciclo vero e proprio
     nsteps &#61; round&#40;Int, &#40;tf - t0&#41; / h&#41;
     t &#61; t0
     for i &#61; 1:nsteps
         println&#40;&quot;  t &#61; &#36;t&quot;&#41;
+        # Incrementa come al solito
         t &#43;&#61; h
     end
     println&#40;&quot;Simulazione terminata a t &#61; &#36;t&quot;&#41;
 end
 
-simulate_method1&#40;0, 1, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t = 0 a t = 1 in passi di 0.1
+simulate_method1&#40;0, 1, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t=0 a 1 con h=0.1
   t = 0
   t = 0.1
   t = 0.2
@@ -81,19 +83,21 @@ Simulazione terminata a t = 0.9999999999999999
 <p>In questo caso il ciclo si è arrestato al valore \(t \approx 1\), con un errore \(\delta t \sim 10^{-16}\) che è assolutamente trascurabile: l&#39;implementazione quindi è corretta.</p>
 <p>Un secondo metodo è quello di calcolare da capo il valore di <code>t</code> ad ogni iterazione:</p>
 <pre><code class=language-julia >function simulate_method2&#40;t0, tf, increment&#41;
-    println&#40;&quot;Inizia la simulazione, da t &#61; &#36;t0 a t &#61; &#36;tf in passi di &#36;increment&quot;&#41;
+    println&#40;&quot;Inizia la simulazione, da t&#61;&#36;t0 a &#36;tf con h&#61;&#36;increment&quot;&#41;
 
-    # Calcola il numero di iterazioni prima di iniziare il ciclo vero e proprio
+    # Calcola il numero di iterazioni prima di iniziare il ciclo vero
+    # e proprio
     nsteps &#61; round&#40;Int, &#40;tf - t0&#41; / h&#41;
     t &#61; t0
     for i &#61; 1:nsteps
         println&#40;&quot;  t &#61; &#36;t&quot;&#41;
+        # Ricalcola t partendo da t0 e da h, usando il contatore i
         t &#61; t0 &#43; i * h
     end
     println&#40;&quot;Simulazione terminata a t &#61; &#36;t&quot;&#41;
 end
 
-simulate_method2&#40;0, 1, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t = 0 a t = 1 in passi di 0.1
+simulate_method2&#40;0, 1, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t=0 a 1 con h=0.1
   t = 0
   t = 0.1
   t = 0.2
@@ -116,7 +120,7 @@ Simulazione terminata a t = 1.0
  -1</code></pre>
 <h2 id=esercizio_81_metodo_di_eulero ><a href="#esercizio_81_metodo_di_eulero" class=header-anchor >Esercizio 8.1: metodo di Eulero</a></h2>
 <p>Testo dell&#39;esercizio: <a href="carminati-esercizi-08.html#esercizio-8.1">carminati-esercizi-08.html</a>.</p>
-<p>Qui non implementiamo una classe con metodo <code>Passo</code> come suggerito nel testo dell&#39;esercizio, perché in Julia non esiste l&#39;equivalente delle classi del C&#43;&#43;. Scriviamo invece una funzione <code>euler</code> che restituisce una matrice a \(N + 1\) colonne, dove \(N\) è il numero di equazioni: la prima colonna contiene il tempo, le altre colonne le soluzioni delle \(N\) variabili.</p>
+<p>Qui non implementiamo una classe con metodo <code>Passo</code> come suggerito nel testo dell&#39;esercizio, perché in Julia non esiste l&#39;equivalente delle classi del C&#43;&#43;. Scriviamo invece una funzione <code>euler</code> che restituisce una matrice a \(N + 1\) colonne, dove \(N\) è il numero di equazioni: la prima colonna contiene il tempo, le altre colonne le soluzioni delle \(N\) variabili. &#40;Per i più curiosi: il modo migliore di procedere in Julia sarebbe quello di implementare un <a href="https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration">iteratore</a>&#41;.</p>
 <p>In Julia non c&#39;è bisogno di definire una classe base <code>FunzioneVettorialeBase</code> da cui derivare altre classi come <code>OscillatoreArmonico</code> eccetera: basta passare la funzione nel parametro <code>fn</code> &#40;primo argomento&#41;. È un meccanismo simile a quello visto nella lezione precedente usando i template, anche se in Julia la risoluzione dei template avviene a <em>runtime</em> anziché in fase di compilazione come in C&#43;&#43;.</p>
 <pre><code class=language-julia >function euler&#40;fn, x0, startt, endt, h&#41;
     # La scrittura startt:h:endt indica il vettore
@@ -181,19 +185,22 @@ bool is_close&#40;double a, double b, double epsilon &#61; 1e-8&#41; &#123;
 void test_euler&#40;&#41; &#123;
   Eulero eulero;
   OscillatoreArmonico oa&#123;1.0&#125;;
-  const double lastt&#123;70.0&#125;;
+  const double lastt&#123;70.0&#125;;      // Simula il sistema per 70 s
   const double h&#123;0.1&#125;;
-  const int steps&#123;static_cast&lt;int&gt;&#40;lasttt / h &#43; 0.5&#41;&#125;;
+  const int nsteps&#123;static_cast&lt;int&gt;&#40;lasttt / h &#43; 0.5&#41;&#125;;
   std::vector&lt;double&gt; pos&#123;0.0, 1.0&#125;;
 
-  for &#40;int idx&#123;&#125;; idx &lt; steps; &#43;&#43;idx&#41; &#123;
+  // Esegue la simulazione
+  double t&#123;&#125;;
+  for &#40;int idx&#123;&#125;; idx &lt; nsteps; &#43;&#43;idx&#41; &#123;
     pos &#61; eulero.Passo&#40;t, pos, h, &amp;oa&#41;;
+    t &#43;&#61; h;
   &#125;
 
   assert&#40;is_close&#40;pos&#91;0&#93;, 19.773746013860173&#41;&#41;;
   assert&#40;is_close&#40;pos&#91;1&#93;, 25.848774751522960&#41;&#41;;
 &#125;</code></pre>
-<p>Notate che il ciclo <code>for</code> è implementato calcolando preventivamente il numero di passi in <code>steps</code>: è quello che sopra avevamo chiamato il «Metodo 1» &#40;<code>simulate_method1</code>&#41;.</p>
+<p>Notate che il ciclo <code>for</code> è implementato calcolando preventivamente il numero di passi in <code>nsteps</code>: è quello che sopra avevamo chiamato il «Metodo 1» &#40;<code>simulate_method1</code>&#41;.</p>
 <p>Per studiare il funzionamento di <code>euler</code>, consideriamo la simulazione nell&#39;intervallo usato sopra, \(0 \leq t \leq
 70\,\text{s}\).</p>
 <p>Per maggiore eleganza rispetto a quanto fatto sopra, dichiariamo la variabile <code>lastt</code> &#40;nel vostro codice dovreste definirla come un <code>const double</code>, ma in un notebook destinato all&#39;uso interattivo come questo non è mai consigliato definire costanti&#41;.</p>
@@ -321,11 +328,14 @@ end</code></pre><pre><code class="plaintext code-output">rungekutta (generic fun
   OscillatoreArmonico oa&#123;1.0&#125;;
   const double lastt&#123;70.0&#125;;
   const double h&#123;0.1&#125;;
-  const int passi&#123;static_cast&lt;double&gt;&#40;lasttt / h &#43; 0.5&#41;&#125;;
+  const int nsteps&#123;static_cast&lt;double&gt;&#40;lasttt / h &#43; 0.5&#41;&#125;;
   std::vector&lt;double&gt; pos&#123;0.0, 1.0&#125;;
 
-  for &#40;int idx&#123;&#125;; idx &lt; passi; &#43;&#43;idx&#41; &#123;
+  // Esegue la simulazione
+  double t&#123;&#125;;
+  for &#40;int idx&#123;&#125;; idx &lt; nsteps; &#43;&#43;idx&#41; &#123;
     pos &#61; rk.Passo&#40;t, pos, h, &amp;oa&#41;;
+    t &#43;&#61; h;
   &#125;
 
   assert&#40;is_close&#40;pos&#91;0&#93;, 0.7738501114078689&#41;&#41;;

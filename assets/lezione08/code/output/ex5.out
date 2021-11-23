@@ -1,4 +1,4 @@
-Inizia la simulazione, da t = 0.0 a t = 1.0 in passi di 0.1
+Inizia la simulazione, da t=0.0 a 1.0 con h=0.1
   t = 0.0
   t = 0.1
   t = 0.2
