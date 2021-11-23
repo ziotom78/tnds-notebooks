@@ -98,7 +98,8 @@ simulate(0.0, 1.0, 0.1)
 function simulate_method1(t0, tf, increment)
     println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
     
-    ## Calcola il numero di iterazioni prima di iniziare il ciclo vero e proprio
+    ## Calcola il numero di iterazioni prima di iniziare il ciclo vero
+    ## e proprio
     nsteps = round(Int, (tf - t0) / h)
     t = t0
     for i = 1:nsteps
@@ -115,8 +116,9 @@ simulate_method1(0, 1, 0.1)
 # un errore $\delta t \sim 10^{-16}$ che è assolutamente trascurabile:
 # l'implementazione quindi è corretta.
 # 
-# Un secondo metodo è quello di calcolare da capo il valore di `t` ad
-# ogni iterazione:
+# Un secondo metodo è quello di evitare di «accumulare» l'incremento
+# `h` nella variabile `t` ad ogni iterazione, ma calcolare ogni volta
+# da capo quest'ultima:
 
 function simulate_method2(t0, tf, increment)
     println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
@@ -458,8 +460,8 @@ savefig(joinpath(@OUTPUT, "euler_rk_comparison.svg")) #hide
 # di lunghezza $l$ sottoposto ad un'accelerazione di gravità $g$.
 # Impostiamo un paio di costanti.
  
-rodlength = 1.
-g = 9.81
+rodlength = 1.;
+g = 9.81;
 
 # La funzione `pendulum` definisce i due membri dell'equazione
 # differenziale di secondo grado.
@@ -483,8 +485,14 @@ oscillations[(end - 10):end, :]
 # [Luxor](https://github.com/JuliaGraphics/Luxor.jl), che consente di
 # creare disegni ed animazioni partendo da forme geometriche
 # primitive. (Se volete creare qualcosa del genere in C++, potete
-# usare la libreria [Monet](https://github.com/ziotom78/monet)). Per
-# installare Luxor da Internet, usate come al solito i comandi di Pkg:
+# usare la libreria [Monet](https://github.com/ziotom78/monet),
+# convertendo poi i file SVG generati da Monet in format PNG con
+# l'interfaccia a linea di comando di
+# [Inkscape](https://inkscape.org/) e assemblando i file PNG in
+# un'animazione MP4 o MKV con [ffmpeg](https://ffmpeg.org/)).
+#
+# Per installare Luxor da Internet, usate come al solito i comandi di
+# Pkg:
 # 
 # ```julia
 # using Pkg
@@ -495,15 +503,20 @@ oscillations[(end - 10):end, :]
 
 import Luxor
 
-# In Luxor, il disegno avviene su una superficie quadrata di
-# dimensione 500×500, con il centro del quadrato collocato alla
-# coordinata (0,0). Noi disegnamo il pendolo come una linea che parte
-# dal centro e alla cui estremità è disegnato un cerchio. (Notate che
-# Julia offre il comando `sincos`, che calcola simultaneamente il
-# valore del seno e del coseno di un angolo).
+# In Luxor occorre specificare le dimensioni della superficie su cui
+# si disegna; noi sceglieremo una dimensione di 500×500; il sistema di
+# coordinate ha origine sempre nel centro dell'immagine, in modo che
+# l'intervallo di valori sugli assi $x$ ed $y$ sarà nel nostro caso
+# $-250\ldots 250$.
+
+# La funzione `plot_pendulum` rappresenta il pendolo come una linea
+# che parte dal centro e alla cui estremità è disegnato un cerchio
+# pieno di colore nero. (Notate che Julia offre il comando `sincos`,
+# che calcola simultaneamente il valore del seno e del coseno di un
+# angolo).
 
 function plot_pendulum(angle)
-    radius = 200
+    radius = 200  # Lunghezza del braccio del pendolo
     y, x = radius .* sincos(π / 2 + angle)
     
     Luxor.sethue("black")
