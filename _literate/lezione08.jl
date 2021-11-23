@@ -678,7 +678,7 @@ interp(ptA, ptB, y) = ptA[1] + (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (y - ptA[
 interp(ptA, ptB) = interp(ptA, ptB, 0)
  
 # Eseguiamo una volta `interp` per trovare il valore dell'ordinata $y$
-# in corrispondenza dell'ascissa $x = 0.3$ di una una retta passante
+# in corrispondenza dell'ordinata $y = 0.3$ di una una retta passante
 # per i punti $(-0.4, -0.7)$ e $(0.5, 0.8)$:
 
 let p1x = -0.4, p1y = -0.7, p2x = 0.5, p2y = 0.8, y = 0.3
