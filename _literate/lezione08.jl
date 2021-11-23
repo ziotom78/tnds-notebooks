@@ -504,7 +504,7 @@ oscillations[(end - 10):end, :]
 import Luxor
 
 # In Luxor occorre specificare le dimensioni della superficie su cui
-# si disegna; noi sceglieremo una dimensione di 500×500; il sistema di
+# si disegna; noi sceglieremo una dimensione di 500×500. Il sistema di
 # coordinate ha origine sempre nel centro dell'immagine, in modo che
 # l'intervallo di valori sugli assi $x$ ed $y$ sarà nel nostro caso
 # $-250\ldots 250$.
@@ -567,7 +567,13 @@ savefig(joinpath(@OUTPUT, "oscillations1.svg")) # hide
 # \fig{oscillations1.svg}
 
 # Possiamo farci un'idea del punto in cui avviene l'inversione usando
-# i filtri offerti da Julia:
+# i filtri offerti da Julia. In particolare, la sintassi `v .< 0.1`
+# restituisce un vettore contenente tutti gli elementi del vettore `v`
+# che hanno valore inferiore a 0.1, ed impiega il solito trucco del
+# punto `.` che «propaga» un operatore sugli elementi di un vettore.
+#
+# Ecco quindi come troviamo tutte le iterazioni della soluzione per
+# cui la velocità $v_i$ è tale per cui $\left| v_i \right| < 0.1$:
 
 oscillations[abs.(oscillations[:, 3]) .< 0.1, :]
 
