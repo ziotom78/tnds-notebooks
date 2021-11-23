@@ -6,6 +6,7 @@ author = "Maurizio Tomasi"
 mintoclevel = 2
 
 showall = true
+prepath = "tnds-notebooks"
 
 # Add here files or directories that should be ignored by Franklin, otherwise
 # these files might be copied and, if markdown, processed by Franklin which
