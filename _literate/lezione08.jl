@@ -628,19 +628,40 @@ end
  
 # La funzione restituisce l'indice dell'ultimo elemento del vettore
 # *prima* dell'inversione. Nella vostra versione in C++ quindi la
-# funzione dovrà restituire un intero. Verifichiamone il funzionamento
-# su un vettore (ricordando che in Julia gli elementi dei vettori si
-# contano da 1 anziché da 0 come in C++!).
+# funzione dovrà restituire un tipo `size_t` (intero senza segno).
+# Verifichiamone il funzionamento su un vettore (ricordando che in
+# Julia gli elementi dei vettori si contano da 1 anziché da 0 come in
+# C++!).
  
 search_inversion([4, 3, 1, -2, -5])
 
-# La formula per l'interpolazione lineare $t = t(\omega)$ tra due
-# punti $(t_A, \omega_A)$ e $(t_B, \omega_B)$ si ricava imponendo che
-# $t(\omega_A) = t_A$ e che $t(\omega_B) = t_B$. Il risultato è
+# Il risultato è quello che ci aspettiamo: l'elemento alla posizione 3
+# ha segno positivo (`1`), mentre il successivo cambia di segno
+# (`-2`).
+#
+# Ora che abbiamo una funzione che determina l'indice $i$ per cui
+# $\omega_i$ ha segno opposto a $\omega_{i + 1}$, ci occorre trovare
+# una formula interpolante che ci restituisca il tempo a cui la
+# velocità si annulla. In altri termini, stiamo considerando due punti
+# $A$ e $B$ associati agli istanti temporali $t_A$ e $t_B$, e in
+# corrispondenza dei quali la velocità angolare passa da $\omega_A$ a
+# $\omega_B$ con un cambio di segno, e vogliamo trovare l'istante
+# temporale a cui $\omega = 0$ nell'ipotesi che $\omega(t)$ segua una
+# legge lineare (il che è un'ottima approssimazione, se riguardate il
+# grafico sopra). Non dobbiamo quindi fare altro che scrivere
+# l'equazione della retta che passa per $(t_A, \omega_A)$ e per $t_B,
+# \omega_B$ e calcolare la sua intersezione con la retta $\omega = 0$.
+#
+# Si tratta di un semplice problema di geometria analitica, e la
+# soluzione è la seguente:
 #
 # $$
 # t(\omega) = t_A + \frac{t_A - t_B}{\omega_A - \omega_B}\bigl(\omega - \omega_A\bigr).
 # $$
+#
+# È facile convincersi della correttezza del risultato, perché
+# $t(\omega_A) = t_A$, $t(\omega_B) = t_B$, e l'espressione è
+# chiaramente una retta.
 # 
 # Nel nostro caso bisogna quindi implementare il calcolo della formula
 # nel caso in cui $\omega = 0$, e **raddoppiare il risultato**: lo
@@ -649,19 +670,48 @@ search_inversion([4, 3, 1, -2, -5])
 # sfrutta la funzione `invtime` che fornisce il valore del tempo
 # all'istante della inversione. Implementiamo una serie di
 # sotto-funzioni, in modo che sia più facile verificare il
-# comportamento di ciascuna.
+# comportamento di ciascuna. Qui introduciamo due implementazioni di
+# `interp`: la seconda è più specifica e calcola l'ascissa del punto
+# di intersezione della retta con l'asse delle ordinate.
  
-interp(ptA, ptB, x) = ptA[1] + (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (x - ptA[2])
+interp(ptA, ptB, y) = ptA[1] + (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (y - ptA[2])
 interp(ptA, ptB) = interp(ptA, ptB, 0)
  
-# Eseguiamo una volta `interp`: il valore restituito è utile per
-# scrivere nel vostro codice un test con `assert`!
- 
-interp((-0.4, -0.7), (0.5, 0.8), 0.3)
+# Eseguiamo una volta `interp` per trovare il valore dell'ordinata $y$
+# in corrispondenza dell'ascissa $x = 0.3$ di una una retta passante
+# per i punti $(-0.4, -0.7)$ e $(0.5, 0.8)$:
 
-# La funzione `invtime` mette insieme `search_inversion` e `interp`
-# per restituire l'istante temporale in cui avviene l'inversione del
-# segno del vettore `vec`:
+let p1x = -0.4, p1y = -0.7, p2x = 0.5, p2y = 0.8, y = 0.3
+    ## Il comando `plot` richiede di passare un array con le ascisse
+    ## e uno con le coordinate…
+    plot([p1x, p2x], [p1y, p2y], label = "")
+    ## …mentre la nostra `interp` richiede due coppie (x, y)
+    let x = interp([p1x, p1y], [p2x, p2y], y)
+        @printf("La retta interpolante passa per (%.1f, %.1f)\n", x, y)
+        ## Il comando `scatter` funziona come `plot`
+        scatter!([p1x, x, p2x], [p1y, y, p2y], label = "")
+    end
+end
+
+savefig(joinpath(@OUTPUT, "interp-test.svg")) # hide
+
+# \fig{interp-test.svg}
+
+# Il grafico mostra che la nostra implementazione di `interp` funziona
+# a dovere; voi potreste implementare un test nel vostro esercizio:
+#
+# ```cpp
+# void test_interp() {
+#   const double p1x = -0.4, p1y = -0.7;
+#   const double p2x = 0.5, p2y = 0.8;
+#
+#   assert(is_close(interp(p1x, p1y, p2x, p2y, 0.3), 0.2));
+# }
+# ```
+
+# Introduciamo ora un'altra funzione, `invtime`, che mette insieme
+# `search_inversion` e `interp` per restituire l'istante temporale in
+# cui avviene l'inversione del segno del vettore `vec`:
  
 function invtime(time, vec)
     idx = search_inversion(vec)
@@ -675,7 +725,6 @@ end
 # posizione $\theta = 0$, il valore del periodo è semplicemente il
 # doppio del tempo necessario per osservare l'inversione
 # (nell'esercizio 9.4 questo **non sarà più vero**, ricordatevelo!).
-# 
  
 period(oscillations) = 2 * invtime(oscillations[:, 1], oscillations[:, 3])
 
@@ -692,7 +741,8 @@ ideal_period = 2π / √(g / rodlength)
 # dell'esercizio.
  
 angles = 0.1:0.1:3.0
-ampl = [period(rungekutta(pendulum, [angle, 0.], 0.0, 3.0, 0.01)) for angle in angles]
+ampl = [period(rungekutta(pendulum, [angle, 0.], 0.0, 3.0, 0.01))
+        for angle in angles]
 plot(angles, ampl, label="", xlabel="Angolo [rad]", ylabel="Periodo [s]")
 scatter!(angles, ampl, label="")
 
@@ -805,7 +855,6 @@ end
 # questo è un numero buono per essere usato in un `assert`. Notate che
 # nel secondo punto (corrispondente al tempo $t + \delta t$) la
 # velocità è nulla.
- 
  
 forced_amplitude(9.5, forcedpendulum(9.5))
  
