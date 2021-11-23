@@ -567,7 +567,7 @@ import Luxor
 ```
 
 In Luxor occorre specificare le dimensioni della superficie su cui
-si disegna; noi sceglieremo una dimensione di 500×500; il sistema di
+si disegna; noi sceglieremo una dimensione di 500×500. Il sistema di
 coordinate ha origine sempre nel centro dell'immagine, in modo che
 l'intervallo di valori sugli assi $x$ ed $y$ sarà nel nostro caso
 $-250\ldots 250$.
@@ -638,15 +638,31 @@ savefig(joinpath(@OUTPUT, "oscillations1.svg")) # hide
 \fig{oscillations1.svg}
 
 Possiamo farci un'idea del punto in cui avviene l'inversione usando
-i filtri offerti da Julia:
+i filtri offerti da Julia. In particolare, la sintassi `v .< 0.1`
+restituisce un vettore contenente tutti gli elementi del vettore `v`
+che hanno valore inferiore a 0.1, ed impiega il solito trucco del
+punto `.` che «propaga» un operatore sugli elementi di un vettore.
+
+Ecco quindi come troviamo tutte le iterazioni della soluzione per
+cui la velocità $v_i$ è tale per cui $\left| v_i \right| < 0.1$:
 
 ```julia:ex37
 oscillations[abs.(oscillations[:, 3]) .< 0.1, :]
 ```
 
-Qui è evidente il problema accennato sul sito: non esiste alcun
-punto in cui la velocità angolare sia esattamente zero, perché
-stiamo usando un passo discreto per integrare l'equazione.
+Vediamo dunque che, oltre alla velocità nulla dell'istante iniziale
+(ovvia perché causata dalle nostre condizioni iniziali), c'è una
+inversione al tempo $t \approx 1.07\,\text{s}$ e un'altra al tempo
+$t \approx 2.15\,\text{s}$.
+
+Dai numeri mostrati qui sopra, è evidente il problema accennato sul
+sito: non esiste alcun punto in cui la velocità angolare sia
+esattamente zero, perché stiamo usando un passo discreto per
+integrare l'equazione. I due istanti esatti in cui avvengono le
+inversioni sono rispettivamente nell'intervallo $(1.07, 1.08)$ e
+$(2.15, 2.16)$. Facciamo un grafico ingrandito nell'intervallo
+temporale $t = 1\ldots 1.2\,\text{s}$ per renderci meglio conto
+della cosa:
 
 ```julia:ex38
 scatter(oscillations[:, 1], oscillations[:, 3],
@@ -661,14 +677,19 @@ savefig(joinpath(@OUTPUT, "oscillations2.svg")) # hide
 \fig{oscillations2.svg}
 
 Implementiamo quindi una funzione per cercare l'inversione di segno
-in un vettore. (È buona cosa che anche voi implementiate una
-funzione del genere nel vostro codice C++).
+in un vettore. Essa dovrà scandire il vettore e determinare quando
+il segno di due elementi consecutivi cambia, restituendo la
+posizione del primo di questi due elementi. (È buona cosa che anche
+voi implementiate una funzione del genere nel vostro codice C++).
 
 ```julia:ex39
 function search_inversion(vect)
     prevval = vect[1]
     for i in 2:length(vect)
-        if prevval * vect[i] < 0
+        # Qui usiamo lo stesso trucco per trovare un cambio di segno
+        # che avevamo già impiegato negli esercizi per la ricerca
+        # degli zeri
+        if sign(prevval) * sign(vect[i]) < 0
             return i - 1
         end
         prevval = vect[i]
@@ -676,28 +697,50 @@ function search_inversion(vect)
 
     println("No inversion found, run the simulation for a longer time")
 
-    # Return a negative (impossible) index
+    # Restituisci un indice negativo (impossibile), perché non
+    # abbiamo trovato alcuna inversione.
     -1
 end
 ```
 
 La funzione restituisce l'indice dell'ultimo elemento del vettore
 *prima* dell'inversione. Nella vostra versione in C++ quindi la
-funzione dovrà restituire un intero. Verifichiamone il funzionamento
-su un vettore (ricordando che in Julia gli elementi dei vettori si
-contano da 1 anziché da 0 come in C++!).
+funzione dovrà restituire un tipo `size_t` (intero senza segno).
+Verifichiamone il funzionamento su un vettore (ricordando che in
+Julia gli elementi dei vettori si contano da 1 anziché da 0 come in
+C++!).
 
 ```julia:ex40
 search_inversion([4, 3, 1, -2, -5])
 ```
 
-La formula per l'interpolazione lineare $t = t(\omega)$ tra due
-punti $(t_A, \omega_A)$ e $(t_B, \omega_B)$ si ricava imponendo che
-$t(\omega_A) = t_A$ e che $t(\omega_B) = t_B$. Il risultato è
+Il risultato è quello che ci aspettiamo: l'elemento alla posizione 3
+ha segno positivo (`1`), mentre il successivo cambia di segno
+(`-2`).
+
+Ora che abbiamo una funzione che determina l'indice $i$ per cui
+$\omega_i$ ha segno opposto a $\omega_{i + 1}$, ci occorre trovare
+una formula interpolante che ci restituisca il tempo a cui la
+velocità si annulla. In altri termini, stiamo considerando due punti
+$A$ e $B$ associati agli istanti temporali $t_A$ e $t_B$, e in
+corrispondenza dei quali la velocità angolare passa da $\omega_A$ a
+$\omega_B$ con un cambio di segno, e vogliamo trovare l'istante
+temporale a cui $\omega = 0$ nell'ipotesi che $\omega(t)$ segua una
+legge lineare (il che è un'ottima approssimazione, se riguardate il
+grafico sopra). Non dobbiamo quindi fare altro che scrivere
+l'equazione della retta che passa per $(t_A, \omega_A)$ e per $t_B,
+\omega_B$ e calcolare la sua intersezione con la retta $\omega = 0$.
+
+Si tratta di un semplice problema di geometria analitica, e la
+soluzione è la seguente:
 
 $$
 t(\omega) = t_A + \frac{t_A - t_B}{\omega_A - \omega_B}\bigl(\omega - \omega_A\bigr).
 $$
+
+È facile convincersi della correttezza del risultato, perché
+$t(\omega_A) = t_A$, $t(\omega_B) = t_B$, e l'espressione è
+chiaramente una retta.
 
 Nel nostro caso bisogna quindi implementare il calcolo della formula
 nel caso in cui $\omega = 0$, e **raddoppiare il risultato**: lo
@@ -706,23 +749,52 @@ matrice a tre colonne prodotta da `euler` o `rungekutta`, e che
 sfrutta la funzione `invtime` che fornisce il valore del tempo
 all'istante della inversione. Implementiamo una serie di
 sotto-funzioni, in modo che sia più facile verificare il
-comportamento di ciascuna.
+comportamento di ciascuna. Qui introduciamo due implementazioni di
+`interp`: la seconda è più specifica e calcola l'ascissa del punto
+di intersezione della retta con l'asse delle ordinate.
 
 ```julia:ex41
-interp(ptA, ptB, x) = ptA[1] + (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (x - ptA[2])
+interp(ptA, ptB, y) = ptA[1] + (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (y - ptA[2])
 interp(ptA, ptB) = interp(ptA, ptB, 0)
 ```
 
-Eseguiamo una volta `interp`: il valore restituito è utile per
-scrivere nel vostro codice un test con `assert`!
+Eseguiamo una volta `interp` per trovare il valore dell'ordinata $y$
+in corrispondenza dell'ascissa $x = 0.3$ di una una retta passante
+per i punti $(-0.4, -0.7)$ e $(0.5, 0.8)$:
 
 ```julia:ex42
-interp((-0.4, -0.7), (0.5, 0.8), 0.3)
+let p1x = -0.4, p1y = -0.7, p2x = 0.5, p2y = 0.8, y = 0.3
+    # Il comando `plot` richiede di passare un array con le ascisse
+    # e uno con le coordinate…
+    plot([p1x, p2x], [p1y, p2y], label = "")
+    # …mentre la nostra `interp` richiede due coppie (x, y)
+    let x = interp([p1x, p1y], [p2x, p2y], y)
+        @printf("La retta interpolante passa per (%.1f, %.1f)\n", x, y)
+        # Il comando `scatter` funziona come `plot`
+        scatter!([p1x, x, p2x], [p1y, y, p2y], label = "")
+    end
+end
+
+savefig(joinpath(@OUTPUT, "interp-test.svg")) # hide
 ```
 
-La funzione `invtime` mette insieme `search_inversion` e `interp`
-per restituire l'istante temporale in cui avviene l'inversione del
-segno del vettore `vec`:
+\fig{interp-test.svg}
+
+Il grafico mostra che la nostra implementazione di `interp` funziona
+a dovere; voi potreste implementare un test nel vostro esercizio:
+
+```cpp
+void test_interp() {
+  const double p1x = -0.4, p1y = -0.7;
+  const double p2x = 0.5, p2y = 0.8;
+
+  assert(is_close(interp(p1x, p1y, p2x, p2y, 0.3), 0.2));
+}
+```
+
+Introduciamo ora un'altra funzione, `invtime`, che mette insieme
+`search_inversion` e `interp` per restituire l'istante temporale in
+cui avviene l'inversione del segno del vettore `vec`:
 
 ```julia:ex43
 function invtime(time, vec)
@@ -761,7 +833,8 @@ dell'esercizio.
 
 ```julia:ex47
 angles = 0.1:0.1:3.0
-ampl = [period(rungekutta(pendulum, [angle, 0.], 0.0, 3.0, 0.01)) for angle in angles]
+ampl = [period(rungekutta(pendulum, [angle, 0.], 0.0, 3.0, 0.01))
+        for angle in angles]
 plot(angles, ampl, label="", xlabel="Angolo [rad]", ylabel="Periodo [s]")
 scatter!(angles, ampl, label="")
 

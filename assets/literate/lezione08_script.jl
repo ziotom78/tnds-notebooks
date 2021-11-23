@@ -245,7 +245,10 @@ savefig(joinpath(@OUTPUT, "oscillations2.svg")) # hide
 function search_inversion(vect)
     prevval = vect[1]
     for i in 2:length(vect)
-        if prevval * vect[i] < 0
+        # Qui usiamo lo stesso trucco per trovare un cambio di segno
+        # che avevamo già impiegato negli esercizi per la ricerca
+        # degli zeri
+        if sign(prevval) * sign(vect[i]) < 0
             return i - 1
         end
         prevval = vect[i]
@@ -253,16 +256,29 @@ function search_inversion(vect)
 
     println("No inversion found, run the simulation for a longer time")
 
-    # Return a negative (impossible) index
+    # Restituisci un indice negativo (impossibile), perché non
+    # abbiamo trovato alcuna inversione.
     -1
 end
 
 search_inversion([4, 3, 1, -2, -5])
 
-interp(ptA, ptB, x) = ptA[1] + (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (x - ptA[2])
+interp(ptA, ptB, y) = ptA[1] + (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (y - ptA[2])
 interp(ptA, ptB) = interp(ptA, ptB, 0)
 
-interp((-0.4, -0.7), (0.5, 0.8), 0.3)
+let p1x = -0.4, p1y = -0.7, p2x = 0.5, p2y = 0.8, y = 0.3
+    # Il comando `plot` richiede di passare un array con le ascisse
+    # e uno con le coordinate…
+    plot([p1x, p2x], [p1y, p2y], label = "")
+    # …mentre la nostra `interp` richiede due coppie (x, y)
+    let x = interp([p1x, p1y], [p2x, p2y], y)
+        @printf("La retta interpolante passa per (%.1f, %.1f)\n", x, y)
+        # Il comando `scatter` funziona come `plot`
+        scatter!([p1x, x, p2x], [p1y, y, p2y], label = "")
+    end
+end
+
+savefig(joinpath(@OUTPUT, "interp-test.svg")) # hide
 
 function invtime(time, vec)
     idx = search_inversion(vec)
@@ -279,7 +295,8 @@ period(oscillations)
 ideal_period = 2π / √(g / rodlength)
 
 angles = 0.1:0.1:3.0
-ampl = [period(rungekutta(pendulum, [angle, 0.], 0.0, 3.0, 0.01)) for angle in angles]
+ampl = [period(rungekutta(pendulum, [angle, 0.], 0.0, 3.0, 0.01))
+        for angle in angles]
 plot(angles, ampl, label="", xlabel="Angolo [rad]", ylabel="Periodo [s]")
 scatter!(angles, ampl, label="")
 

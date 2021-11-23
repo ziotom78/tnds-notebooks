@@ -2,7 +2,10 @@
 function search_inversion(vect)
     prevval = vect[1]
     for i in 2:length(vect)
-        if prevval * vect[i] < 0
+        # Qui usiamo lo stesso trucco per trovare un cambio di segno
+        # che avevamo già impiegato negli esercizi per la ricerca
+        # degli zeri
+        if sign(prevval) * sign(vect[i]) < 0
             return i - 1
         end
         prevval = vect[i]
@@ -10,6 +13,7 @@ function search_inversion(vect)
 
     println("No inversion found, run the simulation for a longer time")
 
-    # Return a negative (impossible) index
+    # Restituisci un indice negativo (impossibile), perché non
+    # abbiamo trovato alcuna inversione.
     -1
 end

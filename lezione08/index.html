@@ -435,7 +435,7 @@ oscillations&#91;1:10, :&#93;</code></pre><pre><code class="plaintext code-outpu
 Pkg.add&#40;&quot;Luxor&quot;&#41;</code></pre>
 <p>Quando è installato, possiamo importarlo come al solito:</p>
 <pre><code class=language-julia >import Luxor</code></pre>
-<p>In Luxor occorre specificare le dimensioni della superficie su cui si disegna; noi sceglieremo una dimensione di 500×500; il sistema di coordinate ha origine sempre nel centro dell&#39;immagine, in modo che l&#39;intervallo di valori sugli assi \(x\) ed \(y\) sarà nel nostro caso \(-250\ldots 250\).</p>
+<p>In Luxor occorre specificare le dimensioni della superficie su cui si disegna; noi sceglieremo una dimensione di 500×500. Il sistema di coordinate ha origine sempre nel centro dell&#39;immagine, in modo che l&#39;intervallo di valori sugli assi \(x\) ed \(y\) sarà nel nostro caso \(-250\ldots 250\).</p>
 <p>La funzione <code>plot_pendulum</code> rappresenta il pendolo come una linea che parte dal centro e alla cui estremità è disegnato un cerchio pieno di colore nero. &#40;Notate che Julia offre il comando <code>sincos</code>, che calcola simultaneamente il valore del seno e del coseno di un angolo&#41;.</p>
 <pre><code class=language-julia >function plot_pendulum&#40;angle&#41;
     radius &#61; 200  # Lunghezza del braccio del pendolo
@@ -464,7 +464,8 @@ Luxor.animate&#40;anim, &#91;Luxor.Scene&#40;anim, animframe, 1:size&#40;oscilla
      xlabel &#61; &quot;Tempo &#91;s&#93;&quot;,
      ylabel &#61; &quot;Velocità angolare &#91;rad/s&#93;&quot;&#41;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/oscillations1.svg" alt="">
-<p>Possiamo farci un&#39;idea del punto in cui avviene l&#39;inversione usando i filtri offerti da Julia:</p>
+<p>Possiamo farci un&#39;idea del punto in cui avviene l&#39;inversione usando i filtri offerti da Julia. In particolare, la sintassi <code>v .&lt; 0.1</code> restituisce un vettore contenente tutti gli elementi del vettore <code>v</code> che hanno valore inferiore a 0.1, ed impiega il solito trucco del punto <code>.</code> che «propaga» un operatore sugli elementi di un vettore.</p>
+<p>Ecco quindi come troviamo tutte le iterazioni della soluzione per cui la velocità \(v_i\) è tale per cui \(\left| v_i \right| < 0.1\):</p>
 <pre><code class=language-julia >oscillations&#91;abs.&#40;oscillations&#91;:, 3&#93;&#41; .&lt; 0.1, :&#93;</code></pre><pre><code class="plaintext code-output">6×3 Matrix{Float64}:
  0.0    1.0472    0.0
  0.01   1.04677  -0.0849501
@@ -472,18 +473,22 @@ Luxor.animate&#40;anim, &#91;Luxor.Scene&#40;anim, animframe, 1:size&#40;oscilla
  1.08  -1.04714   0.030267
  2.15   1.04716   0.0244223
  2.16   1.04698  -0.0605321</code></pre>
-<p>Qui è evidente il problema accennato sul sito: non esiste alcun punto in cui la velocità angolare sia esattamente zero, perché stiamo usando un passo discreto per integrare l&#39;equazione.</p>
+<p>Vediamo dunque che, oltre alla velocità nulla dell&#39;istante iniziale &#40;ovvia perché causata dalle nostre condizioni iniziali&#41;, c&#39;è una inversione al tempo \(t \approx 1.07\,\text{s}\) e un&#39;altra al tempo \(t \approx 2.15\,\text{s}\).</p>
+<p>Dai numeri mostrati qui sopra, è evidente il problema accennato sul sito: non esiste alcun punto in cui la velocità angolare sia esattamente zero, perché stiamo usando un passo discreto per integrare l&#39;equazione. I due istanti esatti in cui avvengono le inversioni sono rispettivamente nell&#39;intervallo \((1.07, 1.08)\) e \((2.15, 2.16)\). Facciamo un grafico ingrandito nell&#39;intervallo temporale \(t = 1\ldots 1.2\,\text{s}\) per renderci meglio conto della cosa:</p>
 <pre><code class=language-julia >scatter&#40;oscillations&#91;:, 1&#93;, oscillations&#91;:, 3&#93;,
         label &#61; &quot;&quot;,
         xlim &#61; &#40;1.0, 1.2&#41;,
         xlabel &#61; &quot;Tempo &#91;s&#93;&quot;,
         ylabel &#61; &quot;Velocità angolare &#91;rad/s&#93;&quot;&#41;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/oscillations2.svg" alt="">
-<p>Implementiamo quindi una funzione per cercare l&#39;inversione di segno in un vettore. &#40;È buona cosa che anche voi implementiate una funzione del genere nel vostro codice C&#43;&#43;&#41;.</p>
+<p>Implementiamo quindi una funzione per cercare l&#39;inversione di segno in un vettore. Essa dovrà scandire il vettore e determinare quando il segno di due elementi consecutivi cambia, restituendo la posizione del primo di questi due elementi. &#40;È buona cosa che anche voi implementiate una funzione del genere nel vostro codice C&#43;&#43;&#41;.</p>
 <pre><code class=language-julia >function search_inversion&#40;vect&#41;
     prevval &#61; vect&#91;1&#93;
     for i in 2:length&#40;vect&#41;
-        if prevval * vect&#91;i&#93; &lt; 0
+        # Qui usiamo lo stesso trucco per trovare un cambio di segno
+        # che avevamo già impiegato negli esercizi per la ricerca
+        # degli zeri
+        if sign&#40;prevval&#41; * sign&#40;vect&#91;i&#93;&#41; &lt; 0
             return i - 1
         end
         prevval &#61; vect&#91;i&#93;
@@ -491,21 +496,45 @@ Luxor.animate&#40;anim, &#91;Luxor.Scene&#40;anim, animframe, 1:size&#40;oscilla
 
     println&#40;&quot;No inversion found, run the simulation for a longer time&quot;&#41;
 
-    # Return a negative &#40;impossible&#41; index
+    # Restituisci un indice negativo &#40;impossibile&#41;, perché non
+    # abbiamo trovato alcuna inversione.
     -1
 end</code></pre><pre><code class="plaintext code-output">search_inversion (generic function with 1 method)</code></pre>
-<p>La funzione restituisce l&#39;indice dell&#39;ultimo elemento del vettore <em>prima</em> dell&#39;inversione. Nella vostra versione in C&#43;&#43; quindi la funzione dovrà restituire un intero. Verifichiamone il funzionamento su un vettore &#40;ricordando che in Julia gli elementi dei vettori si contano da 1 anziché da 0 come in C&#43;&#43;&#33;&#41;.</p>
+<p>La funzione restituisce l&#39;indice dell&#39;ultimo elemento del vettore <em>prima</em> dell&#39;inversione. Nella vostra versione in C&#43;&#43; quindi la funzione dovrà restituire un tipo <code>size_t</code> &#40;intero senza segno&#41;. Verifichiamone il funzionamento su un vettore &#40;ricordando che in Julia gli elementi dei vettori si contano da 1 anziché da 0 come in C&#43;&#43;&#33;&#41;.</p>
 <pre><code class=language-julia >search_inversion&#40;&#91;4, 3, 1, -2, -5&#93;&#41;</code></pre><pre><code class="plaintext code-output">3</code></pre>
-<p>La formula per l&#39;interpolazione lineare \(t = t(\omega)\) tra due punti \((t_A, \omega_A)\) e \((t_B, \omega_B)\) si ricava imponendo che \(t(\omega_A) = t_A\) e che \(t(\omega_B) = t_B\). Il risultato è</p>
+<p>Il risultato è quello che ci aspettiamo: l&#39;elemento alla posizione 3 ha segno positivo &#40;<code>1</code>&#41;, mentre il successivo cambia di segno &#40;<code>-2</code>&#41;.</p>
+<p>Ora che abbiamo una funzione che determina l&#39;indice \(i\) per cui \(\omega_i\) ha segno opposto a \(\omega_{i + 1}\), ci occorre trovare una formula interpolante che ci restituisca il tempo a cui la velocità si annulla. In altri termini, stiamo considerando due punti \(A\) e \(B\) associati agli istanti temporali \(t_A\) e \(t_B\), e in corrispondenza dei quali la velocità angolare passa da \(\omega_A\) a \(\omega_B\) con un cambio di segno, e vogliamo trovare l&#39;istante temporale a cui \(\omega = 0\) nell&#39;ipotesi che \(\omega(t)\) segua una legge lineare &#40;il che è un&#39;ottima approssimazione, se riguardate il grafico sopra&#41;. Non dobbiamo quindi fare altro che scrivere l&#39;equazione della retta che passa per \((t_A, \omega_A)\) e per \(t_B,
+\omega_B\) e calcolare la sua intersezione con la retta \(\omega = 0\).</p>
+<p>Si tratta di un semplice problema di geometria analitica, e la soluzione è la seguente:</p>
 \[
 t(\omega) = t_A + \frac{t_A - t_B}{\omega_A - \omega_B}\bigl(\omega - \omega_A\bigr).
 \]
-<p>Nel nostro caso bisogna quindi implementare il calcolo della formula nel caso in cui \(\omega = 0\), e <strong>raddoppiare il risultato</strong>: lo facciamo nella funzione <code>period</code>, che accetta come parametro la matrice a tre colonne prodotta da <code>euler</code> o <code>rungekutta</code>, e che sfrutta la funzione <code>invtime</code> che fornisce il valore del tempo all&#39;istante della inversione. Implementiamo una serie di sotto-funzioni, in modo che sia più facile verificare il comportamento di ciascuna.</p>
-<pre><code class=language-julia >interp&#40;ptA, ptB, x&#41; &#61; ptA&#91;1&#93; &#43; &#40;ptA&#91;1&#93; - ptB&#91;1&#93;&#41; / &#40;ptA&#91;2&#93; - ptB&#91;2&#93;&#41; * &#40;x - ptA&#91;2&#93;&#41;
+<p>È facile convincersi della correttezza del risultato, perché \(t(\omega_A) = t_A\), \(t(\omega_B) = t_B\), e l&#39;espressione è chiaramente una retta.</p>
+<p>Nel nostro caso bisogna quindi implementare il calcolo della formula nel caso in cui \(\omega = 0\), e <strong>raddoppiare il risultato</strong>: lo facciamo nella funzione <code>period</code>, che accetta come parametro la matrice a tre colonne prodotta da <code>euler</code> o <code>rungekutta</code>, e che sfrutta la funzione <code>invtime</code> che fornisce il valore del tempo all&#39;istante della inversione. Implementiamo una serie di sotto-funzioni, in modo che sia più facile verificare il comportamento di ciascuna. Qui introduciamo due implementazioni di <code>interp</code>: la seconda è più specifica e calcola l&#39;ascissa del punto di intersezione della retta con l&#39;asse delle ordinate.</p>
+<pre><code class=language-julia >interp&#40;ptA, ptB, y&#41; &#61; ptA&#91;1&#93; &#43; &#40;ptA&#91;1&#93; - ptB&#91;1&#93;&#41; / &#40;ptA&#91;2&#93; - ptB&#91;2&#93;&#41; * &#40;y - ptA&#91;2&#93;&#41;
 interp&#40;ptA, ptB&#41; &#61; interp&#40;ptA, ptB, 0&#41;</code></pre><pre><code class="plaintext code-output">interp (generic function with 2 methods)</code></pre>
-<p>Eseguiamo una volta <code>interp</code>: il valore restituito è utile per scrivere nel vostro codice un test con <code>assert</code>&#33;</p>
-<pre><code class=language-julia >interp&#40;&#40;-0.4, -0.7&#41;, &#40;0.5, 0.8&#41;, 0.3&#41;</code></pre><pre><code class="plaintext code-output">0.19999999999999996</code></pre>
-<p>La funzione <code>invtime</code> mette insieme <code>search_inversion</code> e <code>interp</code> per restituire l&#39;istante temporale in cui avviene l&#39;inversione del segno del vettore <code>vec</code>:</p>
+<p>Eseguiamo una volta <code>interp</code> per trovare il valore dell&#39;ordinata \(y\) in corrispondenza dell&#39;ascissa \(x = 0.3\) di una una retta passante per i punti \((-0.4, -0.7)\) e \((0.5, 0.8)\):</p>
+<pre><code class=language-julia >let p1x &#61; -0.4, p1y &#61; -0.7, p2x &#61; 0.5, p2y &#61; 0.8, y &#61; 0.3
+    # Il comando &#96;plot&#96; richiede di passare un array con le ascisse
+    # e uno con le coordinate…
+    plot&#40;&#91;p1x, p2x&#93;, &#91;p1y, p2y&#93;, label &#61; &quot;&quot;&#41;
+    # …mentre la nostra &#96;interp&#96; richiede due coppie &#40;x, y&#41;
+    let x &#61; interp&#40;&#91;p1x, p1y&#93;, &#91;p2x, p2y&#93;, y&#41;
+        @printf&#40;&quot;La retta interpolante passa per &#40;&#37;.1f, &#37;.1f&#41;\n&quot;, x, y&#41;
+        # Il comando &#96;scatter&#96; funziona come &#96;plot&#96;
+        scatter&#33;&#40;&#91;p1x, x, p2x&#93;, &#91;p1y, y, p2y&#93;, label &#61; &quot;&quot;&#41;
+    end
+end</code></pre><pre><code class="plaintext code-output">La retta interpolante passa per (0.2, 0.3)
+</code></pre>
+<img src="/tnds-notebooks/assets/lezione08/code/output/interp-test.svg" alt="">
+<p>Il grafico mostra che la nostra implementazione di <code>interp</code> funziona a dovere; voi potreste implementare un test nel vostro esercizio:</p>
+<pre><code class=language-cpp >void test_interp&#40;&#41; &#123;
+  const double p1x &#61; -0.4, p1y &#61; -0.7;
+  const double p2x &#61; 0.5, p2y &#61; 0.8;
+
+  assert&#40;is_close&#40;interp&#40;p1x, p1y, p2x, p2y, 0.3&#41;, 0.2&#41;&#41;;
+&#125;</code></pre>
+<p>Introduciamo ora un&#39;altra funzione, <code>invtime</code>, che mette insieme <code>search_inversion</code> e <code>interp</code> per restituire l&#39;istante temporale in cui avviene l&#39;inversione del segno del vettore <code>vec</code>:</p>
 <pre><code class=language-julia >function invtime&#40;time, vec&#41;
     idx &#61; search_inversion&#40;vec&#41;
     timeA, timeB &#61; time&#91;idx:idx &#43; 1&#93;
@@ -521,7 +550,8 @@ end</code></pre><pre><code class="plaintext code-output">invtime (generic functi
 <pre><code class=language-julia >ideal_period &#61; 2π / √&#40;g / rodlength&#41;</code></pre><pre><code class="plaintext code-output">2.006066680710647</code></pre>
 <p>Creiamo ora il grafico analogo a quello riportato nel testo dell&#39;esercizio.</p>
 <pre><code class=language-julia >angles &#61; 0.1:0.1:3.0
-ampl &#61; &#91;period&#40;rungekutta&#40;pendulum, &#91;angle, 0.&#93;, 0.0, 3.0, 0.01&#41;&#41; for angle in angles&#93;
+ampl &#61; &#91;period&#40;rungekutta&#40;pendulum, &#91;angle, 0.&#93;, 0.0, 3.0, 0.01&#41;&#41;
+        for angle in angles&#93;
 plot&#40;angles, ampl, label&#61;&quot;&quot;, xlabel&#61;&quot;Angolo &#91;rad&#93;&quot;, ylabel&#61;&quot;Periodo &#91;s&#93;&quot;&#41;
 scatter&#33;&#40;angles, ampl, label&#61;&quot;&quot;&#41;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/period-vs-angle.svg" alt="">
