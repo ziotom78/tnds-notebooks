@@ -23,12 +23,31 @@
 
 <item>
   <title>
+    <![CDATA[  Lezioni 10 e 11  ]]>
+  </title>
+  <link> https://ziotom78.github.io/tnds-tomasi-notebooks/lezione10/index.html </link>
+  <guid> https://ziotom78.github.io/tnds-tomasi-notebooks/lezione10/index.html </guid>
+  <description>
+    <![CDATA[  Lezione sui generatori di numeri pseudocasuali  ]]>
+  </description>  
+    
+  <pubDate>Tue, 14 Dec 2021 00:00:00 +0000</pubDate>  
+  
+  
+  <atom:author>
+    <atom:name>Maurizio Tomasi</atom:name>
+  </atom:author>
+        
+</item>
+
+<item>
+  <title>
     <![CDATA[  Lezione 8  ]]>
   </title>
   <link> https://ziotom78.github.io/tnds-tomasi-notebooks/lezione08/index.html </link>
   <guid> https://ziotom78.github.io/tnds-tomasi-notebooks/lezione08/index.html </guid>
   <description>
-    <![CDATA[  Lezione sui metodi di integrazione numerica delle equazioni diffirenziali  ]]>
+    <![CDATA[  Lezione sui metodi di integrazione numerica delle equazioni differenziali  ]]>
   </description>  
     
   <pubDate>Mon, 22 Nov 2021 00:00:00 +0000</pubDate>  
