@@ -2,7 +2,7 @@
 title = "Lezione 8"
 hascode = true
 date = Date(2021, 11, 22)
-rss = "Lezione sui metodi di integrazione numerica delle equazioni diffirenziali"
+rss = "Lezione sui metodi di integrazione numerica delle equazioni differenziali"
 +++
 @def tags = ["equazioni differenziali", "Eulero", "Runge-Kutta"]
 
