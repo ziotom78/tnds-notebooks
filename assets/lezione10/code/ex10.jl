@@ -10,6 +10,6 @@ Box-Müller algorithm.
 function randgauss(glc::GLC, μ, σ)
     s = rand(glc)
     t = rand(glc)
-    x = sqrt(-2log(s)) * cos(2π * t)
+    x = sqrt(-2log(1 - s)) * cos(2π * t)
     μ + σ * x
 end
