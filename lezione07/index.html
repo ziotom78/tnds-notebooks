@@ -1,38 +1,37 @@
-<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/tnds-notebooks/libs/katex/katex.min.css"> <link rel=stylesheet  href="/tnds-notebooks/libs/highlight/github.min.css"> <link rel=stylesheet  href="/tnds-notebooks/css/franklin.css"> <link rel=stylesheet  href="/tnds-notebooks/css/poole_hyde.css"> <style> html {font-size: 17px;} .franklin-content {position: relative; padding-left: 8%; padding-right: 5%; line-height: 1.35em;} @media (min-width: 940px) { .franklin-content {width: 100%; margin-left: auto; margin-right: auto;} } @media (max-width: 768px) { .franklin-content {padding-left: 6%; padding-right: 6%;} } </style> <link rel=icon  href="/tnds-notebooks/assets/favicon.png"> <title>Lezione 7</title> <div class=sidebar > <div class="container sidebar-sticky"> <div class=sidebar-about > <h1><a href="/tnds-notebooks/">TNDS</a></h1> <p class=lead >Prof. M.&nbsp;Tomasi</p> </div> <nav class=sidebar-nav > <a class="sidebar-nav-item " href="/tnds-notebooks/">Home</a> <a class="sidebar-nav-item active" href="/tnds-notebooks/lezione07/">Lezione 07</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione08/">Lezione 08</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione10/">Lezioni 10 e 11</a> </nav> <p>&copy; Maurizio Tomasi.</p> </div> </div> <div class="content container"> <div class=franklin-content > <p><div class=franklin-toc ><ol><li><a href="#installazione_di_julia">Installazione di Julia</a><li><a href="#introduzione">Introduzione</a><li><a href="#metodo_del_mid-point">Metodo del mid-point</a><li><a href="#errore_del_metodo_mid-point">Errore del metodo mid-point</a><li><a href="#metodo_di_simpson">Metodo di Simpson</a><li><a href="#metodo_dei_trapezoidi">Metodo dei trapezoidi</a><li><a href="#ricerca_della_precisione">Ricerca della precisione</a></ol></div> </p> <p>In questo documento mostro come implementare gli algoritmi di integrazione numerica visti durante la lezione 7. È una utile traccia per capire quali risultati dovete aspettarvi, perché fornisce i numeri da usare negli assert del vostro codice.</p> <p>Invece di fornire gli esempi di codice in C&#43;&#43;, ho scelto di usare il linguaggio <a href="https://julialang.org/">Julia</a>, per i seguenti motivi:</p> <ul> <li><p>Non fornendo codici C&#43;&#43;, vi obbligo ad implementare tutto da soli;</p> <li><p>Il linguaggio Julia è molto semplice da leggere, e non richiede</p> <li><p>competenze particolari per essere compreso;</p> <li><p>Essendo questo un notebook, include sia le spiegazioni che gli</p> <li><p>esempi di codice e gli output.</p> </ul> <p>Tenete conto in Julia non esiste incapsulamento, e l&#39;ereditarietà e il polimorfismo sono implementati in maniera diversa dal C&#43;&#43;, quindi il modo in cui sono implementati i codici è profondamente diverso. Essendo un linguaggio pensato per applicazioni scientifiche, la notazione di Julia è molto «matematica», e non dovrebbe essere difficile per voi capire cosa faccia il codice.</p> <h2 id=installazione_di_julia ><a href="#installazione_di_julia" class=header-anchor >Installazione di Julia</a></h2> <p>Questo documento è un documento creato con Julia e i pacchetti <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a> e <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a>.</p> <p>Julia è un linguaggio di programmazione moderno pensato soprattutto per la scrittura di codici numerici e scientifici. È più semplice del C&#43;&#43; ma, a differenza di altri linguaggi «facili» come Python, è estremamente potente. Non è consigliabile installare Julia sui computer del laboratorio, a causa dello scarso spazio disponibile nelle home. Le istruzioni in questo paragrafo possono esservi utili se desiderate installare Julia sul vostro computer.</p> <p>Scaricate l&#39;eseguibile per il vostro ambiente dal sito https://julialang.org/ &#40;al momento la versione più recente è la 1.6, ma la 1.7 è prevista a breve&#41;. Avviate poi Julia &#40;da Linux eseguite julia, mentre sotto Windows e Mac OS X dovrebbe essere presente un&#39;icona&#41;, ed installate alcuni pacchetti che saranno utili per questa lezione e la prossima.</p> <pre><code class=language-julia >import Pkg
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/tnds-notebooks/libs/katex/katex.min.css"> <link rel=stylesheet  href="/tnds-notebooks/libs/highlight/github.min.css"> <link rel=stylesheet  href="/tnds-notebooks/css/franklin.css"> <link rel=stylesheet  href="/tnds-notebooks/css/poole_hyde.css"> <style> html {font-size: 17px;} .franklin-content {position: relative; padding-left: 8%; padding-right: 5%; line-height: 1.35em;} @media (min-width: 940px) { .franklin-content {width: 100%; margin-left: auto; margin-right: auto;} } @media (max-width: 768px) { .franklin-content {padding-left: 6%; padding-right: 6%;} } </style> <link rel=icon  href="/tnds-notebooks/assets/favicon.png"> <title>Lezione 7</title> <div class=sidebar > <div class="container sidebar-sticky"> <div class=sidebar-about > <h1><a href="/tnds-notebooks/">TNDS</a></h1> <p class=lead >Prof. M.&nbsp;Tomasi</p> </div> <nav class=sidebar-nav > <a class="sidebar-nav-item " href="/tnds-notebooks/">Home</a> <a class="sidebar-nav-item active" href="/tnds-notebooks/lezione07/">Lezione 07</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione08/">Lezione 08</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione10/">Lezioni 10 e 11</a> </nav> <p>&copy; Maurizio Tomasi.</p> </div> </div> <div class="content container"> <div class=franklin-content > <p><div class=franklin-toc ><ol><li><a href="#installazione_di_julia">Installazione di Julia</a><li><a href="#introduzione">Introduzione</a><li><a href="#metodo_del_mid-point">Metodo del mid-point</a><li><a href="#errore_del_metodo_mid-point">Errore del metodo mid-point</a><li><a href="#metodo_di_simpson">Metodo di Simpson</a><li><a href="#metodo_dei_trapezoidi">Metodo dei trapezoidi</a><li><a href="#ricerca_della_precisione">Ricerca della precisione</a></ol></div> </p> <p>In questo documento mostro come implementare gli algoritmi di integrazione numerica visti durante la lezione 7. È una utile traccia per capire quali risultati dovete aspettarvi, perché fornisce i numeri da usare negli <code>assert</code> del vostro codice.</p> <p>Invece di fornire gli esempi di codice in C&#43;&#43;, ho scelto di usare il linguaggio <a href="https://julialang.org/">Julia</a>, per i seguenti motivi:</p> <ul> <li><p>Non fornendo codici C&#43;&#43;, vi obbligo ad implementare tutto da soli come nelle lezioni precedenti;</p> <li><p>Il linguaggio Julia è molto semplice da leggere, e non richiede competenze particolari per essere compreso;</p> <li><p>Essendo questo un notebook, include sia le spiegazioni che gli esempi di codice e gli output.</p> </ul> <p>Tenete conto in Julia non esiste incapsulamento, e l&#39;ereditarietà e il polimorfismo sono implementati in maniera diversa dal C&#43;&#43;, quindi il modo in cui sono implementati i codici è profondamente diverso. Essendo un linguaggio pensato per applicazioni scientifiche, la notazione di Julia è molto «matematica», e non dovrebbe essere difficile per voi capire cosa faccia il codice.</p> <h2 id=installazione_di_julia ><a href="#installazione_di_julia" class=header-anchor >Installazione di Julia</a></h2> <p>Questo documento è un documento creato con Julia e i pacchetti <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a> e <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a>.</p> <p>Julia è un linguaggio di programmazione moderno pensato soprattutto per la scrittura di codici numerici e scientifici. È più semplice del C&#43;&#43; ma, a differenza di altri linguaggi «facili» come Python, è estremamente potente. Non è consigliabile installare Julia sui computer del laboratorio, a causa dello scarso spazio disponibile nelle home. Le istruzioni in questo paragrafo possono esservi utili se desiderate installare Julia sul vostro computer.</p> <p>Scaricate l&#39;eseguibile per il vostro ambiente dal sito https://julialang.org/ &#40;al momento la versione più recente è la 1.8&#41;. Avviate poi Julia &#40;da Linux eseguite <code>julia</code>, mentre sotto Windows e Mac OS X dovrebbe essere presente un&#39;icona&#41;, ed installate alcuni pacchetti che saranno utili per questa lezione e la prossima.</p> <pre><code class=language-julia >import Pkg
 Pkg.add&#40;&quot;Plots&quot;&#41;
-Pkg.add&#40;&quot;IJulia&quot;&#41;</code></pre> <p>Una volta eseguiti i comandi, potete aprire notebook esistenti e crearne di nuovi con questo codice:</p> <pre><code class=language-julia >using IJulia
-jupyterlab&#40;dir&#61;&quot;.&quot;&#41;</code></pre> <p>Appena eseguita l&#39;istruzione, dovrebbe aprirsi il vostro browser Internet &#40;Firefox, Safari, …&#41; e mostrare la pagina di Jupyter-Lab, l&#39;interfaccia che consente di gestire i notebook.</p> <h2 id=introduzione ><a href="#introduzione" class=header-anchor >Introduzione</a></h2> <p>Iniziamo col caricare due librerie che ci serviranno. In Julia si caricano librerie col comando <code>import</code> &#40;l&#39;analogo di <code>#include</code> in C&#43;&#43;&#41;:</p> <pre><code class=language-julia >import Statistics
+Pkg.add&#40;&quot;IJulia&quot;&#41;</code></pre> <p>Una volta eseguiti i comandi, potete continuare a lavorare da linea di comando nel prompt di <code>julia</code>, oppure aprire notebook esistenti e crearne di nuovi con questi due comandi:</p> <pre><code class=language-julia >using IJulia
+jupyterlab&#40;dir&#61;&quot;.&quot;&#41;</code></pre> <p>Appena eseguite queste istruzioni, dovrebbe aprirsi il vostro browser Internet &#40;Firefox, Safari, …&#41; e mostrare la pagina di Jupyter-Lab, l&#39;interfaccia che consente di gestire i notebook.</p> <h2 id=introduzione ><a href="#introduzione" class=header-anchor >Introduzione</a></h2> <p>Iniziamo col caricare due librerie che ci serviranno. In Julia si caricano librerie col comando <code>import</code> &#40;l&#39;analogo di <code>#include</code> in C&#43;&#43;&#41;:</p> <pre><code class=language-julia >import Statistics
 
 # In C&#43;&#43; si sarebbe scritto: Statistics::mean
 # &#40;&quot;Statistics&quot; è un namespace&#41;
 Statistics.mean&#40;&#91;1, 2, 3&#93;&#41;</code></pre><pre><code class="plaintext code-output">2.0</code></pre>
+<p>Notate che in Julia i namespace sono molto più ordinati che in C&#43;&#43;: se si scrive <code>import Statistics</code>, questo non è messo nel namespace <code>std</code> &#40;come sarebbe stato in C&#43;&#43;&#41;, ma nel namespace <code>Statistics</code>. &#40;Bjarne Stroustrup, il creatore del C&#43;&#43;, ha dichiarato in una conferenza che se potesse tornare indietro rivedrebbe il modo in cui il namespace <code>std</code> è stato usato fino ad oggi&#33;&#41;</p>
 <p>Esiste il comando <code>using</code>, che equivale alla combinazione in C&#43;&#43; di <code>#include</code> e <code>using namespace</code>:</p>
 <pre><code class=language-julia >using Statistics
 
 # Non è più necessario scrivere &#96;Statistics.mean&#96;
 mean&#40;&#91;1, 2, 3&#93;&#41;</code></pre><pre><code class="plaintext code-output">2.0</code></pre>
-<p>Le librerie che ci interessano sono Plots &#40;per produrre grafici, come ROOT in C&#43;&#43;&#41; e Printf &#40;per scrivere valori formattati sullo schermo, come in C&#43;&#43; <code>setprecision</code>, <code>setw</code>, etc.&#41;</p>
-<pre><code class=language-julia >using Plots
-using Printf</code></pre>
+<p>Per ora l&#39;unica libreria che ci interessi è <code>Plots</code>, per produrre grafici, come ROOT o gplot&#43;&#43; in C&#43;&#43;</p>
+<pre><code class=language-julia >using Plots</code></pre>
 <p>Nella lezione di oggi dovremo calcolare numericamente degli integrali. Useremo come esempio la funzione \(f(x) = \sin(x)\), sapendo che</p>
 \[\int_0^\pi\sin x\,\mathrm{d}x = 2.\]
 <p>Useremo molto anche la capacità di Julia di creare liste al volo mediante la sintassi</p>
-<pre><code class=language-julia >result &#61; &#91;f&#40;x&#41; for x in lista&#93;</code></pre>
+<pre><code class=language-julia >result &#61; &#91;f&#40;x&#41; for x in array&#93;</code></pre>
 <p>che equivale al codice seguente:</p>
-<pre><code class=language-julia >result &#61; &#91;&#93;
-for elem in lista
-    append&#33;&#40;result, f&#40;elem&#41;&#41;
-end</code></pre>
+<pre><code class=language-julia >result &#61; &#91;f&#40;input&#91;1&#93;&#41;, f&#40;input&#91;2&#93;&#41;, f&#40;input&#91;3&#93;&#41;, …&#93;</code></pre>
 <p>Vediamo un esempio: creiamo un array prova che contenga il quadrato dei valori <code>&#91;1, 2, 3&#93;</code>. In C&#43;&#43; avremmo dovuto scrivere</p>
 <pre><code class=language-cpp >std::vector&lt;int&gt; list&#123;1, 2, 3&#125;;
-std::vector&lt;int&gt; prova&#40;3&#41;;       // Parentesi tonde qui&#33;
+std::vector&lt;int&gt; out&#40;3&#41;;       // Round parentheses here&#33;
 for &#40;size_t i&#123;&#125;; i &lt; list.size&#40;&#41;; &#43;&#43;i&#41; &#123;
-    prova&#91;i&#93; &#61; list&#91;i&#93; * list&#91;i&#93;;
+    out&#91;i&#93; &#61; list&#91;i&#93; * list&#91;i&#93;;
 &#125;
 
-// Ora &#96;prova&#96; contiene i valori &#123;1, 4, 9&#125;</code></pre>
+// Now &#96;out&#96; contains the values &#123;1, 4, 9&#125;</code></pre>
 <p>In Julia è tutto molto più semplice:</p>
-<pre><code class=language-julia >&#91;x * x for x in &#91;1, 2, 3&#93;&#93;</code></pre>
+<pre><code class=language-julia >list &#61; &#91;1, 2, 3&#93;
+# This gets expanded in &#91;1*1, 2*2, 3*3&#93;, that is &#91;1, 4, 9&#93;
+out &#61; &#91;x * x for x in list&#93;</code></pre>
 <h2 id=metodo_del_mid-point ><a href="#metodo_del_mid-point" class=header-anchor >Metodo del mid-point</a></h2>
 <p>Il metodo del mid-point consiste nell&#39;approssimare l&#39;integrale con il valore del punto della funzione \(f\) nel punto medio dell&#39;intervallo:</p>
 \[
@@ -40,18 +39,21 @@ for &#40;size_t i&#123;&#125;; i &lt; list.size&#40;&#41;; &#43;&#43;i&#41; &#12
 \sum_{k = 0}^{n - 1} h \cdot f\left(a + \left(k + \frac12\right) h\right).
 \]
 <p>In Julia non esistono classi, quindi non è possibile definire una classe <code>Integral</code>: si usa una tecnica più adatta per i calcoli che si usano in fisica, basata sul <em>multiple dispatch</em>.</p>
-<p>Non preoccupiamoci quindi di definire classi, ma implementiamo il metodo del mid-point tramite una semplice funzione <code>midpoint</code>. Non specifichiamo il tipo di <code>f</code>, né di <code>a</code> o di <code>b</code>, ma specifichiamo quello di <code>n</code>: il motivo sarà chiaro quando risolveremo l&#39;esercizio 7.2. Il tipo <code>Integer</code> è l&#39;analogo di una classe astratta in C&#43;&#43;, ed è il padre di tutti quei tipi che rappresentano numeri interi &#40;<code>Int</code>, <code>Int8</code>, <code>UInt32</code>, etc.&#41;. Stiamo in pratica dicendo a Julia che <code>midpoint</code> può accettare qualsiasi tipo di valore per <code>f</code>, <code>a</code> e <code>b</code>, ma <code>n</code> deve essere un numero intero.</p>
+<p>In Julia possiamo quindi immediatamente implementare il metodo del mid-point tramite una semplice funzione <code>midpoint</code>. Non specifichiamo il tipo di <code>f</code>, né di <code>a</code> o di <code>b</code> &#40;in Julia si può, e anzi di solito si fa così&#33;&#41;, ma specifichiamo quello di <code>n</code>: il motivo sarà chiaro quando risolveremo l&#39;esercizio 7.2. Il tipo <code>Integer</code> è l&#39;analogo di una classe astratta in C&#43;&#43;, ed è il padre di tutti quei tipi che rappresentano numeri interi &#40;<code>Int</code>, <code>Int8</code>, <code>UInt32</code>, etc.&#41;. Stiamo in pratica dicendo a Julia che <code>midpoint</code> può accettare qualsiasi tipo di valore per <code>f</code>, <code>a</code> e <code>b</code>, ma <code>n</code> deve essere per forza un numero intero.</p>
 <pre><code class=language-julia >function midpoint&#40;f, a, b, n::Integer&#41;
     h &#61; &#40;b - a&#41; / n
     h * sum&#40;&#91;f&#40;a &#43; &#40;k &#43; 0.5&#41; * h&#41; for k in 0:&#40;n - 1&#41;&#93;&#41;
 end</code></pre><pre><code class="plaintext code-output">midpoint (generic function with 1 method)</code></pre>
+<p>La scrittura <code>&#91;f&#40;a &#43; &#40;k &#43; 0.5&#41; * h&#41; for k in 0:&#40;n - 1&#41;&#93;</code> è l&#39;analogo della notazione matematica</p>
+\[\left\{f\bigl(a + (k + 0.5) h\bigr), k \in 0\ldots n - 1 \right\}\]
+<p>e il risultato dell&#39;espressione è un array di valori che viene passato alla funzione <code>sum</code>, la quale ovviamente ne calcola la somma. In Julia non c&#39;è quindi bisogno di implementare un ciclo <code>for</code> &#40;cosa che invece dovrete fare nel vostro programma C&#43;&#43;&#41;.</p>
 <p>Verifichiamone il funzionamento &#40;in Julia \(\pi\) è memorizzato nella costante <code>pi</code>&#41;:</p>
 <pre><code class=language-julia >midpoint&#40;sin, 0, pi, 10&#41;</code></pre><pre><code class="plaintext code-output">2.0082484079079745</code></pre>
 <p>Casi come questo sono utili per implementare un <code>assert</code>. Vediamo cosa succede cambiando il numero di passi:</p>
 <pre><code class=language-julia >midpoint&#40;sin, 0, pi, 100&#41;</code></pre><pre><code class="plaintext code-output">2.000082249070986</code></pre>
 <p>Verifichiamo anche che il segno cambi se invertiamo gli estremi:</p>
 <pre><code class=language-julia >midpoint&#40;sin, pi, 0, 10&#41;</code></pre><pre><code class="plaintext code-output">-2.0082484079079745</code></pre>
-<p>Notate la semplicità con cui è stata chiamata la funzione: a differenza della programmazione OOP in C&#43;&#43;, qui non abbiamo dovuto creare una classe <code>Seno</code> con un metodo <code>Eval</code> che chiamasse <code>sin</code>. È stato sufficiente invocare <code>midpoint</code> passandole sin come primo argomento.</p>
+<p>Notate la semplicità con cui è stata chiamata la funzione: a differenza della programmazione OOP in C&#43;&#43;, qui non abbiamo dovuto derivare una classe <code>Seno</code> dalla classe <code>FunzioneBase</code> e ridefinire un metodo <code>Eval</code> che chiamasse <code>sin</code>. È stato sufficiente invocare <code>midpoint</code> passandole sin come primo argomento.</p>
 <p>Il caso \(\int_0^\pi \sin(x)\,\mathrm{d}x\) è troppo particolare per poter essere un buon caso per i test, perché &#40;1&#41; l&#39;estremo inferiore è zero, e &#40;2&#41; la funzione si annulla negli estremi di integrazione. Alcune formule di integrazione che vedremo oggi richiedono un trattamento speciale agli estremi di integrazione, e un caso come questo potrebbe far passare inosservati dei bug importanti &#40;<strong>è successo in passato&#33;</strong>&#41;. Calcoliamo il valore dell&#39;integrale con questo algoritmo in due casi più rappresentativi:</p>
 \[
 \int_0^1\sin(x)\,\mathrm{d}x, \qquad
@@ -61,7 +63,7 @@ end</code></pre><pre><code class="plaintext code-output">midpoint (generic funct
 println&#40;&quot;Secondo integrale: &quot;, midpoint&#40;sin, 1, 2, 30&#41;&#41;</code></pre><pre><code class="plaintext code-output">Primo integrale:   0.45988929071851814
 Secondo integrale: 0.9564934239032155
 </code></pre>
-<p>In C&#43;&#43; possiamo quindi usare i seguenti assert:</p>
+<p>In C&#43;&#43; possiamo quindi usare i seguenti <code>assert</code>:</p>
 <pre><code class=language-cpp >int test_midpoint&#40;&#41; &#123;
     Seno mysin&#123;&#125;;
     Midpoint mp&#123;&#125;;
@@ -95,13 +97,13 @@ y' &= \alpha x' + \log C,
      xscale &#61; :log10, yscale &#61; :log10,
      xlabel &#61; &quot;Numero di passi&quot;, ylabel &#61; &quot;Errore&quot;&#41;</code></pre>
 <img src="/tnds-notebooks/assets/lezione07/code/output/midpoint-error-log.svg" alt="">
-<p>Nel vostro codice vorrete probabilmente usare ROOT per creare un grafico come questo. Siccome la realizzazione di grafici in ROOT può essere complessa, il mio consiglio è quello di stampare dapprima i numeri in un file &#40;oppure a video, reindirizzando l&#39;output da linea di comando con il carattere <code>&gt;</code>&#41;, e solo una volta che sembrano ragionevoli procedere a creare il plot.</p>
-<p>Se invece di ROOT volete usare <a href="https://github.com/ziotom78/gplotpp">gplot&#43;&#43;</a>, scaricate il file <a href="https://raw.githubusercontent.com/ziotom78/gplotpp/master/gplot&#37;2B&#37;2B.h">gplot&#43;&#43;.h</a> &#40;facendo click col tasto destro sul link&#41; e usate un codice del genere:</p>
+<p>Nel vostro codice vorrete probabilmente creare un grafico come questo. Siccome la realizzazione di grafici può essere complessa, il mio consiglio è quello di stampare dapprima i numeri in un file &#40;oppure a video, reindirizzando l&#39;output da linea di comando con il carattere <code>&gt;</code>&#41;, e solo una volta che sembrano ragionevoli procedere a creare il plot. Ovviamente potete usare la libreria <a href="https://ziotom78.github.io/tnds-tomasi-notebooks/#fmtinstall"><code>fmt</code></a>&#33;</p>
+<p>Per creare i grafici, potete ovviamente usare ROOT, oppure <a href="https://github.com/ziotom78/gplotpp">gplot&#43;&#43;</a>. In quest&#39;ultimo caso, scaricate il file <a href="https://raw.githubusercontent.com/ziotom78/gplotpp/master/gplot&#37;2B&#37;2B.h">gplot&#43;&#43;.h</a> &#40;facendo click col tasto destro sul link&#41; e scrivete un codice del genere:</p>
 <pre><code class=language-cpp >std::vector&lt;double&gt; steps&#123;10, 50, 100, 500, 1000&#125;;
 std::vector&lt;double&gt; errors&#40;steps.size&#40;&#41;&#41;;
 
 for &#40;size_t i&#123;&#125;; i &lt; errors.size&#40;&#41;; &#43;&#43;i&#41; &#123;
-    errors&#91;i&#93; &#61; ...; // Riempire il valore corrispondente
+    errors&#91;i&#93; &#61; ...; // Fill with the correct value
 &#125;
 
 Gnuplot plt&#123;&#125;;
@@ -114,9 +116,9 @@ plt.set_xlabel&#40;&quot;Numero di passi&quot;&#41;;
 plt.set_ylabel&#40;&quot;Errore&quot;&#41;;
 plt.show&#40;&#41;;
 
-// È sempre bene avvisare l&#39;utente che è stato creato un file e fornirgli il
-// nome.
-std::cout &lt;&lt; &quot;Plot salvato nel file &quot; &lt;&lt; output_file_name &lt;&lt; std::endl;</code></pre>
+// It&#39;s always advisable to warn the user that a file has been
+// created. Include the name of the file too&#33;
+fmt::print&#40;&quot;Plot saved in &#39;&#123;&#125;&#39;\n&quot;, output_file_name&#41;;</code></pre>
 <p>Implementiamo ora una funzione che consenta di calcolare rapidamente l&#39;errore di una funzione di integrazione numerica per un dato numero di passi di integrazione: ci servirà per studiare non solo il metodo del mid-point, ma anche i metodi di Simpson e dei trapezi.</p>
 <p>Inizializziamo per prima cosa le costanti che caratterizzano il caso che useremo come esempio, \(\int_0^\pi\sin x\,\mathrm{d}x = 2\): la funzione da integrare &#40;<code>REF_FN</code>&#41;, gli estremi &#40;<code>REF_A</code> e <code>REF_B</code>&#41;, e il valore esatto dell&#39;integrale &#40;<code>REF_INT</code>&#41;.</p>
 <pre><code class=language-julia >const REF_FN &#61; sin;  # La funzione da integrare
@@ -133,7 +135,7 @@ const REF_INT &#61; 2.;  # Valore dell&#39;integrale noto analiticamente</code><
  8.224907098597356e-5
  3.2898719215523897e-6
  8.224672694012725e-7</code></pre>
-<p>Come ricavare la legge di potenza dovrebbe essere ovvio dal discorso fatto sopra circa i grafici bilogaritmici…</p>
+<p>Come ricavare la legge di potenza dovrebbe essere ovvio dal discorso fatto sopra circa i grafici bilogaritmici… Se nel grafico logaritmico la curva si riduce a una retta, basta calcolare la pendenza della retta passante per i due punti estremi, che in Julia hanno indice <code>1</code> &#40;gli array in Julia non iniziano da 0&#41; e <code>end</code> &#40;che in Julia indica l&#39;ultima posizione in un array&#41;:</p>
 <pre><code class=language-julia >function error_slope&#40;steps, errors&#41;
     deltax &#61; log&#40;steps&#91;end&#93;&#41; - log&#40;steps&#91;1&#93;&#41;
     deltay &#61; log&#40;errors&#91;end&#93;&#41; - log&#40;errors&#91;1&#93;&#41;
@@ -234,14 +236,15 @@ plot&#33;&#40;steps, compute_errors&#40;simpson, steps&#41;,
 <p>Sfruttiamo la capacità di Julia di esprimere sequenze con la sintassi <code>start:delta:end</code>:</p>
 <pre><code class=language-julia ># La funzione &#96;collect&#96; obbliga Julia a stampare l&#39;elenco completo
 # degli elementi di una lista anziché usare la forma compatta &#40;poco
-# interessante in questo caso&#41;
+# interessante in questo caso, perché vogliamo almeno per una volta
+# vedere uno per uno gli elementi dell&#39;intervallo 1:2:10&#41;
 collect&#40;1:2:10&#41;</code></pre><pre><code class="plaintext code-output">5-element Vector{Int64}:
  1
  3
  5
  7
  9</code></pre>
-<p>Ora appare chiaro perché nell&#39;implementare <code>midpoint</code>, <code>simpsons</code> e <code>trapezoids</code> sopra avevamo dichiarato esplicitamente come <code>Integer</code> il tipo dell&#39;ultimo parametro, <code>n</code>: adesso vogliamo invece invocare <code>trapezoids</code> usando la precisione, che indichiamo col tipo <code>AbstractFloat</code>, analogo a una classe astratta C&#43;&#43; da cui derivano i tipi floating-point, come <code>Float16</code>, <code>Float32</code>, e <code>Float64</code>.</p>
+<p>Ora appare chiaro perché nell&#39;implementare <code>midpoint</code>, <code>simpsons</code> e <code>trapezoids</code> sopra avevamo dichiarato esplicitamente come <code>Integer</code> il tipo dell&#39;ultimo parametro, <code>n</code>: adesso vogliamo invece invocare <code>trapezoids</code> passando la precisione, che indichiamo col tipo <code>AbstractFloat</code>. Questo tipo è analogo a una classe astratta C&#43;&#43; da cui derivano i tipi floating-point, come <code>Float16</code>, <code>Float32</code>, e <code>Float64</code>.</p>
 <pre><code class=language-julia >function trapezoids&#40;f, a, b, prec::AbstractFloat&#41;
     n &#61; 2
 
@@ -254,22 +257,22 @@ collect&#40;1:2:10&#41;</code></pre><pre><code class="plaintext code-output">5-e
         n *&#61; 2
         h /&#61; 2
 
-        for k in 1:2:&#40;n - 1&#41; # Itera solo sui numeri dispari
+        for k in 1:2:&#40;n - 1&#41; # Just iterate on odd numbers
             acc &#43;&#61; f&#40;a &#43; k * h&#41;
         end
 
         newint &#61; acc * h
-        # 4//3 è la frazione 4/3 in Julia. In C&#43;&#43; *non* scrivete
-        # 4/3, perché sarebbe una divisione intera: scrivete 4.0/3
-        if 4//3 * abs&#40;newint - oldint&#41; &lt; prec
+        # In Julia, the / operator always returns a floating-point
+        # number. This is not true in C&#43;&#43;, so remember to write 4.0/3
+        if 4/3 * abs&#40;newint - oldint&#41; &lt; prec
             break
         end
     end
 
     newint
 end</code></pre><pre><code class="plaintext code-output">trapezoids (generic function with 2 methods)</code></pre>
-<p>Notate che dopo aver compilato la definizione precedente, Julia ha scritto trapezoids &#40;generic function with 2 methods&#41;. Ha quindi capito che abbiamo fornito una nuova implementazione di trapezoids, e non ha quindi sovrascritto la vecchia &#40;che accettava come ultimo argomento un intero, ossia il numero di passaggi&#41;.</p>
-<p>Per verificare il funzionamento della nuova funzione trapezoids, possiamo verificare che l&#39;integrale calcolato sulla nostra funzione di riferimento \(f(x) = \sin x\) abbia un errore sempre inferiore alla precisione richiesta.</p>
+<p>Notate che dopo aver compilato la definizione precedente, Julia ha scritto <code>trapezoids &#40;generic function with 2 methods&#41;</code>. Ha quindi capito che abbiamo fornito una nuova implementazione di <code>trapezoids</code>, e non ha quindi sovrascritto la vecchia &#40;che accettava come ultimo argomento un intero, ossia il numero di passaggi&#41;.</p>
+<p>Per verificare il funzionamento della nuova funzione <code>trapezoids</code>, possiamo verificare che l&#39;integrale calcolato sulla nostra funzione di riferimento \(f(x) = \sin x\) abbia un errore sempre inferiore alla precisione richiesta.</p>
 <pre><code class=language-julia >prec &#61; &#91;1e-1, 1e-2, 1e-3, 1e-4, 1e-5&#93;
 errors &#61; &#91;abs&#40;trapezoids&#40;REF_FN, REF_A, REF_B, eps&#41; - REF_INT&#41;
           for eps in prec&#93;
@@ -280,11 +283,11 @@ plot&#40;prec, errors,
      xlabel &#61; &quot;Precisione impostata&quot;,
      ylabel &#61; &quot;Precisione ottenuta&quot;&#41;
 plot&#33;&#40;prec, prec, label &#61; &quot;Caso teorico peggiore&quot;&#41;</code></pre>
-<p><img src="/tnds-notebooks/assets/lezione07/code/output/trapezoids-vs-theory.svg" alt="">ù</p>
+<img src="/tnds-notebooks/assets/lezione07/code/output/trapezoids-vs-theory.svg" alt="">
 
 <div class=page-foot >
   <div class=copyright >
-    &copy; Maurizio Tomasi. Last modified: December 14, 2021. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+    &copy; Maurizio Tomasi. Last modified: November 21, 2022. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
   </div>
 </div>
 </div>

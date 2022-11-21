@@ -11,14 +11,14 @@ function trapezoids(f, a, b, prec::AbstractFloat)
         n *= 2
         h /= 2
 
-        for k in 1:2:(n - 1) # Itera solo sui numeri dispari
+        for k in 1:2:(n - 1) # Just iterate on odd numbers
             acc += f(a + k * h)
         end
 
         newint = acc * h
-        # 4//3 è la frazione 4/3 in Julia. In C++ *non* scrivete
-        # 4/3, perché sarebbe una divisione intera: scrivete 4.0/3
-        if 4//3 * abs(newint - oldint) < prec
+        # In Julia, the / operator always returns a floating-point
+        # number. This is not true in C++, so remember to write 4.0/3
+        if 4/3 * abs(newint - oldint) < prec
             break
         end
     end

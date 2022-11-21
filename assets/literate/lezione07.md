@@ -2,18 +2,19 @@
 In questo documento mostro come implementare gli algoritmi di
 integrazione numerica visti durante la lezione 7. È una utile
 traccia per capire quali risultati dovete aspettarvi, perché
-fornisce i numeri da usare negli assert del vostro codice.
+fornisce i numeri da usare negli `assert` del vostro codice.
 
 Invece di fornire gli esempi di codice in C++, ho scelto di usare il
 linguaggio [Julia](https://julialang.org/), per i seguenti motivi:
 
-- Non fornendo codici C++, vi obbligo ad implementare tutto da soli;
+- Non fornendo codici C++, vi obbligo ad implementare tutto da soli
+  come nelle lezioni precedenti;
 
 - Il linguaggio Julia è molto semplice da leggere, e non richiede
-- competenze particolari per essere compreso;
+  competenze particolari per essere compreso;
 
 - Essendo questo un notebook, include sia le spiegazioni che gli
-- esempi di codice e gli output.
+  esempi di codice e gli output.
 
 Tenete conto in Julia non esiste incapsulamento, e l'ereditarietà e
 il polimorfismo sono implementati in maniera diversa dal C++, quindi
@@ -37,11 +38,10 @@ nelle home. Le istruzioni in questo paragrafo possono esservi utili
 se desiderate installare Julia sul vostro computer.
 
 Scaricate l'eseguibile per il vostro ambiente dal sito
-https://julialang.org/ (al momento la versione più recente è la 1.6,
-ma la 1.7 è prevista a breve). Avviate poi Julia (da Linux eseguite
-julia, mentre sotto Windows e Mac OS X dovrebbe essere presente
-un'icona), ed installate alcuni pacchetti che saranno utili per
-questa lezione e la prossima.
+https://julialang.org/ (al momento la versione più recente è la
+1.8). Avviate poi Julia (da Linux eseguite `julia`, mentre sotto
+Windows e Mac OS X dovrebbe essere presente un'icona), ed installate
+alcuni pacchetti che saranno utili per questa lezione e la prossima.
 
 ```julia
 import Pkg
@@ -49,17 +49,18 @@ Pkg.add("Plots")
 Pkg.add("IJulia")
 ```
 
-Una volta eseguiti i comandi, potete aprire notebook esistenti e
-crearne di nuovi con questo codice:
+Una volta eseguiti i comandi, potete continuare a lavorare da linea
+di comando nel prompt di `julia`, oppure aprire notebook esistenti e
+crearne di nuovi con questi due comandi:
 
 ```julia
 using IJulia
 jupyterlab(dir=".")
 ```
 
-Appena eseguita l'istruzione, dovrebbe aprirsi il vostro browser
-Internet (Firefox, Safari, …) e mostrare la pagina di Jupyter-Lab,
-l'interfaccia che consente di gestire i notebook.
+Appena eseguite queste istruzioni, dovrebbe aprirsi il vostro
+browser Internet (Firefox, Safari, …) e mostrare la pagina di
+Jupyter-Lab, l'interfaccia che consente di gestire i notebook.
 
 ## Introduzione
 
@@ -75,7 +76,15 @@ import Statistics
 Statistics.mean([1, 2, 3])
 ```
 
-Esiste il comando `using`, che equivale alla combinazione in C++ di `#include` e `using namespace`:
+Notate che in Julia i namespace sono molto più ordinati che in C++:
+se si scrive `import Statistics`, questo non è messo nel namespace
+`std` (come sarebbe stato in C++), ma nel namespace `Statistics`.
+(Bjarne Stroustrup, il creatore del C++, ha dichiarato in una
+conferenza che se potesse tornare indietro rivedrebbe il modo in cui
+il namespace `std` è stato usato fino ad oggi!)
+
+Esiste il comando `using`, che equivale alla combinazione in C++ di
+`#include` e `using namespace`:
 
 ```julia:ex2
 using Statistics
@@ -84,13 +93,11 @@ using Statistics
 mean([1, 2, 3])
 ```
 
-Le librerie che ci interessano sono Plots (per produrre grafici,
-come ROOT in C++) e Printf (per scrivere valori formattati sullo
-schermo, come in C++ `setprecision`, `setw`, etc.)
+Per ora l'unica libreria che ci interessi è `Plots`, per produrre
+grafici, come ROOT o gplot++ in C++
 
 ```julia:ex3
 using Plots
-using Printf
 ```
 
 Nella lezione di oggi dovremo calcolare numericamente degli
@@ -103,16 +110,13 @@ Useremo molto anche la capacità di Julia di creare liste al volo
 mediante la sintassi
 
 ```julia
-result = [f(x) for x in lista]
+result = [f(x) for x in array]
 ```
 
 che equivale al codice seguente:
 
 ```julia
-result = []
-for elem in lista
-    append!(result, f(elem))
-end
+result = [f(input[1]), f(input[2]), f(input[3]), …]
 ```
 
 Vediamo un esempio: creiamo un array prova che contenga il quadrato
@@ -120,18 +124,20 @@ dei valori `[1, 2, 3]`. In C++ avremmo dovuto scrivere
 
 ```cpp
 std::vector<int> list{1, 2, 3};
-std::vector<int> prova(3);       // Parentesi tonde qui!
+std::vector<int> out(3);       // Round parentheses here!
 for (size_t i{}; i < list.size(); ++i) {
-    prova[i] = list[i] * list[i];
+    out[i] = list[i] * list[i];
 }
 
-// Ora `prova` contiene i valori {1, 4, 9}
+// Now `out` contains the values {1, 4, 9}
 ```
 
 In Julia è tutto molto più semplice:
 
 ```julia
-[x * x for x in [1, 2, 3]]
+list = [1, 2, 3]
+# This gets expanded in [1*1, 2*2, 3*3], that is [1, 4, 9]
+out = [x * x for x in list]
 ```
 
 ## Metodo del mid-point
@@ -149,15 +155,16 @@ In Julia non esistono classi, quindi non è possibile definire una
 classe `Integral`: si usa una tecnica più adatta per i calcoli che
 si usano in fisica, basata sul *multiple dispatch*.
 
-Non preoccupiamoci quindi di definire classi, ma implementiamo il
-metodo del mid-point tramite una semplice funzione `midpoint`. Non
-specifichiamo il tipo di `f`, né di `a` o di `b`, ma specifichiamo
-quello di `n`: il motivo sarà chiaro quando risolveremo l'esercizio
-7.2. Il tipo `Integer` è l'analogo di una classe astratta in C++, ed
-è il padre di tutti quei tipi che rappresentano numeri interi
-(`Int`, `Int8`, `UInt32`, etc.). Stiamo in pratica dicendo a Julia
-che `midpoint` può accettare qualsiasi tipo di valore per `f`, `a` e
-`b`, ma `n` deve essere un numero intero.
+In Julia possiamo quindi immediatamente implementare il metodo del
+mid-point tramite una semplice funzione `midpoint`. Non
+specifichiamo il tipo di `f`, né di `a` o di `b` (in Julia si può, e
+anzi di solito si fa così!), ma specifichiamo quello di `n`: il
+motivo sarà chiaro quando risolveremo l'esercizio 7.2. Il tipo
+`Integer` è l'analogo di una classe astratta in C++, ed è il padre
+di tutti quei tipi che rappresentano numeri interi (`Int`, `Int8`,
+`UInt32`, etc.). Stiamo in pratica dicendo a Julia che `midpoint`
+può accettare qualsiasi tipo di valore per `f`, `a` e `b`, ma `n`
+deve essere per forza un numero intero.
 
 ```julia:ex4
 function midpoint(f, a, b, n::Integer)
@@ -165,6 +172,16 @@ function midpoint(f, a, b, n::Integer)
     h * sum([f(a + (k + 0.5) * h) for k in 0:(n - 1)])
 end
 ```
+
+La scrittura `[f(a + (k + 0.5) * h) for k in 0:(n - 1)]` è l'analogo
+della notazione matematica
+
+$$\left\{f\bigl(a + (k + 0.5) h\bigr), k \in 0\ldots n - 1 \right\}$$
+
+e il risultato dell'espressione è un array di valori che viene
+passato alla funzione `sum`, la quale ovviamente ne calcola la
+somma. In Julia non c'è quindi bisogno di implementare un ciclo
+`for` (cosa che invece dovrete fare nel vostro programma C++).
 
 Verifichiamone il funzionamento (in Julia $\pi$ è memorizzato nella
 costante `pi`):
@@ -188,9 +205,9 @@ midpoint(sin, pi, 0, 10)
 
 Notate la semplicità con cui è stata chiamata la funzione: a
 differenza della programmazione OOP in C++, qui non abbiamo dovuto
-creare una classe `Seno` con un metodo `Eval` che chiamasse `sin`. È
-stato sufficiente invocare `midpoint` passandole sin come primo
-argomento.
+derivare una classe `Seno` dalla classe `FunzioneBase` e ridefinire
+un metodo `Eval` che chiamasse `sin`. È stato sufficiente invocare
+`midpoint` passandole sin come primo argomento.
 
 Il caso $\int_0^\pi \sin(x)\,\mathrm{d}x$ è troppo particolare per
 poter essere un buon caso per i test, perché (1) l'estremo inferiore
@@ -211,7 +228,7 @@ println("Primo integrale:   ", midpoint(sin, 0, 1, 10))
 println("Secondo integrale: ", midpoint(sin, 1, 2, 30))
 ```
 
-In C++ possiamo quindi usare i seguenti assert:
+In C++ possiamo quindi usare i seguenti `assert`:
 
 ```cpp
 int test_midpoint() {
@@ -270,17 +287,18 @@ savefig(joinpath(@OUTPUT, "midpoint-error-log.svg")) # hide
 
 \fig{midpoint-error-log.svg}
 
-Nel vostro codice vorrete probabilmente usare ROOT per creare un
-grafico come questo. Siccome la realizzazione di grafici in ROOT può
-essere complessa, il mio consiglio è quello di stampare dapprima i
-numeri in un file (oppure a video, reindirizzando l'output da linea
-di comando con il carattere `>`), e solo una volta che sembrano
-ragionevoli procedere a creare il plot.
+Nel vostro codice vorrete probabilmente creare un grafico come
+questo. Siccome la realizzazione di grafici può essere complessa, il
+mio consiglio è quello di stampare dapprima i numeri in un file
+(oppure a video, reindirizzando l'output da linea di comando con il
+carattere `>`), e solo una volta che sembrano ragionevoli procedere
+a creare il plot. Ovviamente potete usare la libreria [`fmt`](https://ziotom78.github.io/tnds-tomasi-notebooks/#fmtinstall)!
 
-Se invece di ROOT volete usare
-[gplot++](https://github.com/ziotom78/gplotpp), scaricate il file
+Per creare i grafici, potete ovviamente usare ROOT, oppure
+[gplot++](https://github.com/ziotom78/gplotpp). In quest'ultimo
+caso, scaricate il file
 [gplot++.h](https://raw.githubusercontent.com/ziotom78/gplotpp/master/gplot%2B%2B.h)
-(facendo click col tasto destro sul link) e usate un codice del
+(facendo click col tasto destro sul link) e scrivete un codice del
 genere:
 
 ```cpp
@@ -288,7 +306,7 @@ std::vector<double> steps{10, 50, 100, 500, 1000};
 std::vector<double> errors(steps.size());
 
 for (size_t i{}; i < errors.size(); ++i) {
-    errors[i] = ...; // Riempire il valore corrispondente
+    errors[i] = ...; // Fill with the correct value
 }
 
 Gnuplot plt{};
@@ -301,9 +319,9 @@ plt.set_xlabel("Numero di passi");
 plt.set_ylabel("Errore");
 plt.show();
 
-// È sempre bene avvisare l'utente che è stato creato un file e fornirgli il
-// nome.
-std::cout << "Plot salvato nel file " << output_file_name << std::endl;
+// It's always advisable to warn the user that a file has been
+// created. Include the name of the file too!
+fmt::print("Plot saved in '{}'\n", output_file_name);
 ```
 
 Implementiamo ora una funzione che consenta di calcolare rapidamente
@@ -340,7 +358,11 @@ errors = compute_errors(midpoint, steps)
 ```
 
 Come ricavare la legge di potenza dovrebbe essere ovvio dal discorso
-fatto sopra circa i grafici bilogaritmici…
+fatto sopra circa i grafici bilogaritmici… Se nel grafico
+logaritmico la curva si riduce a una retta, basta calcolare la
+pendenza della retta passante per i due punti estremi, che in Julia
+hanno indice `1` (gli array in Julia non iniziano da 0) e `end` (che
+in Julia indica l'ultima posizione in un array):
 
 ```julia:ex14
 function error_slope(steps, errors)
@@ -353,7 +375,10 @@ end
 error_slope(steps, errors)
 ```
 
-Domanda: È importante nell'implementazione di `error_slope` sopra fissare la base del logaritmo, oppure no? In altre parole, si ottengono risultati diversi se si usa $\log_2$, $\log_{10}$ oppure $\log_e$?
+Domanda: È importante nell'implementazione di `error_slope` sopra
+fissare la base del logaritmo, oppure no? In altre parole, si
+ottengono risultati diversi se si usa $\log_2$, $\log_{10}$ oppure
+$\log_e$?
 
 ## Metodo di Simpson
 
@@ -504,16 +529,18 @@ sintassi `start:delta:end`:
 ```julia:ex23
 # La funzione `collect` obbliga Julia a stampare l'elenco completo
 # degli elementi di una lista anziché usare la forma compatta (poco
-# interessante in questo caso)
+# interessante in questo caso, perché vogliamo almeno per una volta
+# vedere uno per uno gli elementi dell'intervallo 1:2:10)
 collect(1:2:10)
 ```
 
 Ora appare chiaro perché nell'implementare `midpoint`, `simpsons` e
 `trapezoids` sopra avevamo dichiarato esplicitamente come `Integer`
 il tipo dell'ultimo parametro, `n`: adesso vogliamo invece invocare
-`trapezoids` usando la precisione, che indichiamo col tipo
-`AbstractFloat`, analogo a una classe astratta C++ da cui derivano i
-tipi floating-point, come `Float16`, `Float32`, e `Float64`.
+`trapezoids` passando la precisione, che indichiamo col tipo
+`AbstractFloat`. Questo tipo è analogo a una classe astratta C++ da
+cui derivano i tipi floating-point, come `Float16`, `Float32`, e
+`Float64`.
 
 ```julia:ex24
 function trapezoids(f, a, b, prec::AbstractFloat)
@@ -528,14 +555,14 @@ function trapezoids(f, a, b, prec::AbstractFloat)
         n *= 2
         h /= 2
 
-        for k in 1:2:(n - 1) # Itera solo sui numeri dispari
+        for k in 1:2:(n - 1) # Just iterate on odd numbers
             acc += f(a + k * h)
         end
 
         newint = acc * h
-        # 4//3 è la frazione 4/3 in Julia. In C++ *non* scrivete
-        # 4/3, perché sarebbe una divisione intera: scrivete 4.0/3
-        if 4//3 * abs(newint - oldint) < prec
+        # In Julia, the / operator always returns a floating-point
+        # number. This is not true in C++, so remember to write 4.0/3
+        if 4/3 * abs(newint - oldint) < prec
             break
         end
     end
@@ -545,12 +572,12 @@ end
 ```
 
 Notate che dopo aver compilato la definizione precedente, Julia ha
-scritto trapezoids (generic function with 2 methods). Ha quindi
-capito che abbiamo fornito una nuova implementazione di trapezoids,
-e non ha quindi sovrascritto la vecchia (che accettava come ultimo
-argomento un intero, ossia il numero di passaggi).
+scritto `trapezoids (generic function with 2 methods)`. Ha quindi
+capito che abbiamo fornito una nuova implementazione di
+`trapezoids`, e non ha quindi sovrascritto la vecchia (che accettava
+come ultimo argomento un intero, ossia il numero di passaggi).
 
-Per verificare il funzionamento della nuova funzione trapezoids,
+Per verificare il funzionamento della nuova funzione `trapezoids`,
 possiamo verificare che l'integrale calcolato sulla nostra funzione
 di riferimento $f(x) = \sin x$ abbia un errore sempre inferiore alla
 precisione richiesta.
@@ -570,5 +597,5 @@ plot!(prec, prec, label = "Caso teorico peggiore")
 savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")) # hide
 ```
 
-\fig{trapezoids-vs-theory.svg}ù
+\fig{trapezoids-vs-theory.svg}
 
