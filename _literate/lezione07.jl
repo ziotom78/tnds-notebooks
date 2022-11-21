@@ -112,8 +112,10 @@ using Plots
 # result = [f(input[1]), f(input[2]), f(input[3]), …]
 # ```
 #
-# Vediamo un esempio: creiamo un array prova che contenga il quadrato
-# dei valori `[1, 2, 3]`. In C++ avremmo dovuto scrivere
+# Vediamo un esempio: creiamo un array `list` che contenga i valori
+# `1, 2, 3`, e poi creiamo un nuovo array `out` che contenga il
+# quadrato dei numeri in `list`, ossia `1, 4, 9`. In C++ avremmo
+# dovuto scrivere
 #
 # ```cpp
 # std::vector<int> list{1, 2, 3};
