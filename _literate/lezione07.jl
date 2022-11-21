@@ -192,7 +192,7 @@ midpoint(sin, pi, 0, 10)
 # differenza della programmazione OOP in C++, qui non abbiamo dovuto
 # derivare una classe `Seno` dalla classe `FunzioneBase` e ridefinire
 # un metodo `Eval` che chiamasse `sin`. È stato sufficiente invocare
-# `midpoint` passandole sin come primo argomento.
+# `midpoint` passandole `sin` come primo argomento.
 #
 # Il caso $\int_0^\pi \sin(x)\,\mathrm{d}x$ è troppo particolare per
 # poter essere un buon caso per i test, perché (1) l'estremo inferiore
@@ -226,6 +226,11 @@ println("Secondo integrale: ", midpoint(sin, 1, 2, 30))
 # }
 # ```
 #
+# D'ora in poi non fornirò più liste di `assert` belle e pronte, ma
+# dovrete voi ricavare i numeri dagli output di Julia e scrivere gli
+# `assert` corrispondentemente. Ormai avete fatto esperienza!
+#
+#
 # ## Errore del metodo mid-point
 #
 # Calcoliamo ora l'andamento dell'errore rispetto alla funzione di riferimento $f(x) = \sin(x)$.
@@ -256,7 +261,8 @@ savefig(joinpath(@OUTPUT, "midpoint-error.svg")) # hide
 # $$
 #
 # che è della forma $y' = m x' + q$, ossia una retta, dove il
-# coefficiente angolare $m$ è proprio $\alpha$.
+# coefficiente angolare $m$ è proprio l'esponente $\alpha$ che
+# cerchiamo.
 
 plot(steps, errors,
      xscale = :log10, yscale = :log10,
@@ -266,13 +272,28 @@ savefig(joinpath(@OUTPUT, "midpoint-error-log.svg")) # hide
 
 # \fig{midpoint-error-log.svg}
 
+# Dal grafico bilogaritmico è facile stimare $\alpha$: vedete infatti
+# che sull'asse $x$ c'è una escursione da 10¹ a 10³, quindi **due**
+# ordini di grandezza, mentre sull'asse $y$ si va da 10⁻² a 10⁻⁶,
+# ossia **meno quattro** ordini di grandezza. La pendenza della retta,
+# ossia l'esponente $\alpha$, è il coefficiente angolare degli ordini
+# di grandezza: $\alpha = -4/2 = -2$, che è esattamente quanto ci
+# aspettavamo, perché l'errore deve essere $\epsilon \propto N^{-2}$.
+
 # Nel vostro codice vorrete probabilmente creare un grafico come
 # questo. Siccome la realizzazione di grafici può essere complessa, il
-# mio consiglio è quello di stampare dapprima i numeri in un file
-# (oppure a video, reindirizzando l'output da linea di comando con il
-# carattere `>`), e solo una volta che sembrano ragionevoli procedere
-# a creare il plot. Ovviamente potete usare la libreria [`fmt`](https://ziotom78.github.io/tnds-tomasi-notebooks/#fmtinstall)!
-#
+# mio consiglio è quello di stampare dapprima i numeri a video usando
+# `cout` o `fmt::print`, e solo una volta che sembrano ragionevoli
+# procedere a creare il plot. Dovreste quindi scrivere l'equivalente
+# in C++ del seguente codice Julia:
+
+for i in eachindex(steps)  # `i` will go from 1 to the length of `step`
+    ## In Julia, writing $() in a string means that the expression
+    ## within parentheses gets evaluated and the result substituted
+    ## in the string. The '\t' character is the TAB, of course
+    println("$(steps[i])\t$(errors[i])")
+end
+
 # Per creare i grafici, potete ovviamente usare ROOT, oppure
 # [gplot++](https://github.com/ziotom78/gplotpp). In quest'ultimo
 # caso, scaricate il file
@@ -397,9 +418,15 @@ println("Secondo caso: ", simpson(sin, 0, pi, 100))
 println("Terzo caso:   ", simpson(sin, 0, 1, 10))
 println("Quarto caso:  ", simpson(sin, 1, 2, 30))
 
-# Stavolta non fornisco gli `assert` da usare nel vostro codice:
-# dovreste essere in grado di implementarli da soli usando i quattro
-# numeri stampati sopra.
+# Come ho scritto sopra, stavolta non fornisco gli `assert` da usare
+# nel vostro codice: dovreste essere in grado di implementarli da soli
+# usando i quattro risultati. È molto importante che implementiate
+# tutti e quattro i test, perché in questo modo verificate che la
+# vostra implementazione consideri correttamente il valore
+# dell'integranda sui due estremi di integrazione.
+#
+# Passiamo ora a calcolare gli errori del metodo di Simpson, usando
+# ancora una volta un grafico bilogaritmico.
 
 errors = compute_errors(simpson, steps)
 
@@ -412,7 +439,7 @@ savefig(joinpath(@OUTPUT, "simpson-error.svg")) # hide
 # \fig{simpson-error.svg}
 
 # Verifichiamo che la pendenza sia quella attesa: l'errore $\epsilon$
-# dovrebbe essere tale che $\epsilon \propto h^{-4}$.
+# dovrebbe essere tale che $\epsilon \propto N^{-4}$.
 
 error_slope(steps, errors)
 
@@ -435,6 +462,9 @@ println("Secondo caso: ", trapezoids(sin, 0, pi, 100))
 println("Terzo caso:   ", trapezoids(sin, 0, 1, 10))
 println("Quarto caso:  ", trapezoids(sin, 1, 2, 30))
 
+# Come al solito, usate questi quattro risultati per implementare
+# degli `assert` nel vostro programma C++.
+#
 # Facciamo un plot come prima:
 
 errors = compute_errors(trapezoids, steps)
@@ -446,7 +476,7 @@ savefig(joinpath(@OUTPUT, "trapezoids-error.svg")) # hide
 
 # \fig{trapezoids-error.svg}
 
-# Calcoliamo anche la pendenza della curva $\epsilon \propto h^\alpha$:
+# Calcoliamo anche la pendenza della curva $\epsilon \propto N^\alpha$:
 
 error_slope(steps, errors)
 
@@ -468,8 +498,8 @@ savefig(joinpath(@OUTPUT, "error-comparison.svg")) # hide
 
 # Notate che il metodo del mid-point e dei trapezi hanno la stessa
 # legge di scala, ma non si sovrappongono: la costante $C$ nella legge
-# di scala $\epsilon = Cn^{-\alpha}$ è diversa (e quindi è diversa
-# l'intercetta $q = \log C$ nel grafico bilogaritmico).
+# di scala $\epsilon = CN^{-\alpha}$ è diversa (e quindi è diversa
+# l'intercetta $q = \log_{10} C$ nel grafico bilogaritmico).
 #
 # ## Ricerca della precisione
 #
