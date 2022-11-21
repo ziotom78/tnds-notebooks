@@ -135,7 +135,11 @@ using Plots
 # out = [x * x for x in list]
 # ```
 #
-# ## Metodo del mid-point
+# ## Esercizio 7.0 – Integrazione con la formula del mid-point
+#
+# 
+# Testo dell'esercizio:
+# [carminati-esercizi-07.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-07.html#esercizio-7.0).
 #
 # Il metodo del mid-point consiste nell'approssimare l'integrale con
 # il valore del punto della funzione $f$ nel punto medio
@@ -374,7 +378,11 @@ error_slope(steps, errors)
 # ottengono risultati diversi se si usa $\log_2$, $\log_{10}$ oppure
 # $\log_e$?
 #
-# ## Metodo di Simpson
+#
+# ## Esercizio 7.1 – Integrazione alla Simpson
+#
+# Testo dell'esercizio:
+# [carminati-esercizi-07.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-07.html#esercizio-7.1).
 #
 # Si usa la formula
 #
@@ -503,7 +511,11 @@ savefig(joinpath(@OUTPUT, "error-comparison.svg")) # hide
 # di scala $\epsilon = CN^{-\alpha}$ è diversa (e quindi è diversa
 # l'intercetta $q = \log_{10} C$ nel grafico bilogaritmico).
 #
-# ## Ricerca della precisione
+#
+# ## Esercizio 7.2 – Integrazione con trapezoidi a precisione fissata
+#
+# Testo dell'esercizio:
+# [carminati-esercizi-07.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-07.html#esercizio-7.2).
 #
 # L'esercizio 7.2 è diverso dagli esercizi 7.0 e 7.1, perché richiede
 # di iterare il calcolo finché non si raggiunge una precisione
