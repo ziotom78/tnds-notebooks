@@ -1,6 +1,12 @@
 # This file was generated, do not modify it. # hide
-# La funzione `collect` obbliga Julia a stampare l'elenco completo
-# degli elementi di una lista anziché usare la forma compatta (poco
-# interessante in questo caso, perché vogliamo almeno per una volta
-# vedere uno per uno gli elementi dell'intervallo 1:2:10)
-collect(1:2:10)
+plot(steps, compute_errors(midpoint, steps),
+     label = "Mid-point",
+     xscale = :log10, yscale = :log10,
+     xlabel = "Numero di passi",
+     ylabel = "Errore")
+plot!(steps, compute_errors(trapezoids, steps),
+      label = "Trapezoidi")
+plot!(steps, compute_errors(simpson, steps),
+      label = "Simpson")
+
+savefig(joinpath(@OUTPUT, "error-comparison.svg")) # hide

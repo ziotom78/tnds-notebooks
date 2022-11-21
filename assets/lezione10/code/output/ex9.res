@@ -1,1 +1,1 @@
-nothing
+"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione10/code/output/randexp_hist.svg"

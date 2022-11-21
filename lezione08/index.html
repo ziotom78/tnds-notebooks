@@ -1,44 +1,44 @@
-<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/tnds-notebooks/libs/katex/katex.min.css"> <link rel=stylesheet  href="/tnds-notebooks/libs/highlight/github.min.css"> <link rel=stylesheet  href="/tnds-notebooks/css/franklin.css"> <link rel=stylesheet  href="/tnds-notebooks/css/poole_hyde.css"> <style> html {font-size: 17px;} .franklin-content {position: relative; padding-left: 8%; padding-right: 5%; line-height: 1.35em;} @media (min-width: 940px) { .franklin-content {width: 100%; margin-left: auto; margin-right: auto;} } @media (max-width: 768px) { .franklin-content {padding-left: 6%; padding-right: 6%;} } </style> <link rel=icon  href="/tnds-notebooks/assets/favicon.png"> <title>Lezione 8</title> <div class=sidebar > <div class="container sidebar-sticky"> <div class=sidebar-about > <h1><a href="/tnds-notebooks/">TNDS</a></h1> <p class=lead >Prof. M.&nbsp;Tomasi</p> </div> <nav class=sidebar-nav > <a class="sidebar-nav-item " href="/tnds-notebooks/">Home</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione07/">Lezione 07</a> <a class="sidebar-nav-item active" href="/tnds-notebooks/lezione08/">Lezione 08</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione10/">Lezioni 10 e 11</a> </nav> <p>&copy; Maurizio Tomasi.</p> </div> </div> <div class="content container"> <div class=franklin-content > <p><div class=franklin-toc ><ol><li><a href="#iterare_sui_tempi">Iterare sui tempi</a><li><a href="#esercizio_80_algebra_vettoriale">Esercizio 8.0: Algebra vettoriale</a><li><a href="#esercizio_81_metodo_di_eulero">Esercizio 8.1: metodo di Eulero</a><li><a href="#esercizio_82_soluzione_con_runge-kutta">Esercizio 8.2: Soluzione con Runge-Kutta</a><li><a href="#esercizio_83">Esercizio 8.3</a><li><a href="#esercizio_84">Esercizio 8.4</a></ol></div> </p> <p>In questa lezione implementeremo dei programmi per risolvere equazioni differenziali. Come per la lezione della volta scorsa, mostro qui qual è il risultato atteso per gli esercizi, usando Julia.</p> <p>Importiamo alcune librerie che ci saranno molto utili per svolgere gli esercizi:</p> <pre><code class=language-julia >using Plots
-using Printf</code></pre> <h2 id=iterare_sui_tempi ><a href="#iterare_sui_tempi" class=header-anchor >Iterare sui tempi</a></h2> <p>In tutti gli esercizi di oggi si richiede di iterare sul tempo \(t\), perché la soluzione numerica delle equazioni differenziali richiede di partire dalla condizione iniziale al tempo \(t = t_0\) e procedere a incrementi di \(h\) finché non si raggiunge il tempo finale \(t_f\):</p> <pre><code class=language-cpp >std::vector&lt;double&gt; current&#123;...&#125;;  // Condizione iniziale
-while &#40;...&#41; &#123;
-    // Sovrascrive &quot;current&quot; al tempo t con &quot;current&quot; al tempo t &#43; h
-    current &#61; evolve&#40;current, t, h&#41;;
-    t &#43;&#61; h;
-&#125;</code></pre> <p>È importante scrivere bene la condizione nel ciclo <code>while</code>, perché è una cosa che gli studenti sbagliano spesso&#33; Il problema sta negli errori di arrotondamento, che sono dovuti al modo in cui il computer memorizza i numeri <em>floating-point</em> e sono quindi identici sia in C&#43;&#43; che in Julia.</p> <p>Vediamo quindi in cosa consiste il problema usando Julia. Creiamo una variabile <code>t &#61; 0</code> che poi incrementiamo in passi di <code>h &#61; 0.1</code> secondi: in questo modo simuliamo quello che farebbe il ciclo per risolvere una equazione differenziale</p> <pre><code class=language-julia >t &#61; 0
-h &#61; 0.1
-t &#43;&#61; h</code></pre><pre><code class="plaintext code-output">0.1</code></pre>
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/tnds-notebooks/libs/katex/katex.min.css"> <link rel=stylesheet  href="/tnds-notebooks/libs/highlight/github.min.css"> <link rel=stylesheet  href="/tnds-notebooks/css/franklin.css"> <link rel=stylesheet  href="/tnds-notebooks/css/poole_hyde.css"> <style> html {font-size: 17px;} .franklin-content {position: relative; padding-left: 8%; padding-right: 5%; line-height: 1.35em;} @media (min-width: 940px) { .franklin-content {width: 100%; margin-left: auto; margin-right: auto;} } @media (max-width: 768px) { .franklin-content {padding-left: 6%; padding-right: 6%;} } </style> <link rel=icon  href="/tnds-notebooks/assets/favicon.png"> <title>Lezione 8</title> <div class=sidebar > <div class="container sidebar-sticky"> <div class=sidebar-about > <h1><a href="/tnds-notebooks/">TNDS</a></h1> <p class=lead >Prof. M.&nbsp;Tomasi</p> </div> <nav class=sidebar-nav > <a class="sidebar-nav-item " href="/tnds-notebooks/">Home</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione07/">Lezione 07</a> <a class="sidebar-nav-item active" href="/tnds-notebooks/lezione08/">Lezione 08</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione10/">Lezioni 10 e 11</a> </nav> <p>&copy; Maurizio Tomasi.</p> </div> </div> <div class="content container"> <div class=franklin-content > <p><div class=franklin-toc ><ol><li><a href="#iterare_sui_tempi">Iterare sui tempi</a><li><a href="#esercizio_80_algebra_vettoriale">Esercizio 8.0: Algebra vettoriale</a><li><a href="#esercizio_81_metodo_di_eulero">Esercizio 8.1: metodo di Eulero</a><li><a href="#esercizio_82_soluzione_con_runge-kutta">Esercizio 8.2: Soluzione con Runge-Kutta</a><li><a href="#esercizio_83">Esercizio 8.3</a><li><a href="#esercizio_84">Esercizio 8.4</a></ol></div> </p> <p>In questa lezione implementeremo dei programmi per risolvere equazioni differenziali. Come per la lezione della volta scorsa, mostro qui qual è il risultato atteso per gli esercizi, usando Julia.</p> <p>Importiamo alcune librerie che ci saranno molto utili per svolgere gli esercizi:</p> <pre><code class="julia hljs"><span class=hljs-keyword >using</span> Plots
+<span class=hljs-keyword >using</span> Printf</code></pre> <h2 id=iterare_sui_tempi ><a href="#iterare_sui_tempi" class=header-anchor >Iterare sui tempi</a></h2> <p>In tutti gli esercizi di oggi si richiede di iterare sul tempo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span></span></span></span>, perché la soluzione numerica delle equazioni differenziali richiede di partire dalla condizione iniziale al tempo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><msub><mi>t</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">t = t_0</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.76508em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> e procedere a incrementi di <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi></mrow><annotation encoding="application/x-tex">h</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span></span></span></span> finché non si raggiunge il tempo finale <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mi>f</mi></msub></mrow><annotation encoding="application/x-tex">t_f</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.9011879999999999em;vertical-align:-0.286108em;"></span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.10764em;">f</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.286108em;"><span></span></span></span></span></span></span></span></span></span>:</p> <pre><code class="cpp hljs">std::vector&lt;<span class=hljs-type >double</span>&gt; current{...};  <span class=hljs-comment >// Condizione iniziale</span>
+<span class=hljs-keyword >while</span> (...) {
+    <span class=hljs-comment >// Sovrascrive &quot;current&quot; al tempo t con &quot;current&quot; al tempo t + h</span>
+    current = <span class=hljs-built_in >evolve</span>(current, t, h);
+    t += h;
+}</code></pre> <p>È importante scrivere bene la condizione nel ciclo <code>while</code>, perché è una cosa che gli studenti sbagliano spesso&#33; Il problema sta negli errori di arrotondamento, che sono dovuti al modo in cui il computer memorizza i numeri <em>floating-point</em> e sono quindi identici sia in C&#43;&#43; che in Julia.</p> <p>Vediamo quindi in cosa consiste il problema usando Julia. Creiamo una variabile <code>t &#61; 0</code> che poi incrementiamo in passi di <code>h &#61; 0.1</code> secondi: in questo modo simuliamo quello che farebbe il ciclo per risolvere una equazione differenziale</p> <pre><code class="julia hljs">t = <span class=hljs-number >0</span>
+h = <span class=hljs-number >0.1</span>
+t += h</code></pre><pre><code class="plaintext hljs">0.1</code></pre>
 <p>Nulla di sorprendente… Incrementiamo ancora una volta:</p>
-<pre><code class=language-julia >t &#43;&#61; h</code></pre><pre><code class="plaintext code-output">0.2</code></pre>
+<pre><code class="julia hljs">t += h</code></pre><pre><code class="plaintext hljs">0.2</code></pre>
 <p>Sembra ancora tutto regolare. Proviamo allora ad incrementare <code>t</code> per dieci volte:</p>
-<pre><code class=language-julia ># Esegue per &#96;nruns&#96; volte l&#39;incremento &#96;increment&#96;, partendo da
-# &#96;start&#96;
-function simulate&#40;nruns, start, increment&#41;
-    t &#61; start
-    for i in 1:nruns
-        t &#43;&#61; increment
-    end
-    println&#40;&quot;Incrementando di &#36;increment per &#36;nruns volte, il risultato è &#36;t&quot;&#41;
-end
+<pre><code class="julia hljs"><span class=hljs-comment ># Esegue per `nruns` volte l&#x27;incremento `increment`, partendo da</span>
+<span class=hljs-comment ># `start`</span>
+<span class=hljs-keyword >function</span> simulate(nruns, start, increment)
+    t = start
+    <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:nruns
+        t += increment
+    <span class=hljs-keyword >end</span>
+    println(<span class=hljs-string >&quot;Incrementando di <span class=hljs-variable >$increment</span> per <span class=hljs-variable >$nruns</span> volte, il risultato è <span class=hljs-variable >$t</span>&quot;</span>)
+<span class=hljs-keyword >end</span>
 
-simulate&#40;10, 0, h&#41;</code></pre><pre><code class="plaintext code-output">Incrementando di 0.1 per 10 volte, il risultato è 0.9999999999999999
+simulate(<span class=hljs-number >10</span>, <span class=hljs-number >0</span>, h)</code></pre><pre><code class="plaintext hljs">Incrementando di 0.1 per 10 volte, il risultato è 0.9999999999999999
 </code></pre>
 <p>Sorpresa&#33; Con 10 incrementi si è rivelato un piccolo errore di arrotondamento che era nascosto già nel primo passaggio: il numero <code>0.1</code> non è rappresentabile nel formato <em>floating-point</em> usato dai calcolatori moderni, che usano lo <a href="https://en.wikipedia.org/wiki/IEEE_754">standard IEE 754</a>. L&#39;errore si è accumulato, passaggio dopo passaggio, diventando visibile solo al decimo passaggio.</p>
 <p>Considerate ora un codice come questo, che vorrebbe iterare per <code>t</code> che va da <code>0</code> a <code>1</code> in step di <code>h &#61; 0.1</code>:</p>
-<pre><code class=language-julia >function simulate&#40;t0, tf, increment&#41;
-    t &#61; t0
+<pre><code class="julia hljs"><span class=hljs-keyword >function</span> simulate(t0, tf, increment)
+    t = t0
 
-    println&#40;&quot;Inizia la simulazione, da t&#61;&#36;t0 a &#36;tf con h&#61;&#36;increment&quot;&#41;
+    println(<span class=hljs-string >&quot;Inizia la simulazione, da t=<span class=hljs-variable >$t0</span> a <span class=hljs-variable >$tf</span> con h=<span class=hljs-variable >$increment</span>&quot;</span>)
 
-    # Itera finché non abbiamo raggiunto il tempo finale
-    while t &lt; tf
-        println&#40;&quot;  t &#61; &#36;t&quot;&#41;
-        t &#43;&#61; increment
-    end
+    <span class=hljs-comment ># Itera finché non abbiamo raggiunto il tempo finale</span>
+    <span class=hljs-keyword >while</span> t &lt; tf
+        println(<span class=hljs-string >&quot;  t = <span class=hljs-variable >$t</span>&quot;</span>)
+        t += increment
+    <span class=hljs-keyword >end</span>
 
-    println&#40;&quot;Simulazione terminata a t &#61; &#36;t&quot;&#41;
-end
+    println(<span class=hljs-string >&quot;Simulazione terminata a t = <span class=hljs-variable >$t</span>&quot;</span>)
+<span class=hljs-keyword >end</span>
 
-simulate&#40;0.0, 1.0, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t=0.0 a 1.0 con h=0.1
+simulate(<span class=hljs-number >0.0</span>, <span class=hljs-number >1.0</span>, <span class=hljs-number >0.1</span>)</code></pre><pre><code class="plaintext hljs">Inizia la simulazione, da t=0.0 a 1.0 con h=0.1
   t = 0.0
   t = 0.1
   t = 0.2
@@ -52,23 +52,23 @@ simulate&#40;0.0, 1.0, 0.1&#41;</code></pre><pre><code class="plaintext code-out
   t = 0.9999999999999999
 Simulazione terminata a t = 1.0999999999999999
 </code></pre>
-<p>Il codice si è arrestato al tempo \(t \approx 1.1\) anziché al tempo \(t = 1\)&#33; Questa implementazione di <code>while</code> è molto comune nei compiti scritti dei vostri colleghi degli anni scorsi, ma è ovviamente <strong>sbagliata</strong>. Il modo giusto per implementare questo genere di ciclo è di calcolare il numero di iterazioni &#40;come un intero&#41; e poi fare un ciclo for usando solo variabili intere:</p>
-<pre><code class=language-julia >function simulate_method1&#40;t0, tf, increment&#41;
-    println&#40;&quot;Inizia la simulazione, da t&#61;&#36;t0 a &#36;tf con h&#61;&#36;increment&quot;&#41;
+<p>Il codice si è arrestato al tempo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>≈</mo><mn>1.1</mn></mrow><annotation encoding="application/x-tex">t \approx 1.1</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >≈</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >1.1</span></span></span></span> anziché al tempo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">t = 1</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >1</span></span></span></span>&#33; Questa implementazione di <code>while</code> è molto comune nei compiti scritti dei vostri colleghi degli anni scorsi, ma è ovviamente <strong>sbagliata</strong>. Il modo giusto per implementare questo genere di ciclo è di calcolare il numero di iterazioni &#40;come un intero&#41; e poi fare un ciclo for usando solo variabili intere:</p>
+<pre><code class="julia hljs"><span class=hljs-keyword >function</span> simulate_method1(t0, tf, increment)
+    println(<span class=hljs-string >&quot;Inizia la simulazione, da t=<span class=hljs-variable >$t0</span> a <span class=hljs-variable >$tf</span> con h=<span class=hljs-variable >$increment</span>&quot;</span>)
 
-    # Calcola il numero di iterazioni prima di iniziare il ciclo vero
-    # e proprio
-    nsteps &#61; round&#40;Int, &#40;tf - t0&#41; / h&#41;
-    t &#61; t0
-    for i &#61; 1:nsteps
-        println&#40;&quot;  t &#61; &#36;t&quot;&#41;
-        # Incrementa come al solito
-        t &#43;&#61; h
-    end
-    println&#40;&quot;Simulazione terminata a t &#61; &#36;t&quot;&#41;
-end
+    <span class=hljs-comment ># Calcola il numero di iterazioni prima di iniziare il ciclo vero</span>
+    <span class=hljs-comment ># e proprio</span>
+    nsteps = round(<span class=hljs-built_in >Int</span>, (tf - t0) / h)
+    t = t0
+    <span class=hljs-keyword >for</span> i = <span class=hljs-number >1</span>:nsteps
+        println(<span class=hljs-string >&quot;  t = <span class=hljs-variable >$t</span>&quot;</span>)
+        <span class=hljs-comment ># Incrementa come al solito</span>
+        t += h
+    <span class=hljs-keyword >end</span>
+    println(<span class=hljs-string >&quot;Simulazione terminata a t = <span class=hljs-variable >$t</span>&quot;</span>)
+<span class=hljs-keyword >end</span>
 
-simulate_method1&#40;0, 1, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t=0 a 1 con h=0.1
+simulate_method1(<span class=hljs-number >0</span>, <span class=hljs-number >1</span>, <span class=hljs-number >0.1</span>)</code></pre><pre><code class="plaintext hljs">Inizia la simulazione, da t=0 a 1 con h=0.1
   t = 0
   t = 0.1
   t = 0.2
@@ -81,24 +81,24 @@ simulate_method1&#40;0, 1, 0.1&#41;</code></pre><pre><code class="plaintext code
   t = 0.8999999999999999
 Simulazione terminata a t = 0.9999999999999999
 </code></pre>
-<p>In questo caso il ciclo si è arrestato al valore \(t \approx 1\), con un errore \(\delta t \sim 10^{-16}\) che è assolutamente trascurabile: l&#39;implementazione quindi è corretta.</p>
+<p>In questo caso il ciclo si è arrestato al valore <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>≈</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">t \approx 1</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >≈</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >1</span></span></span></span>, con un errore <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>δ</mi><mi>t</mi><mo>∼</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>16</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\delta t \sim 10^{-16}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.03785em;">δ</span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >∼</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.8141079999999999em;vertical-align:0em;"></span><span class=mord >1</span><span class=mord ><span class=mord >0</span><span class=msupsub ><span class=vlist-t ><span class=vlist-r ><span class=vlist  style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">16</span></span></span></span></span></span></span></span></span></span></span></span> che è assolutamente trascurabile: l&#39;implementazione quindi è corretta.</p>
 <p>Un secondo metodo è quello di evitare di «accumulare» l&#39;incremento <code>h</code> nella variabile <code>t</code> ad ogni iterazione, ma calcolare ogni volta da capo quest&#39;ultima:</p>
-<pre><code class=language-julia >function simulate_method2&#40;t0, tf, increment&#41;
-    println&#40;&quot;Inizia la simulazione, da t&#61;&#36;t0 a &#36;tf con h&#61;&#36;increment&quot;&#41;
+<pre><code class="julia hljs"><span class=hljs-keyword >function</span> simulate_method2(t0, tf, increment)
+    println(<span class=hljs-string >&quot;Inizia la simulazione, da t=<span class=hljs-variable >$t0</span> a <span class=hljs-variable >$tf</span> con h=<span class=hljs-variable >$increment</span>&quot;</span>)
 
-    # Calcola il numero di iterazioni prima di iniziare il ciclo vero
-    # e proprio
-    nsteps &#61; round&#40;Int, &#40;tf - t0&#41; / h&#41;
-    t &#61; t0
-    for i &#61; 1:nsteps
-        println&#40;&quot;  t &#61; &#36;t&quot;&#41;
-        # Ricalcola t partendo da t0 e da h, usando il contatore i
-        t &#61; t0 &#43; i * h
-    end
-    println&#40;&quot;Simulazione terminata a t &#61; &#36;t&quot;&#41;
-end
+    <span class=hljs-comment ># Calcola il numero di iterazioni prima di iniziare il ciclo vero</span>
+    <span class=hljs-comment ># e proprio</span>
+    nsteps = round(<span class=hljs-built_in >Int</span>, (tf - t0) / h)
+    t = t0
+    <span class=hljs-keyword >for</span> i = <span class=hljs-number >1</span>:nsteps
+        println(<span class=hljs-string >&quot;  t = <span class=hljs-variable >$t</span>&quot;</span>)
+        <span class=hljs-comment ># Ricalcola t partendo da t0 e da h, usando il contatore i</span>
+        t = t0 + i * h
+    <span class=hljs-keyword >end</span>
+    println(<span class=hljs-string >&quot;Simulazione terminata a t = <span class=hljs-variable >$t</span>&quot;</span>)
+<span class=hljs-keyword >end</span>
 
-simulate_method2&#40;0, 1, 0.1&#41;</code></pre><pre><code class="plaintext code-output">Inizia la simulazione, da t=0 a 1 con h=0.1
+simulate_method2(<span class=hljs-number >0</span>, <span class=hljs-number >1</span>, <span class=hljs-number >0.1</span>)</code></pre><pre><code class="plaintext hljs">Inizia la simulazione, da t=0 a 1 con h=0.1
   t = 0
   t = 0.1
   t = 0.2
@@ -115,41 +115,41 @@ Simulazione terminata a t = 1.0
 <h2 id=esercizio_80_algebra_vettoriale ><a href="#esercizio_80_algebra_vettoriale" class=header-anchor >Esercizio 8.0: Algebra vettoriale</a></h2>
 <p>Testo dell&#39;esercizio: <a href="https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.0">carminati-esercizi-08.html</a>.</p>
 <p>In Julia non è necessario implementare le operazioni aritmetiche su vettori, perché sono già implementate: basta porre un punto <code>.</code> davanti all&#39;operatore perché questo venga automaticamente propagato sugli elementi di vettori:</p>
-<pre><code class=language-julia >&#91;1, 2, 4&#93; .&#43; &#91;3, 7, -5&#93;</code></pre><pre><code class="plaintext code-output">3-element Vector{Int64}:
+<pre><code class="julia hljs">[<span class=hljs-number >1</span>, <span class=hljs-number >2</span>, <span class=hljs-number >4</span>] .+ [<span class=hljs-number >3</span>, <span class=hljs-number >7</span>, -<span class=hljs-number >5</span>]</code></pre><pre><code class="plaintext hljs">3-element Vector{Int64}:
   4
   9
  -1</code></pre>
 <h2 id=esercizio_81_metodo_di_eulero ><a href="#esercizio_81_metodo_di_eulero" class=header-anchor >Esercizio 8.1: metodo di Eulero</a></h2>
 <p>Testo dell&#39;esercizio: <a href="https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.1">carminati-esercizi-08.html</a>.</p>
-<p>Qui non implementiamo una classe con metodo <code>Passo</code> come suggerito nel testo dell&#39;esercizio, perché in Julia non esiste l&#39;equivalente delle classi del C&#43;&#43;. Scriviamo invece una funzione <code>euler</code> che restituisce una matrice a \(N + 1\) colonne, dove \(N\) è il numero di equazioni: la prima colonna contiene il tempo, le altre colonne le soluzioni delle \(N\) variabili. &#40;Per i più curiosi: il modo migliore di procedere in Julia sarebbe quello di implementare un <a href="https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration">iteratore</a>&#41;.</p>
+<p>Qui non implementiamo una classe con metodo <code>Passo</code> come suggerito nel testo dell&#39;esercizio, perché in Julia non esiste l&#39;equivalente delle classi del C&#43;&#43;. Scriviamo invece una funzione <code>euler</code> che restituisce una matrice a <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">N + 1</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mbin >+</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >1</span></span></span></span> colonne, dove <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> è il numero di equazioni: la prima colonna contiene il tempo, le altre colonne le soluzioni delle <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> variabili. &#40;Per i più curiosi: il modo migliore di procedere in Julia sarebbe quello di implementare un <a href="https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration">iteratore</a>&#41;.</p>
 <p>In Julia non c&#39;è bisogno di definire una classe base <code>FunzioneVettorialeBase</code> da cui derivare altre classi come <code>OscillatoreArmonico</code> eccetera: basta passare la funzione nel parametro <code>fn</code> &#40;primo argomento&#41;. È un meccanismo simile a quello visto nella lezione precedente usando i template, anche se in Julia la risoluzione dei template avviene a <em>runtime</em> anziché in fase di compilazione come in C&#43;&#43;.</p>
-<pre><code class=language-julia >function euler&#40;fn, x0, startt, endt, h&#41;
-    # La scrittura startt:h:endt indica il vettore
-    #
-    #     &#91;startt, startt &#43; h, startt &#43; 2h, startt &#43; 3h, …, startt &#43; N * h&#93;
-    #
-    # dove N è il più grande intero tale che
-    #
-    #     startt &#43; N * h ≤ endt
-    timerange &#61; startt:h:endt
-    result &#61; Array&#123;Float64&#125;&#40;undef, length&#40;timerange&#41;, 1 &#43; length&#40;x0&#41;&#41;
-    cur &#61; x0
-    for &#40;i, t&#41; in enumerate&#40;timerange&#41;
-        result&#91;i, 1&#93; &#61; t
-        result&#91;i, 2:end&#93; &#61; cur
-        cur .&#43;&#61; fn&#40;t, cur&#41; * h
-    end
+<pre><code class="julia hljs"><span class=hljs-keyword >function</span> euler(fn, x0, startt, endt, h)
+    <span class=hljs-comment ># La scrittura startt:h:endt indica il vettore</span>
+    <span class=hljs-comment >#</span>
+    <span class=hljs-comment >#     [startt, startt + h, startt + 2h, startt + 3h, …, startt + N * h]</span>
+    <span class=hljs-comment >#</span>
+    <span class=hljs-comment ># dove N è il più grande intero tale che</span>
+    <span class=hljs-comment >#</span>
+    <span class=hljs-comment >#     startt + N * h ≤ endt</span>
+    timerange = startt:h:endt
+    result = <span class=hljs-built_in >Array</span>{<span class=hljs-built_in >Float64</span>}(<span class=hljs-literal >undef</span>, length(timerange), <span class=hljs-number >1</span> + length(x0))
+    cur = x0
+    <span class=hljs-keyword >for</span> (i, t) <span class=hljs-keyword >in</span> enumerate(timerange)
+        result[i, <span class=hljs-number >1</span>] = t
+        result[i, <span class=hljs-number >2</span>:<span class=hljs-keyword >end</span>] = cur
+        cur .+= fn(t, cur) * h
+    <span class=hljs-keyword >end</span>
 
     result
-end</code></pre><pre><code class="plaintext code-output">euler (generic function with 1 method)</code></pre>
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">euler (generic function with 1 method)</code></pre>
 <p>Definiamo ora una funzione che descriva l&#39;oscillatore armonico del problema 8.1.</p>
-<pre><code class=language-julia >oscillatore&#40;time, x&#41; &#61; &#91;x&#91;2&#93;, -x&#91;1&#93;&#93;  # ω0 &#61; 1</code></pre><pre><code class="plaintext code-output">oscillatore (generic function with 1 method)</code></pre>
-<p>Invochiamo <code>oscillatore</code> usando come condizione iniziale \((x, v) =
-(0, 1)\) e integrando nell&#39;intervallo \(0 \leq t \leq 70\,\text{s}\), usando come passo \(h = 10^{-1}\). La funzione restituisce una matrice a tre colonne, contenenti il tempo, la posizione e la velocità.</p>
-<pre><code class=language-julia >h &#61; 0.1
-result &#61; euler&#40;oscillatore, &#91;0., 1.&#93;, 0.0, 70.0, h&#41;;</code></pre>
+<pre><code class="julia hljs">oscillatore(time, x) = [x[<span class=hljs-number >2</span>], -x[<span class=hljs-number >1</span>]]  <span class=hljs-comment ># ω0 = 1</span></code></pre><pre><code class="plaintext hljs">oscillatore (generic function with 1 method)</code></pre>
+<p>Invochiamo <code>oscillatore</code> usando come condizione iniziale <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy=false >(</mo><mi>x</mi><mo separator=true >,</mo><mi>v</mi><mo stretchy=false >)</mo><mo>=</mo><mo stretchy=false >(</mo><mn>0</mn><mo separator=true >,</mo><mn>1</mn><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">(x, v) =
+(0, 1)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >(</span><span class="mord mathnormal">x</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class=mclose >)</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >(</span><span class=mord >0</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >1</span><span class=mclose >)</span></span></span></span> e integrando nell&#39;intervallo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mo>≤</mo><mi>t</mi><mo>≤</mo><mn>70</mn><mtext> </mtext><mtext>s</mtext></mrow><annotation encoding="application/x-tex">0 \leq t \leq 70\,\text{s}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.78041em;vertical-align:-0.13597em;"></span><span class=mord >0</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >≤</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.7719400000000001em;vertical-align:-0.13597em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >≤</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >70</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord text"><span class=mord >s</span></span></span></span></span>, usando come passo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi><mo>=</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><annotation encoding="application/x-tex">h = 10^{-1}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.8141079999999999em;vertical-align:0em;"></span><span class=mord >1</span><span class=mord ><span class=mord >0</span><span class=msupsub ><span class=vlist-t ><span class=vlist-r ><span class=vlist  style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span></span></span></span>. La funzione restituisce una matrice a tre colonne, contenenti il tempo, la posizione e la velocità.</p>
+<pre><code class="julia hljs">h = <span class=hljs-number >0.1</span>
+result = euler(oscillatore, [<span class=hljs-number >0.</span>, <span class=hljs-number >1.</span>], <span class=hljs-number >0.0</span>, <span class=hljs-number >70.0</span>, h);</code></pre>
 <p>Questi sono i primi step &#40;tempo, posizione e velocità&#41;:</p>
-<pre><code class=language-julia >result&#91;1:10, :&#93;</code></pre><pre><code class="plaintext code-output">10×3 Matrix{Float64}:
+<pre><code class="julia hljs">result[<span class=hljs-number >1</span>:<span class=hljs-number >10</span>, :]</code></pre><pre><code class="plaintext hljs">10×3 Matrix{Float64}:
  0.0  0.0       1.0
  0.1  0.1       1.0
  0.2  0.2       0.99
@@ -161,7 +161,7 @@ result &#61; euler&#40;oscillatore, &#91;0., 1.&#93;, 0.0, 70.0, h&#41;;</code><
  0.8  0.744559  0.726972
  0.9  0.817256  0.652516</code></pre>
 <p>Questi sono invece gli ultimi:</p>
-<pre><code class=language-julia >result&#91;&#40;end - 10&#41;:end, :&#93;</code></pre><pre><code class="plaintext code-output">11×3 Matrix{Float64}:
+<pre><code class="julia hljs">result[(<span class=hljs-keyword >end</span> - <span class=hljs-number >10</span>):<span class=hljs-keyword >end</span>, :]</code></pre><pre><code class="plaintext hljs">11×3 Matrix{Float64}:
  69.0  -10.4335   29.1545
  69.1   -7.51806  30.1979
  69.2   -4.49827  30.9497
@@ -174,43 +174,43 @@ result &#61; euler&#40;oscillatore, &#91;0., 1.&#93;, 0.0, 70.0, h&#41;;</code><
  69.9   17.0187   27.5506
  70.0   19.7737   25.8488</code></pre>
 <p>Il risultato sopra dovrebbe esservi utile per scrivere dei test nel vostro codice C&#43;&#43; usando <code>assert</code>:</p>
-<pre><code class=language-cpp >#include &quot;EquazioniDifferenziali.hpp&quot;
-#include &lt;cstdio&gt;
-#include &lt;cassert&gt;
-#include &lt;cmath&gt;
+<pre><code class="cpp hljs"><span class=hljs-meta >#<span class=hljs-keyword >include</span> <span class=hljs-string >&quot;EquazioniDifferenziali.hpp&quot;</span></span>
+<span class=hljs-meta >#<span class=hljs-keyword >include</span> <span class=hljs-string >&lt;cstdio&gt;</span></span>
+<span class=hljs-meta >#<span class=hljs-keyword >include</span> <span class=hljs-string >&lt;cassert&gt;</span></span>
+<span class=hljs-meta >#<span class=hljs-keyword >include</span> <span class=hljs-string >&lt;cmath&gt;</span></span>
 
-bool is_close&#40;double a, double b, double epsilon &#61; 1e-8&#41; &#123;
-    return std::fabs&#40;a - b&#41; &lt; epsilon;
-&#125;
+<span class=hljs-function ><span class=hljs-type >bool</span> <span class=hljs-title >is_close</span><span class=hljs-params >(<span class=hljs-type >double</span> a, <span class=hljs-type >double</span> b, <span class=hljs-type >double</span> epsilon = <span class=hljs-number >1e-8</span>)</span> </span>{
+    <span class=hljs-keyword >return</span> std::<span class=hljs-built_in >fabs</span>(a - b) &lt; epsilon;
+}
 
-void test_euler&#40;&#41; &#123;
+<span class=hljs-function ><span class=hljs-type >void</span> <span class=hljs-title >test_euler</span><span class=hljs-params >()</span> </span>{
   Eulero eulero;
-  OscillatoreArmonico oa&#123;1.0&#125;;
-  const double lastt&#123;70.0&#125;;      // Simula il sistema per 70 s
-  const double h&#123;0.1&#125;;
-  const int nsteps&#123;static_cast&lt;int&gt;&#40;lasttt / h &#43; 0.5&#41;&#125;;
-  std::vector&lt;double&gt; pos&#123;0.0, 1.0&#125;;
+  OscillatoreArmonico oa{<span class=hljs-number >1.0</span>};
+  <span class=hljs-type >const</span> <span class=hljs-type >double</span> lastt{<span class=hljs-number >70.0</span>};      <span class=hljs-comment >// Simula il sistema per 70 s</span>
+  <span class=hljs-type >const</span> <span class=hljs-type >double</span> h{<span class=hljs-number >0.1</span>};
+  <span class=hljs-type >const</span> <span class=hljs-type >int</span> nsteps{<span class=hljs-built_in >static_cast</span>&lt;<span class=hljs-type >int</span>&gt;(lasttt / h + <span class=hljs-number >0.5</span>)};
+  std::vector&lt;<span class=hljs-type >double</span>&gt; pos{<span class=hljs-number >0.0</span>, <span class=hljs-number >1.0</span>};
 
-  // Esegue la simulazione
-  double t&#123;&#125;;
-  for &#40;int idx&#123;&#125;; idx &lt; nsteps; &#43;&#43;idx&#41; &#123;
-    pos &#61; eulero.Passo&#40;t, pos, h, &amp;oa&#41;;
-    t &#43;&#61; h;
-  &#125;
+  <span class=hljs-comment >// Esegue la simulazione</span>
+  <span class=hljs-type >double</span> t{};
+  <span class=hljs-keyword >for</span> (<span class=hljs-type >int</span> idx{}; idx &lt; nsteps; ++idx) {
+    pos = eulero.<span class=hljs-built_in >Passo</span>(t, pos, h, &amp;oa);
+    t += h;
+  }
 
-  assert&#40;is_close&#40;pos&#91;0&#93;, 19.773746013860173&#41;&#41;;
-  assert&#40;is_close&#40;pos&#91;1&#93;, 25.848774751522960&#41;&#41;;
-&#125;</code></pre>
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >is_close</span>(pos[<span class=hljs-number >0</span>], <span class=hljs-number >19.773746013860173</span>));
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >is_close</span>(pos[<span class=hljs-number >1</span>], <span class=hljs-number >25.848774751522960</span>));
+}</code></pre>
 <p>Notate che il ciclo <code>for</code> è implementato calcolando preventivamente il numero di passi in <code>nsteps</code>: è quello che sopra avevamo chiamato il «Metodo 1» &#40;<code>simulate_method1</code>&#41;.</p>
-<p>Per studiare il funzionamento di <code>euler</code>, consideriamo la simulazione nell&#39;intervallo usato sopra, \(0 \leq t \leq
-70\,\text{s}\).</p>
+<p>Per studiare il funzionamento di <code>euler</code>, consideriamo la simulazione nell&#39;intervallo usato sopra, <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mo>≤</mo><mi>t</mi><mo>≤</mo><mn>70</mn><mtext> </mtext><mtext>s</mtext></mrow><annotation encoding="application/x-tex">0 \leq t \leq
+70\,\text{s}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.78041em;vertical-align:-0.13597em;"></span><span class=mord >0</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >≤</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.7719400000000001em;vertical-align:-0.13597em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >≤</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >70</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord text"><span class=mord >s</span></span></span></span></span>.</p>
 <p>Per maggiore eleganza rispetto a quanto fatto sopra, dichiariamo la variabile <code>lastt</code> &#40;nel vostro codice dovreste definirla come un <code>const double</code>, ma in un notebook destinato all&#39;uso interattivo come questo non è mai consigliato definire costanti&#41;.</p>
-<pre><code class=language-julia >lastt &#61; 70.0;</code></pre>
-<p>Nello stabilire il passo di integrazione occorre fare un&#39;osservazione <strong>molto importante</strong>: se vogliamo paragonare la soluzione calcolata da euler, possiamo semplicemente paragonare l&#39;ultimo valore di <code>pos.GetComponente&#40;0&#41;</code> col valore \(\sin(70)\). Ma questo funziona se effettivamente il valore della variabile \(t\) durante l&#39;ultima iterazione del ciclo <code>for</code> è uguale a 70, e questo vale solo se \(\Delta t = 70\,\text{s}\) è esattamente divisibile per \(h\). Non scegliete quindi a caso i valori di \(h\), ma definiteli in funzione del numero di passi che volete far compiere.</p>
-<p>Nel codice Julia definiamo <code>nsteps</code> come un vettore di valori della forma \(7\times 10^k\), con \(k \in [2, 2.2, 2.4, 2.6, \ldots, 3.8,
-4]\): in questo modo gli estremi sono 700 e 70000, pari ad \(h =
-10^{-1}\) e \(h = 10^{-3}\). Il valore di <code>nsteps</code> deve ovviamente essere sempre arrotondato ad un intero &#40;mediante round&#41;.</p>
-<pre><code class=language-julia >nsteps &#61; 7 * round.&#40;Int, exp10.&#40;2:0.2:4&#41;&#41;</code></pre><pre><code class="plaintext code-output">11-element Vector{Int64}:
+<pre><code class="julia hljs">lastt = <span class=hljs-number >70.0</span>;</code></pre>
+<p>Nello stabilire il passo di integrazione occorre fare un&#39;osservazione <strong>molto importante</strong>: se vogliamo paragonare la soluzione calcolata da euler, possiamo semplicemente paragonare l&#39;ultimo valore di <code>pos.GetComponente&#40;0&#41;</code> col valore <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>sin</mi><mo>⁡</mo><mo stretchy=false >(</mo><mn>70</mn><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">\sin(70)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mop >sin</span><span class=mopen >(</span><span class=mord >70</span><span class=mclose >)</span></span></span></span>. Ma questo funziona se effettivamente il valore della variabile <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span></span></span></span> durante l&#39;ultima iterazione del ciclo <code>for</code> è uguale a 70, e questo vale solo se <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant=normal >Δ</mi><mi>t</mi><mo>=</mo><mn>70</mn><mtext> </mtext><mtext>s</mtext></mrow><annotation encoding="application/x-tex">\Delta t = 70\,\text{s}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class=mord >Δ</span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >70</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord text"><span class=mord >s</span></span></span></span></span> è esattamente divisibile per <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi></mrow><annotation encoding="application/x-tex">h</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span></span></span></span>. Non scegliete quindi a caso i valori di <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi></mrow><annotation encoding="application/x-tex">h</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span></span></span></span>, ma definiteli in funzione del numero di passi che volete far compiere.</p>
+<p>Nel codice Julia definiamo <code>nsteps</code> come un vettore di valori della forma <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>7</mn><mo>×</mo><mn>1</mn><msup><mn>0</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">7\times 10^k</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.72777em;vertical-align:-0.08333em;"></span><span class=mord >7</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mbin >×</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span></span><span class=base ><span class=strut  style="height:0.849108em;vertical-align:0em;"></span><span class=mord >1</span><span class=mord ><span class=mord >0</span><span class=msupsub ><span class=vlist-t ><span class=vlist-r ><span class=vlist  style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span></span></span></span></span></span></span>, con <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>∈</mo><mo stretchy=false >[</mo><mn>2</mn><mo separator=true >,</mo><mn>2.2</mn><mo separator=true >,</mo><mn>2.4</mn><mo separator=true >,</mo><mn>2.6</mn><mo separator=true >,</mo><mo>…</mo><mo separator=true >,</mo><mn>3.8</mn><mo separator=true >,</mo><mn>4</mn><mo stretchy=false >]</mo></mrow><annotation encoding="application/x-tex">k \in [2, 2.2, 2.4, 2.6, \ldots, 3.8,
+4]</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.73354em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >∈</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >[</span><span class=mord >2</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >2.2</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >2.4</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >2.6</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=minner >…</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >3.8</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >4</span><span class=mclose >]</span></span></span></span>: in questo modo gli estremi sono 700 e 70000, pari ad <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi><mo>=</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><annotation encoding="application/x-tex">h =
+10^{-1}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.8141079999999999em;vertical-align:0em;"></span><span class=mord >1</span><span class=mord ><span class=mord >0</span><span class=msupsub ><span class=vlist-t ><span class=vlist-r ><span class=vlist  style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi><mo>=</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup></mrow><annotation encoding="application/x-tex">h = 10^{-3}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.8141079999999999em;vertical-align:0em;"></span><span class=mord >1</span><span class=mord ><span class=mord >0</span><span class=msupsub ><span class=vlist-t ><span class=vlist-r ><span class=vlist  style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">3</span></span></span></span></span></span></span></span></span></span></span></span>. Il valore di <code>nsteps</code> deve ovviamente essere sempre arrotondato ad un intero &#40;mediante round&#41;.</p>
+<pre><code class="julia hljs">nsteps = <span class=hljs-number >7</span> * round.(<span class=hljs-built_in >Int</span>, exp10.(<span class=hljs-number >2</span>:<span class=hljs-number >0.2</span>:<span class=hljs-number >4</span>))</code></pre><pre><code class="plaintext hljs">11-element Vector{Int64}:
    700
   1106
   1757
@@ -222,8 +222,8 @@ void test_euler&#40;&#41; &#123;
  27867
  44170
  70000</code></pre>
-<p>In <code>deltat</code> memorizziamo invece i passi temporali &#40;ossia, i valori di \(h\)&#41; che studieremo più sotto. Come spiegato per l&#39;esercizio 8.0, in Julia l&#39;operatore <code>./</code> è come l&#39;operatore <code>/</code> di divisione, ma viene applicato uno ad uno ad ogni elemento dell&#39;array, e risparmia la noia di dover implementare un ciclo <code>for</code>.</p>
-<pre><code class=language-julia >deltat &#61; lastt ./ nsteps</code></pre><pre><code class="plaintext code-output">11-element Vector{Float64}:
+<p>In <code>deltat</code> memorizziamo invece i passi temporali &#40;ossia, i valori di <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi></mrow><annotation encoding="application/x-tex">h</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span></span></span></span>&#41; che studieremo più sotto. Come spiegato per l&#39;esercizio 8.0, in Julia l&#39;operatore <code>./</code> è come l&#39;operatore <code>/</code> di divisione, ma viene applicato uno ad uno ad ogni elemento dell&#39;array, e risparmia la noia di dover implementare un ciclo <code>for</code>.</p>
+<pre><code class="julia hljs">deltat = lastt ./ nsteps</code></pre><pre><code class="plaintext hljs">11-element Vector{Float64}:
  0.1
  0.06329113924050633
  0.0398406374501992
@@ -235,26 +235,26 @@ void test_euler&#40;&#41; &#123;
  0.0025119316754584277
  0.001584786053882726
  0.001</code></pre>
-<p>Creiamo ora un&#39;animazione che confronti la soluzione analitica esatta \(f(x) = \sin x\) con la soluzione calcolata col metodo <code>euler</code>. In Julia è semplicissimo creare animazioni: basta usare la macro <code>@animate</code> del pacchetto <a href="https://github.com/JuliaPlots/Plots.jl/">Plots</a>, e poi salvare il risultato in un file GIF.</p>
-<pre><code class=language-julia >anim &#61; @animate for h in deltat
-    result &#61; euler&#40;oscillatore, &#91;0., 1.&#93;, 0.0, 70.0, h&#41;
-    plot&#40;result&#91;:, 1&#93;, result&#91;:, 2&#93;,
-         title &#61; @sprintf&#40;&quot;h &#61; &#37;.5f&quot;, h&#41;,
-         label&#61;&quot;Eulero&quot;, ylim&#61;&#40;-2, 2&#41;,
-         xlabel&#61;&quot;Tempo &#91;s&#93;&quot;, ylabel&#61;&quot;Posizione &#91;m&#93;&quot;&#41;
-    plot&#33;&#40;result&#91;:, 1&#93;, sin.&#40;result&#91;:, 1&#93;&#41;, label &#61; &quot;Risultato atteso&quot;&#41;
-end
+<p>Creiamo ora un&#39;animazione che confronti la soluzione analitica esatta <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo stretchy=false >(</mo><mi>x</mi><mo stretchy=false >)</mo><mo>=</mo><mi>sin</mi><mo>⁡</mo><mi>x</mi></mrow><annotation encoding="application/x-tex">f(x) = \sin x</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class=mopen >(</span><span class="mord mathnormal">x</span><span class=mclose >)</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.66786em;vertical-align:0em;"></span><span class=mop >sin</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">x</span></span></span></span> con la soluzione calcolata col metodo <code>euler</code>. In Julia è semplicissimo creare animazioni: basta usare la macro <code>@animate</code> del pacchetto <a href="https://github.com/JuliaPlots/Plots.jl/">Plots</a>, e poi salvare il risultato in un file GIF.</p>
+<pre><code class="julia hljs">anim = <span class=hljs-meta >@animate</span> <span class=hljs-keyword >for</span> h <span class=hljs-keyword >in</span> deltat
+    result = euler(oscillatore, [<span class=hljs-number >0.</span>, <span class=hljs-number >1.</span>], <span class=hljs-number >0.0</span>, <span class=hljs-number >70.0</span>, h)
+    plot(result[:, <span class=hljs-number >1</span>], result[:, <span class=hljs-number >2</span>],
+         title = <span class=hljs-meta >@sprintf</span>(<span class=hljs-string >&quot;h = %.5f&quot;</span>, h),
+         label=<span class=hljs-string >&quot;Eulero&quot;</span>, ylim=(-<span class=hljs-number >2</span>, <span class=hljs-number >2</span>),
+         xlabel=<span class=hljs-string >&quot;Tempo [s]&quot;</span>, ylabel=<span class=hljs-string >&quot;Posizione [m]&quot;</span>)
+    plot!(result[:, <span class=hljs-number >1</span>], sin.(result[:, <span class=hljs-number >1</span>]), label = <span class=hljs-string >&quot;Risultato atteso&quot;</span>)
+<span class=hljs-keyword >end</span>
 
-gif&#40;anim, joinpath&#40;@OUTPUT, &quot;euler.gif&quot;&#41;, fps &#61; 1&#41;;</code></pre>
+gif(anim, joinpath(<span class=hljs-meta >@OUTPUT</span>, <span class=hljs-string >&quot;euler.gif&quot;</span>), fps = <span class=hljs-number >1</span>);</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/euler.gif" alt="">
-<p>Vediamo che l&#39;errore è estremamente significativo se \(h = 10^{-2}\). Facciamo un confronto più quantitativo confrontando il valore della posizione all&#39;istante \(t=70\,\text{s}\) con quello teorico.</p>
-<pre><code class=language-julia >lastpos &#61; &#91;euler&#40;oscillatore, &#91;0., 1.&#93;, 0.0, lastt, h&#41;&#91;end, 2&#93; for h in deltat&#93;
-error_euler &#61; abs.&#40;lastpos .- sin&#40;lastt&#41;&#41;
+<p>Vediamo che l&#39;errore è estremamente significativo se <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi><mo>=</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">h = 10^{-2}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.8141079999999999em;vertical-align:0em;"></span><span class=mord >1</span><span class=mord ><span class=mord >0</span><span class=msupsub ><span class=vlist-t ><span class=vlist-r ><span class=vlist  style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span>. Facciamo un confronto più quantitativo confrontando il valore della posizione all&#39;istante <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>70</mn><mtext> </mtext><mtext>s</mtext></mrow><annotation encoding="application/x-tex">t=70\,\text{s}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >70</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord text"><span class=mord >s</span></span></span></span></span> con quello teorico.</p>
+<pre><code class="julia hljs">lastpos = [euler(oscillatore, [<span class=hljs-number >0.</span>, <span class=hljs-number >1.</span>], <span class=hljs-number >0.0</span>, lastt, h)[<span class=hljs-keyword >end</span>, <span class=hljs-number >2</span>] <span class=hljs-keyword >for</span> h <span class=hljs-keyword >in</span> deltat]
+error_euler = abs.(lastpos .- sin(lastt))
 
-@printf&#40;&quot;&#37;-14s\t&#37;-14s\n&quot;, &quot;δt &#91;s&#93;&quot;, &quot;x&#40;70&#41; &#91;m&#93;&quot;&#41;
-for i in 1:length&#40;deltat&#41;
-    @printf&#40;&quot;&#37;.12f\t&#37;.12f\n&quot;, deltat&#91;i&#93;, lastpos&#91;i&#93;&#41;
-end</code></pre><pre><code class="plaintext code-output">δt [s]        	x(70) [m]     
+<span class=hljs-meta >@printf</span>(<span class=hljs-string >&quot;%-14s\t%-14s\n&quot;</span>, <span class=hljs-string >&quot;δt [s]&quot;</span>, <span class=hljs-string >&quot;x(70) [m]&quot;</span>)
+<span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:length(deltat)
+    <span class=hljs-meta >@printf</span>(<span class=hljs-string >&quot;%.12f\t%.12f\n&quot;</span>, deltat[i], lastpos[i])
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">δt [s]        	x(70) [m]     
 0.100000000000	19.773746013860
 0.063291139241	6.491353718714
 0.039840637450	3.020870585603
@@ -267,39 +267,39 @@ end</code></pre><pre><code class="plaintext code-output">δt [s]        	x(70) [
 0.001584786054	0.817989996041
 0.001000000000	0.801441124227
 </code></pre>
-<p>I numeri sopra vi saranno preziosi per fare test sul vostro codice usando <code>assert</code>. Creiamo ora un plot che mostri l&#39;andamento dell&#39;errore in funzione del passo \(h\), come mostrato sul sito.</p>
-<pre><code class=language-julia >plot&#40;deltat, error_euler,
-     xscale &#61; :log10, yscale &#61; :log10,
-     xlabel &#61; &quot;Passo d&#39;integrazione&quot;,
-     ylabel &#61; @sprintf&#40;&quot;Errore a t &#61; &#37;.1f&quot;, lastt&#41;,
-     label &#61; &quot;&quot;&#41;
-scatter&#33;&#40;deltat, error_euler, label &#61; &quot;&quot;&#41;</code></pre>
+<p>I numeri sopra vi saranno preziosi per fare test sul vostro codice usando <code>assert</code>. Creiamo ora un plot che mostri l&#39;andamento dell&#39;errore in funzione del passo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi></mrow><annotation encoding="application/x-tex">h</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span></span></span></span>, come mostrato sul sito.</p>
+<pre><code class="julia hljs">plot(deltat, error_euler,
+     xscale = :log10, yscale = :log10,
+     xlabel = <span class=hljs-string >&quot;Passo d&#x27;integrazione&quot;</span>,
+     ylabel = <span class=hljs-meta >@sprintf</span>(<span class=hljs-string >&quot;Errore a t = %.1f&quot;</span>, lastt),
+     label = <span class=hljs-string >&quot;&quot;</span>)
+scatter!(deltat, error_euler, label = <span class=hljs-string >&quot;&quot;</span>)</code></pre><pre><code class="plaintext hljs">&quot;/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/euler_error.svg&quot;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/euler_error.svg" alt="">
 <h2 id=esercizio_82_soluzione_con_runge-kutta ><a href="#esercizio_82_soluzione_con_runge-kutta" class=header-anchor >Esercizio 8.2: Soluzione con Runge-Kutta</a></h2>
 <p>Testo dell&#39;esercizio: <a href="https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.2">carminati-esercizi-08.html</a>.</p>
 <p>La funzione <code>rungekutta</code> implementa l&#39;integrazione di Runge-Kutta usando lo stesso approccio della funzione <code>euler</code> vista sopra: è quindi un po&#39; diverso dal modo in cui la implementerete voi.</p>
-<pre><code class=language-julia >function rungekutta&#40;fn, x0, startt, endt, h&#41;
-    timerange &#61; startt:h:endt
-    result &#61; Array&#123;Float64&#125;&#40;undef, length&#40;timerange&#41;, 1 &#43; length&#40;x0&#41;&#41;
-    cur &#61; copy&#40;x0&#41;
-    for &#40;i, t&#41; in enumerate&#40;timerange&#41;
-        result&#91;i, 1&#93; &#61; t
-        result&#91;i, 2:end&#93; &#61; cur
+<pre><code class="julia hljs"><span class=hljs-keyword >function</span> rungekutta(fn, x0, startt, endt, h)
+    timerange = startt:h:endt
+    result = <span class=hljs-built_in >Array</span>{<span class=hljs-built_in >Float64</span>}(<span class=hljs-literal >undef</span>, length(timerange), <span class=hljs-number >1</span> + length(x0))
+    cur = copy(x0)
+    <span class=hljs-keyword >for</span> (i, t) <span class=hljs-keyword >in</span> enumerate(timerange)
+        result[i, <span class=hljs-number >1</span>] = t
+        result[i, <span class=hljs-number >2</span>:<span class=hljs-keyword >end</span>] = cur
 
-        k1 &#61; fn&#40;t,          cur&#41;
-        k2 &#61; fn&#40;t &#43; h / 2., cur .&#43; k1 .* h / 2.0&#41;
-        k3 &#61; fn&#40;t &#43; h / 2., cur .&#43; k2 .* h / 2.0&#41;
-        k4 &#61; fn&#40;t &#43; h,      cur .&#43; k3 .* h&#41;
+        k1 = fn(t,          cur)
+        k2 = fn(t + h / <span class=hljs-number >2.</span>, cur .+ k1 .* h / <span class=hljs-number >2.0</span>)
+        k3 = fn(t + h / <span class=hljs-number >2.</span>, cur .+ k2 .* h / <span class=hljs-number >2.0</span>)
+        k4 = fn(t + h,      cur .+ k3 .* h)
 
-        cur .&#43;&#61; &#40;k1 .&#43; 2k2 .&#43; 2k3 .&#43; k4&#41; .* h / 6
-    end
+        cur .+= (k1 .+ <span class=hljs-number >2</span>k2 .+ <span class=hljs-number >2</span>k3 .+ k4) .* h / <span class=hljs-number >6</span>
+    <span class=hljs-keyword >end</span>
 
     result
-end</code></pre><pre><code class="plaintext code-output">rungekutta (generic function with 1 method)</code></pre>
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">rungekutta (generic function with 1 method)</code></pre>
 <p>Il funzionamento di <code>rungekutta</code> è però il medesimo di <code>euler</code>: le due funzioni accettano gli stessi parametri e restituiscono matrici a tre colonne.</p>
-<pre><code class=language-julia >result &#61; rungekutta&#40;oscillatore, &#91;0., 1.&#93;, 0.0, 70.0, 0.1&#41;;</code></pre>
+<pre><code class="julia hljs">result = rungekutta(oscillatore, [<span class=hljs-number >0.</span>, <span class=hljs-number >1.</span>], <span class=hljs-number >0.0</span>, <span class=hljs-number >70.0</span>, <span class=hljs-number >0.1</span>);</code></pre>
 <p>Come sopra, consideriamo la posizione e la velocità all&#39;inizio della simulazione:</p>
-<pre><code class=language-julia >result&#91;1:10, :&#93;</code></pre><pre><code class="plaintext code-output">10×3 Matrix{Float64}:
+<pre><code class="julia hljs">result[<span class=hljs-number >1</span>:<span class=hljs-number >10</span>, :]</code></pre><pre><code class="plaintext hljs">10×3 Matrix{Float64}:
  0.0  0.0        1.0
  0.1  0.0998333  0.995004
  0.2  0.198669   0.980067
@@ -311,7 +311,7 @@ end</code></pre><pre><code class="plaintext code-output">rungekutta (generic fun
  0.8  0.717356   0.696707
  0.9  0.783326   0.621611</code></pre>
 <p>Questi sono i dati alla fine della simulazione:</p>
-<pre><code class=language-julia >result&#91;&#40;end - 10&#41;:end, :&#93;</code></pre><pre><code class="plaintext code-output">11×3 Matrix{Float64}:
+<pre><code class="julia hljs">result[(<span class=hljs-keyword >end</span> - <span class=hljs-number >10</span>):<span class=hljs-keyword >end</span>, :]</code></pre><pre><code class="plaintext hljs">11×3 Matrix{Float64}:
  69.0  -0.114841   0.993379
  69.1  -0.0150951  0.999881
  69.2   0.0848018  0.996393
@@ -324,39 +324,39 @@ end</code></pre><pre><code class="plaintext code-output">rungekutta (generic fun
  69.9   0.706754   0.707453
  70.0   0.77385    0.633361</code></pre>
 <p>Possiamo usare questi valori per scrivere una funzione <code>test_runge_kutta</code>, simile a <code>test_euler</code> &#40;v. sopra&#41;:</p>
-<pre><code class=language-cpp >void test_runge_kutta&#40;&#41; &#123;
+<pre><code class="cpp hljs"><span class=hljs-function ><span class=hljs-type >void</span> <span class=hljs-title >test_runge_kutta</span><span class=hljs-params >()</span> </span>{
   RungeKutta rk;
-  OscillatoreArmonico oa&#123;1.0&#125;;
-  const double lastt&#123;70.0&#125;;
-  const double h&#123;0.1&#125;;
-  const int nsteps&#123;static_cast&lt;double&gt;&#40;lasttt / h &#43; 0.5&#41;&#125;;
-  std::vector&lt;double&gt; pos&#123;0.0, 1.0&#125;;
+  OscillatoreArmonico oa{<span class=hljs-number >1.0</span>};
+  <span class=hljs-type >const</span> <span class=hljs-type >double</span> lastt{<span class=hljs-number >70.0</span>};
+  <span class=hljs-type >const</span> <span class=hljs-type >double</span> h{<span class=hljs-number >0.1</span>};
+  <span class=hljs-type >const</span> <span class=hljs-type >int</span> nsteps{<span class=hljs-built_in >static_cast</span>&lt;<span class=hljs-type >double</span>&gt;(lasttt / h + <span class=hljs-number >0.5</span>)};
+  std::vector&lt;<span class=hljs-type >double</span>&gt; pos{<span class=hljs-number >0.0</span>, <span class=hljs-number >1.0</span>};
 
-  // Esegue la simulazione
-  double t&#123;&#125;;
-  for &#40;int idx&#123;&#125;; idx &lt; nsteps; &#43;&#43;idx&#41; &#123;
-    pos &#61; rk.Passo&#40;t, pos, h, &amp;oa&#41;;
-    t &#43;&#61; h;
-  &#125;
+  <span class=hljs-comment >// Esegue la simulazione</span>
+  <span class=hljs-type >double</span> t{};
+  <span class=hljs-keyword >for</span> (<span class=hljs-type >int</span> idx{}; idx &lt; nsteps; ++idx) {
+    pos = rk.<span class=hljs-built_in >Passo</span>(t, pos, h, &amp;oa);
+    t += h;
+  }
 
-  assert&#40;is_close&#40;pos&#91;0&#93;, 0.7738501114078689&#41;&#41;;
-  assert&#40;is_close&#40;pos&#91;1&#93;, 0.6333611095194112&#41;&#41;;
-&#125;</code></pre>
-<p>Nel caso di Runge-Kutta, l&#39;animazione è molto meno interessante: la convergenza è eccellente anche per \(h = 10^{-1}\).</p>
-<pre><code class=language-julia >anim &#61; @animate for h in deltat
-    cur_result &#61; rungekutta&#40;oscillatore, &#91;0., 1.&#93;, 0.0, 70.0, h&#41;
-    plot&#40;cur_result&#91;:, 1&#93;, cur_result&#91;:, 2&#93;,
-         title &#61; @sprintf&#40;&quot;h &#61; &#37;.5f&quot;, h&#41;,
-         label&#61;&quot;Eulero&quot;, ylim&#61;&#40;-2, 2&#41;,
-         xlabel&#61;&quot;Tempo &#91;s&#93;&quot;, ylabel&#61;&quot;Posizione &#91;m&#93;&quot;&#41;
-    plot&#33;&#40;cur_result&#91;:, 1&#93;, sin.&#40;cur_result&#91;:, 1&#93;&#41;, label &#61; &quot;Risultato atteso&quot;&#41;
-end
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >is_close</span>(pos[<span class=hljs-number >0</span>], <span class=hljs-number >0.7738501114078689</span>));
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >is_close</span>(pos[<span class=hljs-number >1</span>], <span class=hljs-number >0.6333611095194112</span>));
+}</code></pre>
+<p>Nel caso di Runge-Kutta, l&#39;animazione è molto meno interessante: la convergenza è eccellente anche per <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi><mo>=</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><annotation encoding="application/x-tex">h = 10^{-1}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.8141079999999999em;vertical-align:0em;"></span><span class=mord >1</span><span class=mord ><span class=mord >0</span><span class=msupsub ><span class=vlist-t ><span class=vlist-r ><span class=vlist  style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span></span></span></span>.</p>
+<pre><code class="julia hljs">anim = <span class=hljs-meta >@animate</span> <span class=hljs-keyword >for</span> h <span class=hljs-keyword >in</span> deltat
+    cur_result = rungekutta(oscillatore, [<span class=hljs-number >0.</span>, <span class=hljs-number >1.</span>], <span class=hljs-number >0.0</span>, <span class=hljs-number >70.0</span>, h)
+    plot(cur_result[:, <span class=hljs-number >1</span>], cur_result[:, <span class=hljs-number >2</span>],
+         title = <span class=hljs-meta >@sprintf</span>(<span class=hljs-string >&quot;h = %.5f&quot;</span>, h),
+         label=<span class=hljs-string >&quot;Eulero&quot;</span>, ylim=(-<span class=hljs-number >2</span>, <span class=hljs-number >2</span>),
+         xlabel=<span class=hljs-string >&quot;Tempo [s]&quot;</span>, ylabel=<span class=hljs-string >&quot;Posizione [m]&quot;</span>)
+    plot!(cur_result[:, <span class=hljs-number >1</span>], sin.(cur_result[:, <span class=hljs-number >1</span>]), label = <span class=hljs-string >&quot;Risultato atteso&quot;</span>)
+<span class=hljs-keyword >end</span>
 
-gif&#40;anim, joinpath&#40;@OUTPUT, &quot;rk.gif&quot;&#41;, fps &#61; 1&#41;;</code></pre>
+gif(anim, joinpath(<span class=hljs-meta >@OUTPUT</span>, <span class=hljs-string >&quot;rk.gif&quot;</span>), fps = <span class=hljs-number >1</span>);</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/rk.gif" alt="">
 <p>Confrontiamo il grafico dell&#39;errore di Runge-Kutta con quello di Eulero, per rendere evidente la differenza nella velocità di convergenza.</p>
-<pre><code class=language-julia >lastpos &#61; &#91;rungekutta&#40;oscillatore, &#91;0., 1.&#93;, 0.0, lastt, h&#41;&#91;end, 2&#93; for h in deltat&#93;
-error_rk &#61; abs.&#40;lastpos .- sin&#40;lastt&#41;&#41;</code></pre><pre><code class="plaintext code-output">11-element Vector{Float64}:
+<pre><code class="julia hljs">lastpos = [rungekutta(oscillatore, [<span class=hljs-number >0.</span>, <span class=hljs-number >1.</span>], <span class=hljs-number >0.0</span>, lastt, h)[<span class=hljs-keyword >end</span>, <span class=hljs-number >2</span>] <span class=hljs-keyword >for</span> h <span class=hljs-keyword >in</span> deltat]
+error_rk = abs.(lastpos .- sin(lastt))</code></pre><pre><code class="plaintext hljs">11-element Vector{Float64}:
  4.0570150020236007e-5
  6.301458916779801e-6
  9.680016646029799e-7
@@ -368,11 +368,11 @@ error_rk &#61; abs.&#40;lastpos .- sin&#40;lastt&#41;&#41;</code></pre><pre><cod
  1.4744427900836854e-11
  2.3335777754596165e-12
  3.597122599785507e-13</code></pre>
-<p>Questa è la corrispondenza tra \(\delta t\) e la posizione finale &#40;a \(t = 70\,\text{s}\)&#41;:</p>
-<pre><code class=language-julia >@printf&#40;&quot;&#37;-14s\t&#37;-14s\n&quot;, &quot;δt &#91;s&#93;&quot;, &quot;x&#40;70&#41; &#91;m&#93;&quot;&#41;
-for i in 1:length&#40;deltat&#41;
-    @printf&#40;&quot;&#37;.12f\t&#37;.12f\n&quot;, deltat&#91;i&#93;, lastpos&#91;i&#93;&#41;
-end</code></pre><pre><code class="plaintext code-output">δt [s]        	x(70) [m]     
+<p>Questa è la corrispondenza tra <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>δ</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">\delta t</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.03785em;">δ</span><span class="mord mathnormal">t</span></span></span></span> e la posizione finale &#40;a <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>70</mn><mtext> </mtext><mtext>s</mtext></mrow><annotation encoding="application/x-tex">t = 70\,\text{s}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >70</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord text"><span class=mord >s</span></span></span></span></span>&#41;:</p>
+<pre><code class="julia hljs"><span class=hljs-meta >@printf</span>(<span class=hljs-string >&quot;%-14s\t%-14s\n&quot;</span>, <span class=hljs-string >&quot;δt [s]&quot;</span>, <span class=hljs-string >&quot;x(70) [m]&quot;</span>)
+<span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:length(deltat)
+    <span class=hljs-meta >@printf</span>(<span class=hljs-string >&quot;%.12f\t%.12f\n&quot;</span>, deltat[i], lastpos[i])
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">δt [s]        	x(70) [m]     
 0.100000000000	0.773850111408
 0.063291139241	0.773884380099
 0.039840637450	0.773889713556
@@ -386,26 +386,26 @@ end</code></pre><pre><code class="plaintext code-output">δt [s]        	x(70) [
 0.001000000000	0.773890681558
 </code></pre>
 <p>Creiamo un plot che mostri visivamente la differenza tra i due metodi:</p>
-<pre><code class=language-julia >plot&#40;deltat, error_euler, label &#61; &quot;&quot;&#41;
-scatter&#33;&#40;deltat, error_euler, label &#61; &quot;Eulero&quot;&#41;
+<pre><code class="julia hljs">plot(deltat, error_euler, label = <span class=hljs-string >&quot;&quot;</span>)
+scatter!(deltat, error_euler, label = <span class=hljs-string >&quot;Eulero&quot;</span>)
 
-plot&#33;&#40;deltat, error_rk,
-     xscale &#61; :log10, yscale &#61; :log10,
-     xlabel &#61; &quot;Passo d&#39;integrazione&quot;,
-     ylabel &#61; @sprintf&#40;&quot;Errore a t &#61; &#37;.1f&quot;, lastt&#41;,
-     label &#61; &quot;&quot;&#41;
-scatter&#33;&#40;deltat, error_rk, label &#61; &quot;Runge-Kutta&quot;&#41;</code></pre>
+plot!(deltat, error_rk,
+     xscale = :log10, yscale = :log10,
+     xlabel = <span class=hljs-string >&quot;Passo d&#x27;integrazione&quot;</span>,
+     ylabel = <span class=hljs-meta >@sprintf</span>(<span class=hljs-string >&quot;Errore a t = %.1f&quot;</span>, lastt),
+     label = <span class=hljs-string >&quot;&quot;</span>)
+scatter!(deltat, error_rk, label = <span class=hljs-string >&quot;Runge-Kutta&quot;</span>)</code></pre><pre><code class="plaintext hljs">&quot;/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/euler_rk_comparison.svg&quot;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/euler_rk_comparison.svg" alt="">
 <h2 id=esercizio_83 ><a href="#esercizio_83" class=header-anchor >Esercizio 8.3</a></h2>
 <p>Testo dell&#39;esercizio: <a href="https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.3">carminati-esercizi-08.html</a>.</p>
-<p>Questo esercizio richiede di studiare il comportamento di un pendolo di lunghezza \(l\) sottoposto ad un&#39;accelerazione di gravità \(g\). Impostiamo un paio di costanti.</p>
-<pre><code class=language-julia >rodlength &#61; 1.;
-g &#61; 9.81;</code></pre>
+<p>Questo esercizio richiede di studiare il comportamento di un pendolo di lunghezza <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi></mrow><annotation encoding="application/x-tex">l</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span></span></span></span> sottoposto ad un&#39;accelerazione di gravità <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>g</mi></mrow><annotation encoding="application/x-tex">g</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span></span></span></span>. Impostiamo un paio di costanti.</p>
+<pre><code class="julia hljs">rodlength = <span class=hljs-number >1.</span>;
+g = <span class=hljs-number >9.81</span>;</code></pre>
 <p>La funzione <code>pendulum</code> definisce i due membri dell&#39;equazione differenziale di secondo grado.</p>
-<pre><code class=language-julia >pendulum&#40;t, x&#41; &#61; &#91;x&#91;2&#93;, -g / rodlength * sin&#40;x&#91;1&#93;&#41;&#93;</code></pre><pre><code class="plaintext code-output">pendulum (generic function with 1 method)</code></pre>
-<p>Prima di effettuare lo studio richiesto dall&#39;esercizio, è buona norma studiare il comportamento della soluzione in un caso particolare. Usiamo <code>rungekutta</code> per analizzare il caso in cui \(\theta_0 = \pi / 3\):</p>
-<pre><code class=language-julia >oscillations &#61; rungekutta&#40;pendulum, &#91;π / 3, 0.&#93;, 0.0, 3.0, 0.01&#41;
-oscillations&#91;1:10, :&#93;</code></pre><pre><code class="plaintext code-output">10×3 Matrix{Float64}:
+<pre><code class="julia hljs">pendulum(t, x) = [x[<span class=hljs-number >2</span>], -g / rodlength * sin(x[<span class=hljs-number >1</span>])]</code></pre><pre><code class="plaintext hljs">pendulum (generic function with 1 method)</code></pre>
+<p>Prima di effettuare lo studio richiesto dall&#39;esercizio, è buona norma studiare il comportamento della soluzione in un caso particolare. Usiamo <code>rungekutta</code> per analizzare il caso in cui <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>θ</mi><mn>0</mn></msub><mo>=</mo><mi>π</mi><mi mathvariant=normal >/</mi><mn>3</mn></mrow><annotation encoding="application/x-tex">\theta_0 = \pi / 3</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.84444em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">π</span><span class=mord >/3</span></span></span></span>:</p>
+<pre><code class="julia hljs">oscillations = rungekutta(pendulum, [<span class=hljs-literal >π</span> / <span class=hljs-number >3</span>, <span class=hljs-number >0.</span>], <span class=hljs-number >0.0</span>, <span class=hljs-number >3.0</span>, <span class=hljs-number >0.01</span>)
+oscillations[<span class=hljs-number >1</span>:<span class=hljs-number >10</span>, :]</code></pre><pre><code class="plaintext hljs">10×3 Matrix{Float64}:
  0.0   1.0472    0.0
  0.01  1.04677  -0.0849501
  0.02  1.0455   -0.169859
@@ -417,7 +417,7 @@ oscillations&#91;1:10, :&#93;</code></pre><pre><code class="plaintext code-outpu
  0.08  1.02008  -0.676057
  0.09  1.01291  -0.759471</code></pre>
 <p>Visualizziamo anche le ultime righe:</p>
-<pre><code class=language-julia >oscillations&#91;&#40;end - 10&#41;:end, :&#93;</code></pre><pre><code class="plaintext code-output">11×3 Matrix{Float64}:
+<pre><code class="julia hljs">oscillations[(<span class=hljs-keyword >end</span> - <span class=hljs-number >10</span>):<span class=hljs-keyword >end</span>, :]</code></pre><pre><code class="plaintext hljs">11×3 Matrix{Float64}:
  2.9   -0.609502  -2.50541
  2.91  -0.634272  -2.44826
  2.92  -0.658461  -2.38917
@@ -431,132 +431,132 @@ oscillations&#91;1:10, :&#93;</code></pre><pre><code class="plaintext code-outpu
  3.0   -0.828941  -1.85645</code></pre>
 <p>È interessante studiare il pendolo creando un&#39;animazione. Noi useremo il pacchetto <a href="https://github.com/JuliaGraphics/Luxor.jl">Luxor</a>, che consente di creare disegni ed animazioni partendo da forme geometriche primitive. &#40;Se volete creare qualcosa del genere in C&#43;&#43;, potete usare la libreria <a href="https://github.com/ziotom78/monet">Monet</a>, convertendo poi i file SVG generati da Monet in format PNG con l&#39;interfaccia a linea di comando di <a href="https://inkscape.org/">Inkscape</a> e assemblando i file PNG in un&#39;animazione MP4 o MKV con <a href="https://ffmpeg.org/">ffmpeg</a>&#41;.</p>
 <p>Per installare Luxor da Internet, usate come al solito i comandi di Pkg:</p>
-<pre><code class=language-julia >using Pkg
-Pkg.add&#40;&quot;Luxor&quot;&#41;</code></pre>
+<pre><code class="julia hljs"><span class=hljs-keyword >using</span> Pkg
+Pkg.add(<span class=hljs-string >&quot;Luxor&quot;</span>)</code></pre>
 <p>Quando è installato, possiamo importarlo come al solito:</p>
-<pre><code class=language-julia >import Luxor</code></pre>
-<p>In Luxor occorre specificare le dimensioni della superficie su cui si disegna; noi sceglieremo una dimensione di 500×500. Il sistema di coordinate ha origine sempre nel centro dell&#39;immagine, in modo che l&#39;intervallo di valori sugli assi \(x\) ed \(y\) sarà nel nostro caso \(-250\ldots 250\).</p>
+<pre><code class="julia hljs"><span class=hljs-keyword >import</span> Luxor</code></pre>
+<p>In Luxor occorre specificare le dimensioni della superficie su cui si disegna; noi sceglieremo una dimensione di 500×500. Il sistema di coordinate ha origine sempre nel centro dell&#39;immagine, in modo che l&#39;intervallo di valori sugli assi <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">x</span></span></span></span> ed <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span></span></span></span> sarà nel nostro caso <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>−</mo><mn>250</mn><mo>…</mo><mn>250</mn></mrow><annotation encoding="application/x-tex">-250\ldots 250</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.72777em;vertical-align:-0.08333em;"></span><span class=mord >−</span><span class=mord >250</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=minner >…</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >250</span></span></span></span>.</p>
 <p>La funzione <code>plot_pendulum</code> rappresenta il pendolo come una linea che parte dal centro e alla cui estremità è disegnato un cerchio pieno di colore nero. &#40;Notate che Julia offre il comando <code>sincos</code>, che calcola simultaneamente il valore del seno e del coseno di un angolo&#41;.</p>
-<pre><code class=language-julia >function plot_pendulum&#40;angle&#41;
-    radius &#61; 200  # Lunghezza del braccio del pendolo
-    y, x &#61; radius .* sincos&#40;π / 2 &#43; angle&#41;
+<pre><code class="julia hljs"><span class=hljs-keyword >function</span> plot_pendulum(angle)
+    radius = <span class=hljs-number >200</span>  <span class=hljs-comment ># Lunghezza del braccio del pendolo</span>
+    y, x = radius .* sincos(<span class=hljs-literal >π</span> / <span class=hljs-number >2</span> + angle)
 
-    Luxor.sethue&#40;&quot;black&quot;&#41;
-    Luxor.line&#40;Luxor.Point&#40;0, 0&#41;, Luxor.Point&#40;x, y&#41;, :stroke&#41;
-    Luxor.circle&#40;Luxor.Point&#40;x, y&#41;, 10, :fill&#41;
-end</code></pre><pre><code class="plaintext code-output">plot_pendulum (generic function with 1 method)</code></pre>
-<p>Abbiamo già calcolato la soluzione dell&#39;equazione in un caso particolare, e il risultato è nella matrice <code>oscillations</code>. Il comando <code>size</code> restituisce le dimensioni di vettori, matrici e tensori. Nel caso di <code>oscillations</code> ci sono ovviamente 3 colonne, ma il numero di righe &#40;corrispondente agli step temporali&#41; dipende dal passo \(h\) e dalla lunghezza della simulazione. Vediamo di quanti step si tratta:</p>
-<pre><code class=language-julia >size&#40;oscillations, 1&#41;</code></pre><pre><code class="plaintext code-output">301</code></pre>
+    Luxor.sethue(<span class=hljs-string >&quot;black&quot;</span>)
+    Luxor.line(Luxor.Point(<span class=hljs-number >0</span>, <span class=hljs-number >0</span>), Luxor.Point(x, y), :stroke)
+    Luxor.circle(Luxor.Point(x, y), <span class=hljs-number >10</span>, :fill)
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">plot_pendulum (generic function with 1 method)</code></pre>
+<p>Abbiamo già calcolato la soluzione dell&#39;equazione in un caso particolare, e il risultato è nella matrice <code>oscillations</code>. Il comando <code>size</code> restituisce le dimensioni di vettori, matrici e tensori. Nel caso di <code>oscillations</code> ci sono ovviamente 3 colonne, ma il numero di righe &#40;corrispondente agli step temporali&#41; dipende dal passo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi></mrow><annotation encoding="application/x-tex">h</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span></span></span></span> e dalla lunghezza della simulazione. Vediamo di quanti step si tratta:</p>
+<pre><code class="julia hljs">size(oscillations, <span class=hljs-number >1</span>)</code></pre><pre><code class="plaintext hljs">301</code></pre>
 <p>Creeremo ora un&#39;immagine GIF animata chiamando ripetutamente il comando <code>plot_pendulum</code>. Notate la comodità di Luxor: in poche righe è possibile creare un&#39;intera animazione e salvarla su disco.</p>
-<pre><code class=language-julia >anim &#61; Luxor.Movie&#40;500, 500, &quot;Pendulum&quot;&#41;
+<pre><code class="julia hljs">anim = Luxor.Movie(<span class=hljs-number >500</span>, <span class=hljs-number >500</span>, <span class=hljs-string >&quot;Pendulum&quot;</span>)
 
-function animframe&#40;scene, framenumber&#41;
-    Luxor.background&#40;&quot;white&quot;&#41;
-    plot_pendulum&#40;oscillations&#91;framenumber, 2&#93;&#41;
-end
+<span class=hljs-keyword >function</span> animframe(scene, framenumber)
+    Luxor.background(<span class=hljs-string >&quot;white&quot;</span>)
+    plot_pendulum(oscillations[framenumber, <span class=hljs-number >2</span>])
+<span class=hljs-keyword >end</span>
 
-Luxor.animate&#40;anim, &#91;Luxor.Scene&#40;anim, animframe, 1:size&#40;oscillations, 1&#41;&#41;&#93;,
-    creategif&#61;true, pathname&#61;joinpath&#40;@OUTPUT, &quot;pendulum.gif&quot;&#41;&#41;;</code></pre>
+Luxor.animate(anim, [Luxor.Scene(anim, animframe, <span class=hljs-number >1</span>:size(oscillations, <span class=hljs-number >1</span>))],
+    creategif=<span class=hljs-literal >true</span>, pathname=joinpath(<span class=hljs-meta >@OUTPUT</span>, <span class=hljs-string >&quot;pendulum.gif&quot;</span>));</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/pendulum.gif" alt="">
 <p>Adesso che abbiamo visto che l&#39;equazione del pendolo viene integrata correttamente, dobbiamo passare al calcolo del periodo di oscillazione. Come suggerito sul sito, bisogna considerare il momento in cui la velocità angolare inverte il segno. Osserviamo allora il grafico della velocità &#40;seconda componente del sistema di equazioni differenziali&#41;.</p>
-<pre><code class=language-julia >plot&#40;oscillations&#91;:, 1&#93;, oscillations&#91;:, 3&#93;,
-     label &#61; &quot;&quot;,
-     xlabel &#61; &quot;Tempo &#91;s&#93;&quot;,
-     ylabel &#61; &quot;Velocità angolare &#91;rad/s&#93;&quot;&#41;</code></pre>
+<pre><code class="julia hljs">plot(oscillations[:, <span class=hljs-number >1</span>], oscillations[:, <span class=hljs-number >3</span>],
+     label = <span class=hljs-string >&quot;&quot;</span>,
+     xlabel = <span class=hljs-string >&quot;Tempo [s]&quot;</span>,
+     ylabel = <span class=hljs-string >&quot;Velocità angolare [rad/s]&quot;</span>)</code></pre><pre><code class="plaintext hljs">&quot;/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/oscillations1.svg&quot;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/oscillations1.svg" alt="">
 <p>Possiamo farci un&#39;idea del punto in cui avviene l&#39;inversione usando i filtri offerti da Julia. In particolare, la sintassi <code>v .&lt; 0.1</code> restituisce un vettore contenente tutti gli elementi del vettore <code>v</code> che hanno valore inferiore a 0.1, ed impiega il solito trucco del punto <code>.</code> che «propaga» un operatore sugli elementi di un vettore.</p>
-<p>Ecco quindi come troviamo tutte le iterazioni della soluzione per cui la velocità \(v_i\) è tale per cui \(\left| v_i \right| < 0.1\):</p>
-<pre><code class=language-julia >oscillations&#91;abs.&#40;oscillations&#91;:, 3&#93;&#41; .&lt; 0.1, :&#93;</code></pre><pre><code class="plaintext code-output">6×3 Matrix{Float64}:
+<p>Ecco quindi come troviamo tutte le iterazioni della soluzione per cui la velocità <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>v</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">v_i</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.58056em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> è tale per cui <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo fence=true >∣</mo><msub><mi>v</mi><mi>i</mi></msub><mo fence=true >∣</mo></mrow><mo>&lt;</mo><mn>0.1</mn></mrow><annotation encoding="application/x-tex">\left| v_i \right| &lt; 0.1</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=minner ><span class="mopen delimcenter" style="top:0em;">∣</span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose delimcenter" style="top:0em;">∣</span></span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >&lt;</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >0.1</span></span></span></span>:</p>
+<pre><code class="julia hljs">oscillations[abs.(oscillations[:, <span class=hljs-number >3</span>]) .&lt; <span class=hljs-number >0.1</span>, :]</code></pre><pre><code class="plaintext hljs">6×3 Matrix{Float64}:
  0.0    1.0472    0.0
  0.01   1.04677  -0.0849501
  1.07  -1.04702  -0.0546879
  1.08  -1.04714   0.030267
  2.15   1.04716   0.0244223
  2.16   1.04698  -0.0605321</code></pre>
-<p>Vediamo dunque che, oltre alla velocità nulla dell&#39;istante iniziale &#40;ovvia perché causata dalle nostre condizioni iniziali&#41;, c&#39;è una inversione al tempo \(t \approx 1.07\,\text{s}\) e un&#39;altra al tempo \(t \approx 2.15\,\text{s}\).</p>
-<p>Dai numeri mostrati qui sopra, è evidente il problema accennato sul sito: non esiste alcun punto in cui la velocità angolare sia esattamente zero, perché stiamo usando un passo discreto per integrare l&#39;equazione. I due istanti esatti in cui avvengono le inversioni sono rispettivamente nell&#39;intervallo \((1.07, 1.08)\) e \((2.15, 2.16)\). Facciamo un grafico ingrandito nell&#39;intervallo temporale \(t = 1\ldots 1.2\,\text{s}\) per renderci meglio conto della cosa:</p>
-<pre><code class=language-julia >scatter&#40;oscillations&#91;:, 1&#93;, oscillations&#91;:, 3&#93;,
-        label &#61; &quot;&quot;,
-        xlim &#61; &#40;1.0, 1.2&#41;,
-        xlabel &#61; &quot;Tempo &#91;s&#93;&quot;,
-        ylabel &#61; &quot;Velocità angolare &#91;rad/s&#93;&quot;&#41;</code></pre>
+<p>Vediamo dunque che, oltre alla velocità nulla dell&#39;istante iniziale &#40;ovvia perché causata dalle nostre condizioni iniziali&#41;, c&#39;è una inversione al tempo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>≈</mo><mn>1.07</mn><mtext> </mtext><mtext>s</mtext></mrow><annotation encoding="application/x-tex">t \approx 1.07\,\text{s}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >≈</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >1.07</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord text"><span class=mord >s</span></span></span></span></span> e un&#39;altra al tempo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>≈</mo><mn>2.15</mn><mtext> </mtext><mtext>s</mtext></mrow><annotation encoding="application/x-tex">t \approx 2.15\,\text{s}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >≈</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >2.15</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord text"><span class=mord >s</span></span></span></span></span>.</p>
+<p>Dai numeri mostrati qui sopra, è evidente il problema accennato sul sito: non esiste alcun punto in cui la velocità angolare sia esattamente zero, perché stiamo usando un passo discreto per integrare l&#39;equazione. I due istanti esatti in cui avvengono le inversioni sono rispettivamente nell&#39;intervallo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy=false >(</mo><mn>1.07</mn><mo separator=true >,</mo><mn>1.08</mn><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">(1.07, 1.08)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >(</span><span class=mord >1.07</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >1.08</span><span class=mclose >)</span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy=false >(</mo><mn>2.15</mn><mo separator=true >,</mo><mn>2.16</mn><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">(2.15, 2.16)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >(</span><span class=mord >2.15</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >2.16</span><span class=mclose >)</span></span></span></span>. Facciamo un grafico ingrandito nell&#39;intervallo temporale <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>1</mn><mo>…</mo><mn>1.2</mn><mtext> </mtext><mtext>s</mtext></mrow><annotation encoding="application/x-tex">t = 1\ldots 1.2\,\text{s}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >1</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=minner >…</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >1.2</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord text"><span class=mord >s</span></span></span></span></span> per renderci meglio conto della cosa:</p>
+<pre><code class="julia hljs">scatter(oscillations[:, <span class=hljs-number >1</span>], oscillations[:, <span class=hljs-number >3</span>],
+        label = <span class=hljs-string >&quot;&quot;</span>,
+        xlim = (<span class=hljs-number >1.0</span>, <span class=hljs-number >1.2</span>),
+        xlabel = <span class=hljs-string >&quot;Tempo [s]&quot;</span>,
+        ylabel = <span class=hljs-string >&quot;Velocità angolare [rad/s]&quot;</span>)</code></pre><pre><code class="plaintext hljs">&quot;/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/oscillations2.svg&quot;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/oscillations2.svg" alt="">
 <p>Implementiamo quindi una funzione per cercare l&#39;inversione di segno in un vettore. Essa dovrà scandire il vettore e determinare quando il segno di due elementi consecutivi cambia, restituendo la posizione del primo di questi due elementi. &#40;È buona cosa che anche voi implementiate una funzione del genere nel vostro codice C&#43;&#43;&#41;.</p>
-<pre><code class=language-julia >function search_inversion&#40;vect&#41;
-    prevval &#61; vect&#91;1&#93;
-    for i in 2:length&#40;vect&#41;
-        # Qui usiamo lo stesso trucco per trovare un cambio di segno
-        # che avevamo già impiegato negli esercizi per la ricerca
-        # degli zeri
-        if sign&#40;prevval&#41; * sign&#40;vect&#91;i&#93;&#41; &lt; 0
-            return i - 1
-        end
-        prevval &#61; vect&#91;i&#93;
-    end
+<pre><code class="julia hljs"><span class=hljs-keyword >function</span> search_inversion(vect)
+    prevval = vect[<span class=hljs-number >1</span>]
+    <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >2</span>:length(vect)
+        <span class=hljs-comment ># Qui usiamo lo stesso trucco per trovare un cambio di segno</span>
+        <span class=hljs-comment ># che avevamo già impiegato negli esercizi per la ricerca</span>
+        <span class=hljs-comment ># degli zeri</span>
+        <span class=hljs-keyword >if</span> sign(prevval) * sign(vect[i]) &lt; <span class=hljs-number >0</span>
+            <span class=hljs-keyword >return</span> i - <span class=hljs-number >1</span>
+        <span class=hljs-keyword >end</span>
+        prevval = vect[i]
+    <span class=hljs-keyword >end</span>
 
-    println&#40;&quot;No inversion found, run the simulation for a longer time&quot;&#41;
+    println(<span class=hljs-string >&quot;No inversion found, run the simulation for a longer time&quot;</span>)
 
-    # Restituisci un indice negativo &#40;impossibile&#41;, perché non
-    # abbiamo trovato alcuna inversione.
-    -1
-end</code></pre><pre><code class="plaintext code-output">search_inversion (generic function with 1 method)</code></pre>
+    <span class=hljs-comment ># Restituisci un indice negativo (impossibile), perché non</span>
+    <span class=hljs-comment ># abbiamo trovato alcuna inversione.</span>
+    -<span class=hljs-number >1</span>
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">search_inversion (generic function with 1 method)</code></pre>
 <p>La funzione restituisce l&#39;indice dell&#39;ultimo elemento del vettore <em>prima</em> dell&#39;inversione. Nella vostra versione in C&#43;&#43; quindi la funzione dovrà restituire un tipo <code>size_t</code> &#40;intero senza segno&#41;. Verifichiamone il funzionamento su un vettore &#40;ricordando che in Julia gli elementi dei vettori si contano da 1 anziché da 0 come in C&#43;&#43;&#33;&#41;.</p>
-<pre><code class=language-julia >search_inversion&#40;&#91;4, 3, 1, -2, -5&#93;&#41;</code></pre><pre><code class="plaintext code-output">3</code></pre>
+<pre><code class="julia hljs">search_inversion([<span class=hljs-number >4</span>, <span class=hljs-number >3</span>, <span class=hljs-number >1</span>, -<span class=hljs-number >2</span>, -<span class=hljs-number >5</span>])</code></pre><pre><code class="plaintext hljs">3</code></pre>
 <p>Il risultato è quello che ci aspettiamo: l&#39;elemento alla posizione 3 ha segno positivo &#40;<code>1</code>&#41;, mentre il successivo cambia di segno &#40;<code>-2</code>&#41;.</p>
-<p>Ora che abbiamo una funzione che determina l&#39;indice \(i\) per cui \(\omega_i\) ha segno opposto a \(\omega_{i + 1}\), ci occorre trovare una formula interpolante che ci restituisca il tempo a cui la velocità si annulla. In altri termini, stiamo considerando due punti \(A\) e \(B\) associati agli istanti temporali \(t_A\) e \(t_B\), e in corrispondenza dei quali la velocità angolare passa da \(\omega_A\) a \(\omega_B\) con un cambio di segno, e vogliamo trovare l&#39;istante temporale a cui \(\omega = 0\) nell&#39;ipotesi che \(\omega(t)\) segua una legge lineare &#40;il che è un&#39;ottima approssimazione, se riguardate il grafico sopra&#41;. Non dobbiamo quindi fare altro che scrivere l&#39;equazione della retta che passa per \((t_A, \omega_A)\) e per \(t_B,
-\omega_B\) e calcolare la sua intersezione con la retta \(\omega = 0\).</p>
+<p>Ora che abbiamo una funzione che determina l&#39;indice <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.65952em;vertical-align:0em;"></span><span class="mord mathnormal">i</span></span></span></span> per cui <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ω</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\omega_i</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.58056em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> ha segno opposto a <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ω</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub></mrow><annotation encoding="application/x-tex">\omega_{i + 1}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.638891em;vertical-align:-0.208331em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.208331em;"><span></span></span></span></span></span></span></span></span></span>, ci occorre trovare una formula interpolante che ci restituisca il tempo a cui la velocità si annulla. In altri termini, stiamo considerando due punti <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal">A</span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>B</mi></mrow><annotation encoding="application/x-tex">B</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span></span></span></span> associati agli istanti temporali <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mi>A</mi></msub></mrow><annotation encoding="application/x-tex">t_A</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.76508em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">A</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mi>B</mi></msub></mrow><annotation encoding="application/x-tex">t_B</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.76508em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>, e in corrispondenza dei quali la velocità angolare passa da <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ω</mi><mi>A</mi></msub></mrow><annotation encoding="application/x-tex">\omega_A</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.58056em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">A</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> a <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ω</mi><mi>B</mi></msub></mrow><annotation encoding="application/x-tex">\omega_B</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.58056em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> con un cambio di segno, e vogliamo trovare l&#39;istante temporale a cui <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ω</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\omega = 0</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >0</span></span></span></span> nell&#39;ipotesi che <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ω</mi><mo stretchy=false >(</mo><mi>t</mi><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">\omega(t)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=mopen >(</span><span class="mord mathnormal">t</span><span class=mclose >)</span></span></span></span> segua una legge lineare &#40;il che è un&#39;ottima approssimazione, se riguardate il grafico sopra&#41;. Non dobbiamo quindi fare altro che scrivere l&#39;equazione della retta che passa per <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy=false >(</mo><msub><mi>t</mi><mi>A</mi></msub><mo separator=true >,</mo><msub><mi>ω</mi><mi>A</mi></msub><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">(t_A, \omega_A)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >(</span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">A</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">A</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mclose >)</span></span></span></span> e per <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mi>B</mi></msub><mo separator=true >,</mo><msub><mi>ω</mi><mi>B</mi></msub></mrow><annotation encoding="application/x-tex">t_B,
+\omega_B</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.80952em;vertical-align:-0.19444em;"></span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> e calcolare la sua intersezione con la retta <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ω</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\omega = 0</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >0</span></span></span></span>.</p>
 <p>Si tratta di un semplice problema di geometria analitica, e la soluzione è la seguente:</p>
-\[
+<span class=katex-display ><span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML" display=block ><semantics><mrow><mi>t</mi><mo stretchy=false >(</mo><mi>ω</mi><mo stretchy=false >)</mo><mo>=</mo><msub><mi>t</mi><mi>A</mi></msub><mo>+</mo><mfrac><mrow><msub><mi>t</mi><mi>A</mi></msub><mo>−</mo><msub><mi>t</mi><mi>B</mi></msub></mrow><mrow><msub><mi>ω</mi><mi>A</mi></msub><mo>−</mo><msub><mi>ω</mi><mi>B</mi></msub></mrow></mfrac><mo fence=true  stretchy=true  minsize=1.2em  maxsize=1.2em >(</mo><mi>ω</mi><mo>−</mo><msub><mi>ω</mi><mi>A</mi></msub><mo fence=true  stretchy=true  minsize=1.2em  maxsize=1.2em >)</mo><mi mathvariant=normal >.</mi></mrow><annotation encoding="application/x-tex">
 t(\omega) = t_A + \frac{t_A - t_B}{\omega_A - \omega_B}\bigl(\omega - \omega_A\bigr).
-\]
-<p>È facile convincersi della correttezza del risultato, perché \(t(\omega_A) = t_A\), \(t(\omega_B) = t_B\), e l&#39;espressione è chiaramente una retta.</p>
-<p>Nel nostro caso bisogna quindi implementare il calcolo della formula nel caso in cui \(\omega = 0\), e <strong>raddoppiare il risultato</strong>: lo facciamo nella funzione <code>period</code>, che accetta come parametro la matrice a tre colonne prodotta da <code>euler</code> o <code>rungekutta</code>, e che sfrutta la funzione <code>invtime</code> che fornisce il valore del tempo all&#39;istante della inversione. Implementiamo una serie di sotto-funzioni, in modo che sia più facile verificare il comportamento di ciascuna. Qui introduciamo due implementazioni di <code>interp</code>: la seconda è più specifica e calcola l&#39;ascissa del punto di intersezione della retta con l&#39;asse delle ordinate.</p>
-<pre><code class=language-julia >interp&#40;ptA, ptB, y&#41; &#61; ptA&#91;1&#93; &#43; &#40;ptA&#91;1&#93; - ptB&#91;1&#93;&#41; / &#40;ptA&#91;2&#93; - ptB&#91;2&#93;&#41; * &#40;y - ptA&#91;2&#93;&#41;
-interp&#40;ptA, ptB&#41; &#61; interp&#40;ptA, ptB, 0&#41;</code></pre><pre><code class="plaintext code-output">interp (generic function with 2 methods)</code></pre>
-<p>Eseguiamo una volta <code>interp</code> per trovare il valore dell&#39;ordinata \(y\) in corrispondenza dell&#39;ordinata \(y = 0.3\) di una una retta passante per i punti \((-0.4, -0.7)\) e \((0.5, 0.8)\):</p>
-<pre><code class=language-julia >let p1x &#61; -0.4, p1y &#61; -0.7, p2x &#61; 0.5, p2y &#61; 0.8, y &#61; 0.3
-    # Il comando &#96;plot&#96; richiede di passare un array con le ascisse
-    # e uno con le coordinate…
-    plot&#40;&#91;p1x, p2x&#93;, &#91;p1y, p2y&#93;, label &#61; &quot;&quot;&#41;
-    # …mentre la nostra &#96;interp&#96; richiede due coppie &#40;x, y&#41;
-    let x &#61; interp&#40;&#91;p1x, p1y&#93;, &#91;p2x, p2y&#93;, y&#41;
-        @printf&#40;&quot;La retta interpolante passa per &#40;&#37;.1f, &#37;.1f&#41;\n&quot;, x, y&#41;
-        # Il comando &#96;scatter&#96; funziona come &#96;plot&#96;
-        scatter&#33;&#40;&#91;p1x, x, p2x&#93;, &#91;p1y, y, p2y&#93;, label &#61; &quot;&quot;&#41;
-    end
-end</code></pre><pre><code class="plaintext code-output">La retta interpolante passa per (0.2, 0.3)
-</code></pre>
+</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">t</span><span class=mopen >(</span><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=mclose >)</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.76508em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">A</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mbin >+</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span></span><span class=base ><span class=strut  style="height:2.1280799999999997em;vertical-align:-0.8360000000000001em;"></span><span class=mord ><span class="mopen nulldelimiter"></span><span class=mfrac ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:1.29208em;"><span style="top:-2.3139999999999996em;"><span class=pstrut  style="height:3em;"></span><span class=mord ><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">A</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mbin >−</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class=pstrut  style="height:3em;"></span><span class=frac-line  style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class=pstrut  style="height:3em;"></span><span class=mord ><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">A</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mbin >−</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.8360000000000001em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class=mopen ><span class="delimsizing size1">(</span></span><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mbin >−</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span></span><span class=base ><span class=strut  style="height:1.20001em;vertical-align:-0.35001em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">A</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mclose ><span class="delimsizing size1">)</span></span><span class=mord >.</span></span></span></span></span>
+<p>È facile convincersi della correttezza del risultato, perché <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo stretchy=false >(</mo><msub><mi>ω</mi><mi>A</mi></msub><mo stretchy=false >)</mo><mo>=</mo><msub><mi>t</mi><mi>A</mi></msub></mrow><annotation encoding="application/x-tex">t(\omega_A) = t_A</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">t</span><span class=mopen >(</span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">A</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mclose >)</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.76508em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">A</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>, <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo stretchy=false >(</mo><msub><mi>ω</mi><mi>B</mi></msub><mo stretchy=false >)</mo><mo>=</mo><msub><mi>t</mi><mi>B</mi></msub></mrow><annotation encoding="application/x-tex">t(\omega_B) = t_B</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">t</span><span class=mopen >(</span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mclose >)</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.76508em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05017em;">B</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>, e l&#39;espressione è chiaramente una retta.</p>
+<p>Nel nostro caso bisogna quindi implementare il calcolo della formula nel caso in cui <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ω</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\omega = 0</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >0</span></span></span></span>, e <strong>raddoppiare il risultato</strong>: lo facciamo nella funzione <code>period</code>, che accetta come parametro la matrice a tre colonne prodotta da <code>euler</code> o <code>rungekutta</code>, e che sfrutta la funzione <code>invtime</code> che fornisce il valore del tempo all&#39;istante della inversione. Implementiamo una serie di sotto-funzioni, in modo che sia più facile verificare il comportamento di ciascuna. Qui introduciamo due implementazioni di <code>interp</code>: la seconda è più specifica e calcola l&#39;ascissa del punto di intersezione della retta con l&#39;asse delle ordinate.</p>
+<pre><code class="julia hljs">interp(ptA, ptB, y) = ptA[<span class=hljs-number >1</span>] + (ptA[<span class=hljs-number >1</span>] - ptB[<span class=hljs-number >1</span>]) / (ptA[<span class=hljs-number >2</span>] - ptB[<span class=hljs-number >2</span>]) * (y - ptA[<span class=hljs-number >2</span>])
+interp(ptA, ptB) = interp(ptA, ptB, <span class=hljs-number >0</span>)</code></pre><pre><code class="plaintext hljs">interp (generic function with 2 methods)</code></pre>
+<p>Eseguiamo una volta <code>interp</code> per trovare il valore dell&#39;ordinata <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span></span></span></span> in corrispondenza dell&#39;ordinata <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi><mo>=</mo><mn>0.3</mn></mrow><annotation encoding="application/x-tex">y = 0.3</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >0.3</span></span></span></span> di una una retta passante per i punti <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy=false >(</mo><mo>−</mo><mn>0.4</mn><mo separator=true >,</mo><mo>−</mo><mn>0.7</mn><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">(-0.4, -0.7)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >(</span><span class=mord >−</span><span class=mord >0.4</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >−</span><span class=mord >0.7</span><span class=mclose >)</span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy=false >(</mo><mn>0.5</mn><mo separator=true >,</mo><mn>0.8</mn><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">(0.5, 0.8)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >(</span><span class=mord >0.5</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >0.8</span><span class=mclose >)</span></span></span></span>:</p>
+<pre><code class="julia hljs"><span class=hljs-keyword >let</span> p1x = -<span class=hljs-number >0.4</span>, p1y = -<span class=hljs-number >0.7</span>, p2x = <span class=hljs-number >0.5</span>, p2y = <span class=hljs-number >0.8</span>, y = <span class=hljs-number >0.3</span>
+    <span class=hljs-comment ># Il comando `plot` richiede di passare un array con le ascisse</span>
+    <span class=hljs-comment ># e uno con le coordinate…</span>
+    plot([p1x, p2x], [p1y, p2y], label = <span class=hljs-string >&quot;&quot;</span>)
+    <span class=hljs-comment ># …mentre la nostra `interp` richiede due coppie (x, y)</span>
+    <span class=hljs-keyword >let</span> x = interp([p1x, p1y], [p2x, p2y], y)
+        <span class=hljs-meta >@printf</span>(<span class=hljs-string >&quot;La retta interpolante passa per (%.1f, %.1f)\n&quot;</span>, x, y)
+        <span class=hljs-comment ># Il comando `scatter` funziona come `plot`</span>
+        scatter!([p1x, x, p2x], [p1y, y, p2y], label = <span class=hljs-string >&quot;&quot;</span>)
+    <span class=hljs-keyword >end</span>
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">La retta interpolante passa per (0.2, 0.3)
+&quot;/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/interp-test.svg&quot;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/interp-test.svg" alt="">
 <p>Il grafico mostra che la nostra implementazione di <code>interp</code> funziona a dovere; voi potreste implementare un test nel vostro esercizio:</p>
-<pre><code class=language-cpp >void test_interp&#40;&#41; &#123;
-  const double p1x &#61; -0.4, p1y &#61; -0.7;
-  const double p2x &#61; 0.5, p2y &#61; 0.8;
+<pre><code class="cpp hljs"><span class=hljs-function ><span class=hljs-type >void</span> <span class=hljs-title >test_interp</span><span class=hljs-params >()</span> </span>{
+  <span class=hljs-type >const</span> <span class=hljs-type >double</span> p1x = <span class=hljs-number >-0.4</span>, p1y = <span class=hljs-number >-0.7</span>;
+  <span class=hljs-type >const</span> <span class=hljs-type >double</span> p2x = <span class=hljs-number >0.5</span>, p2y = <span class=hljs-number >0.8</span>;
 
-  assert&#40;is_close&#40;interp&#40;p1x, p1y, p2x, p2y, 0.3&#41;, 0.2&#41;&#41;;
-&#125;</code></pre>
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >is_close</span>(<span class=hljs-built_in >interp</span>(p1x, p1y, p2x, p2y, <span class=hljs-number >0.3</span>), <span class=hljs-number >0.2</span>));
+}</code></pre>
 <p>Introduciamo ora un&#39;altra funzione, <code>invtime</code>, che mette insieme <code>search_inversion</code> e <code>interp</code> per restituire l&#39;istante temporale in cui avviene l&#39;inversione del segno del vettore <code>vec</code>:</p>
-<pre><code class=language-julia >function invtime&#40;time, vec&#41;
-    idx &#61; search_inversion&#40;vec&#41;
-    timeA, timeB &#61; time&#91;idx:idx &#43; 1&#93;
-    vecA, vecB &#61; vec&#91;idx:idx &#43; 1&#93;
+<pre><code class="julia hljs"><span class=hljs-keyword >function</span> invtime(time, vec)
+    idx = search_inversion(vec)
+    timeA, timeB = time[idx:idx + <span class=hljs-number >1</span>]
+    vecA, vecB = vec[idx:idx + <span class=hljs-number >1</span>]
 
-    abs&#40;interp&#40;&#40;timeA, vecA&#41;, &#40;timeB, vecB&#41;&#41;&#41;
-end</code></pre><pre><code class="plaintext code-output">invtime (generic function with 1 method)</code></pre>
-<p>Siccome in questo esercizio assumiamo sempre di iniziare dalla posizione \(\theta = 0\), il valore del periodo è semplicemente il doppio del tempo necessario per osservare l&#39;inversione &#40;nell&#39;esercizio 9.4 questo <strong>non sarà più vero</strong>, ricordatevelo&#33;&#41;.</p>
-<pre><code class=language-julia >period&#40;oscillations&#41; &#61; 2 * invtime&#40;oscillations&#91;:, 1&#93;, oscillations&#91;:, 3&#93;&#41;</code></pre><pre><code class="plaintext code-output">period (generic function with 1 method)</code></pre>
+    abs(interp((timeA, vecA), (timeB, vecB)))
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">invtime (generic function with 1 method)</code></pre>
+<p>Siccome in questo esercizio assumiamo sempre di iniziare dalla posizione <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\theta = 0</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >0</span></span></span></span>, il valore del periodo è semplicemente il doppio del tempo necessario per osservare l&#39;inversione &#40;nell&#39;esercizio 9.4 questo <strong>non sarà più vero</strong>, ricordatevelo&#33;&#41;.</p>
+<pre><code class="julia hljs">period(oscillations) = <span class=hljs-number >2</span> * invtime(oscillations[:, <span class=hljs-number >1</span>], oscillations[:, <span class=hljs-number >3</span>])</code></pre><pre><code class="plaintext hljs">period (generic function with 1 method)</code></pre>
 <p>Chiamando <code>period</code> su una matrice restituita da <code>euler</code> o da <code>rungekutta</code> si ottiene quindi il periodo di oscillazione.</p>
-<pre><code class=language-julia >period&#40;oscillations&#41;</code></pre><pre><code class="plaintext code-output">2.152874570427233</code></pre>
+<pre><code class="julia hljs">period(oscillations)</code></pre><pre><code class="plaintext hljs">2.152874570427233</code></pre>
 <p>Confrontiamola col periodo ideale di un pendolo sottoposto a piccole oscillazioni.</p>
-<pre><code class=language-julia >ideal_period &#61; 2π / √&#40;g / rodlength&#41;</code></pre><pre><code class="plaintext code-output">2.006066680710647</code></pre>
+<pre><code class="julia hljs">ideal_period = <span class=hljs-number >2</span><span class=hljs-literal >π</span> / √(g / rodlength)</code></pre><pre><code class="plaintext hljs">2.006066680710647</code></pre>
 <p>Creiamo ora il grafico analogo a quello riportato nel testo dell&#39;esercizio.</p>
-<pre><code class=language-julia >angles &#61; 0.1:0.1:3.0
-ampl &#61; &#91;period&#40;rungekutta&#40;pendulum, &#91;angle, 0.&#93;, 0.0, 3.0, 0.01&#41;&#41;
-        for angle in angles&#93;
-plot&#40;angles, ampl, label&#61;&quot;&quot;, xlabel&#61;&quot;Angolo &#91;rad&#93;&quot;, ylabel&#61;&quot;Periodo &#91;s&#93;&quot;&#41;
-scatter&#33;&#40;angles, ampl, label&#61;&quot;&quot;&#41;</code></pre>
+<pre><code class="julia hljs">angles = <span class=hljs-number >0.1</span>:<span class=hljs-number >0.1</span>:<span class=hljs-number >3.0</span>
+ampl = [period(rungekutta(pendulum, [angle, <span class=hljs-number >0.</span>], <span class=hljs-number >0.0</span>, <span class=hljs-number >3.0</span>, <span class=hljs-number >0.01</span>))
+        <span class=hljs-keyword >for</span> angle <span class=hljs-keyword >in</span> angles]
+plot(angles, ampl, label=<span class=hljs-string >&quot;&quot;</span>, xlabel=<span class=hljs-string >&quot;Angolo [rad]&quot;</span>, ylabel=<span class=hljs-string >&quot;Periodo [s]&quot;</span>)
+scatter!(angles, ampl, label=<span class=hljs-string >&quot;&quot;</span>)</code></pre><pre><code class="plaintext hljs">&quot;/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/period-vs-angle.svg&quot;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/period-vs-angle.svg" alt="">
 <p>Ecco alcuni dei valori in una tabella che associa ampiezza &#40;in radianti&#41; e periodo &#40;in secondi&#41;. In questo modo potrete confrontarli con l&#39;output del vostro programma, magari mediante alcuni test con <code>assert</code> &#40;usate ad esempio il primo e l&#39;ultimo&#41;.</p>
-<pre><code class=language-julia >&#91;angles ampl&#93;</code></pre><pre><code class="plaintext code-output">30×2 Matrix{Float64}:
+<pre><code class="julia hljs">[angles ampl]</code></pre><pre><code class="plaintext hljs">30×2 Matrix{Float64}:
  0.1  2.00732
  0.2  2.01109
  0.3  2.01741
@@ -590,74 +590,74 @@ scatter&#33;&#40;angles, ampl, label&#61;&quot;&quot;&#41;</code></pre>
 <h2 id=esercizio_84 ><a href="#esercizio_84" class=header-anchor >Esercizio 8.4</a></h2>
 <p>Testo dell&#39;esercizio: <a href="https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.4">carminati-esercizi-08.html</a>.</p>
 <p>Come sopra, definiamo i parametri numerici del problema.</p>
-<pre><code class=language-julia >ω0 &#61; 10;
-α &#61; 1.0 / 30;</code></pre>
+<pre><code class="julia hljs">ω<span class=hljs-number >0</span> = <span class=hljs-number >10</span>;
+α = <span class=hljs-number >1.0</span> / <span class=hljs-number >30</span>;</code></pre>
 <p>Trattandosi di un esercizio complesso, definiamo una funzione che invochi <code>rungekutta</code> con dei parametri sensati. Notate la sintassi <code>do...end</code>, che in Julia permette di passare come primo argomento di una funzione &#40;nel nostro caso appunto <code>rungekutta</code>&#41; una seconda funzione. Questa sintassi è molto comoda per casi come il nostro.</p>
-<pre><code class=language-julia >function forcedpendulum&#40;ω; init&#61;&#91;0., 0.&#93;, startt&#61;0., endt&#61;15. / α, deltat&#61;0.01&#41;
-    rungekutta&#40;init, startt, endt, deltat&#41; do t, x
-        &#91;x&#91;2&#93;, -ω0^2 * x&#91;1&#93; - α * x&#91;2&#93; &#43; sin&#40;ω * t&#41;&#93;
-    end
-end</code></pre><pre><code class="plaintext code-output">forcedpendulum (generic function with 1 method)</code></pre>
+<pre><code class="julia hljs"><span class=hljs-keyword >function</span> forcedpendulum(ω; init=[<span class=hljs-number >0.</span>, <span class=hljs-number >0.</span>], startt=<span class=hljs-number >0.</span>, endt=<span class=hljs-number >15.</span> / α, deltat=<span class=hljs-number >0.01</span>)
+    rungekutta(init, startt, endt, deltat) <span class=hljs-keyword >do</span> t, x
+        [x[<span class=hljs-number >2</span>], -ω<span class=hljs-number >0</span>^<span class=hljs-number >2</span> * x[<span class=hljs-number >1</span>] - α * x[<span class=hljs-number >2</span>] + sin(ω * t)]
+    <span class=hljs-keyword >end</span>
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">forcedpendulum (generic function with 1 method)</code></pre>
 <p>Il valore di ritorno di <code>forcedpendulum</code> è come al solito una matrice a tre colonne. Il plot mostra come il pendolo forzato con smorzante arrivi presto ad una situazione di equilibrio:</p>
-<pre><code class=language-julia >oscillations &#61; forcedpendulum&#40;8.&#41;
-plot&#40;oscillations&#91;:, 1&#93;, oscillations&#91;:, 2&#93;, label&#61;&quot;&quot;&#41;</code></pre>
+<pre><code class="julia hljs">oscillations = forcedpendulum(<span class=hljs-number >8.</span>)
+plot(oscillations[:, <span class=hljs-number >1</span>], oscillations[:, <span class=hljs-number >2</span>], label=<span class=hljs-string >&quot;&quot;</span>)</code></pre><pre><code class="plaintext hljs">&quot;/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/forced-pendulum.svg&quot;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/forced-pendulum.svg" alt="">
 <p>Rispetto all&#39;esercizio precedente, dobbiamo calcolare qui non il periodo bensì l&#39;ampiezza di oscillazione &#40;che nell&#39;esercizio precedente era fissata dalla condizione iniziale&#41;. Come prima, anche qui non possiamo avere la garanzia che l&#39;integrazione con RK passerà dall&#39;istante in cui il valore della velocità si annulla esattamente. Il modo migliore di procedere è quindi il seguente:</p>
 <ol>
-<li><p>Iteriamo RK per un tempo ragionevole in modo da toglierci dalla regione iniziale di instabilità; qui integro fino al tempo \(15/\alpha\);</p>
+<li><p>Iteriamo RK per un tempo ragionevole in modo da toglierci dalla regione iniziale di instabilità; qui integro fino al tempo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>15</mn><mi mathvariant=normal >/</mi><mi>α</mi></mrow><annotation encoding="application/x-tex">15/\alpha</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mord >15/</span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span></span></span></span>;</p>
 
 <li><p>A questo punto il codice cerca nuovamente una inversione nel segno della velocità;</p>
 
-<li><p>Trovata l&#39;inversione, sappiamo che il massimo avviene in qualche istante che sta tra \(t\) e \(t + h\). Troviamo questo istante \(t_\text{inv}\) con una interpolazione lineare tra il punto \((t,
-   \omega_0)\) e \((t + h, \omega_1)\)</p>
+<li><p>Trovata l&#39;inversione, sappiamo che il massimo avviene in qualche istante che sta tra <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>+</mo><mi>h</mi></mrow><annotation encoding="application/x-tex">t + h</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69841em;vertical-align:-0.08333em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mbin >+</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span></span><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span></span></span></span>. Troviamo questo istante <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mtext>inv</mtext></msub></mrow><annotation encoding="application/x-tex">t_\text{inv}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.76508em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.31750199999999995em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord text mtight"><span class="mord mtight">inv</span></span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> con una interpolazione lineare tra il punto <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy=false >(</mo><mi>t</mi><mo separator=true >,</mo><msub><mi>ω</mi><mn>0</mn></msub><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">(t,
+   \omega_0)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >(</span><span class="mord mathnormal">t</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mclose >)</span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy=false >(</mo><mi>t</mi><mo>+</mo><mi>h</mi><mo separator=true >,</mo><msub><mi>ω</mi><mn>1</mn></msub><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">(t + h, \omega_1)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >(</span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mbin >+</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span></span><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">h</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mclose >)</span></span></span></span></p>
 
-<li><p>Eseguiamo di nuovo RK partendo dal tempo \(t\), ma questa volta non usiamo come incremento \(h\) bensì \(t_\text{inv} - t\)</p>
+<li><p>Eseguiamo di nuovo RK partendo dal tempo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span></span></span></span>, ma questa volta non usiamo come incremento <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>h</mi></mrow><annotation encoding="application/x-tex">h</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">h</span></span></span></span> bensì <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mtext>inv</mtext></msub><mo>−</mo><mi>t</mi></mrow><annotation encoding="application/x-tex">t_\text{inv} - t</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.76508em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">t</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.31750199999999995em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord text mtight"><span class="mord mtight">inv</span></span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mbin >−</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span></span><span class=base ><span class=strut  style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span></span></span></span></p>
 
 <li><p>Se abbiamo fatto le cose per bene, dopo una <em>singola</em> esecuzione di RK ci troviamo in corrispondenza del massimo. Stampare la velocità in questo punto dovrebbe quindi mostrare un numero pressoché nullo</p>
 
-<li><p>Se effettivamente la velocità è praticamente nulla &#40;diciamo \(\left|v\right| \leq 10^{-6}\,\text{rad/s}\), il valore della posizione in questo punto corrisponde all&#39;ampiezza.</p>
+<li><p>Se effettivamente la velocità è praticamente nulla &#40;diciamo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo fence=true >∣</mo><mi>v</mi><mo fence=true >∣</mo></mrow><mo>≤</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>6</mn></mrow></msup><mtext> </mtext><mtext>rad/s</mtext></mrow><annotation encoding="application/x-tex">\left|v\right| \leq 10^{-6}\,\text{rad/s}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=minner ><span class="mopen delimcenter" style="top:0em;">∣</span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mclose delimcenter" style="top:0em;">∣</span></span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >≤</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:1.064108em;vertical-align:-0.25em;"></span><span class=mord >1</span><span class=mord ><span class=mord >0</span><span class=msupsub ><span class=vlist-t ><span class=vlist-r ><span class=vlist  style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">6</span></span></span></span></span></span></span></span></span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord text"><span class=mord >rad/s</span></span></span></span></span>, il valore della posizione in questo punto corrisponde all&#39;ampiezza.</p>
 
 </ol>
-<pre><code class=language-julia >function forced_amplitude&#40;ω, oscillations&#41;
-    # Per comodità estraggo la prima colonna della matrice &#40;quella che
-    # contiene i tempi&#41; nel vettore &quot;timevec&quot;
-    timevec &#61; oscillations&#91;:, 1&#93;
+<pre><code class="julia hljs"><span class=hljs-keyword >function</span> forced_amplitude(ω, oscillations)
+    <span class=hljs-comment ># Per comodità estraggo la prima colonna della matrice (quella che</span>
+    <span class=hljs-comment ># contiene i tempi) nel vettore &quot;timevec&quot;</span>
+    timevec = oscillations[:, <span class=hljs-number >1</span>]
 
-    # Questa maschera serve per trascurare le oscillazioni nella prima
-    # parte della simulazione, ossia le prime righe della matrice.
-    # Di fatto quindi ci concentriamo solo sulla &quot;coda&quot; della soluzione,
-    # ossia le ultime righe della matrice
-    mask &#61; timevec .&gt; 10 / α
-    oscill_tail &#61; oscillations&#91;mask, :&#93;
+    <span class=hljs-comment ># Questa maschera serve per trascurare le oscillazioni nella prima</span>
+    <span class=hljs-comment ># parte della simulazione, ossia le prime righe della matrice.</span>
+    <span class=hljs-comment ># Di fatto quindi ci concentriamo solo sulla &quot;coda&quot; della soluzione,</span>
+    <span class=hljs-comment ># ossia le ultime righe della matrice</span>
+    mask = timevec .&gt; <span class=hljs-number >10</span> / α
+    oscill_tail = oscillations[mask, :]
 
-    # Calcolo il tempo in corrispondenza della prima inversione
-    # nella &quot;coda&quot; della soluzione
-    idx0 &#61; search_inversion&#40;oscill_tail&#91;:, 3&#93;&#41;
-    ptA &#61; oscill_tail&#91;idx0, &#91;1, 3&#93;&#93;
-    ptB &#61; oscill_tail&#91;idx0 &#43; 1, &#91;1, 3&#93;&#93;
-    t0 &#61; interp&#40;ptA, ptB&#41;
-    δt &#61; t0 - oscill_tail&#91;idx0, 1&#93;
-    newsol &#61; forcedpendulum&#40;ω,
-        init&#61;oscill_tail&#91;idx0, 2:3&#93;,
-        startt&#61;oscill_tail&#91;idx0, 1&#93;,
-        endt&#61;oscill_tail&#91;idx0, 1&#93; &#43; 1.1 * δt,
-        deltat&#61;δt&#41;
+    <span class=hljs-comment ># Calcolo il tempo in corrispondenza della prima inversione</span>
+    <span class=hljs-comment ># nella &quot;coda&quot; della soluzione</span>
+    idx0 = search_inversion(oscill_tail[:, <span class=hljs-number >3</span>])
+    ptA = oscill_tail[idx0, [<span class=hljs-number >1</span>, <span class=hljs-number >3</span>]]
+    ptB = oscill_tail[idx0 + <span class=hljs-number >1</span>, [<span class=hljs-number >1</span>, <span class=hljs-number >3</span>]]
+    t0 = interp(ptA, ptB)
+    δt = t0 - oscill_tail[idx0, <span class=hljs-number >1</span>]
+    newsol = forcedpendulum(ω,
+        init=oscill_tail[idx0, <span class=hljs-number >2</span>:<span class=hljs-number >3</span>],
+        startt=oscill_tail[idx0, <span class=hljs-number >1</span>],
+        endt=oscill_tail[idx0, <span class=hljs-number >1</span>] + <span class=hljs-number >1.1</span> * δt,
+        deltat=δt)
 
-    @printf&#40;&quot;t0 &#61; &#37;.4f, angle &#61; &#37;.4f, speed &#61; &#37;.4f, t0 &#43; δt &#61; &#37;.4f, angle &#61; &#37;.4f, speed &#61; &#37;.4f\n&quot;,
-        newsol&#91;1, 1&#93;, newsol&#91;1, 2&#93;, newsol&#91;1,3&#93;, newsol&#91;2, 1&#93;, newsol&#91;2, 2&#93;, newsol&#91;2, 3&#93;&#41;
-    abs&#40;newsol&#91;2, 2&#93;&#41;
-end</code></pre><pre><code class="plaintext code-output">forced_amplitude (generic function with 1 method)</code></pre>
-<p>Chiamiamo la funzione <code>forced_amplitude</code> su un caso specifico: questo è un numero buono per essere usato in un <code>assert</code>. Notate che nel secondo punto &#40;corrispondente al tempo \(t + \delta t\)&#41; la velocità è nulla.</p>
-<pre><code class=language-julia >forced_amplitude&#40;9.5, forcedpendulum&#40;9.5&#41;&#41;</code></pre><pre><code class="plaintext code-output">t0 = 300.1000, angle = -0.1018, speed = -0.0709, t0 + δt = 300.1077, angle = -0.1020, speed = -0.0000
+    <span class=hljs-meta >@printf</span>(<span class=hljs-string >&quot;t0 = %.4f, angle = %.4f, speed = %.4f, t0 + δt = %.4f, angle = %.4f, speed = %.4f\n&quot;</span>,
+        newsol[<span class=hljs-number >1</span>, <span class=hljs-number >1</span>], newsol[<span class=hljs-number >1</span>, <span class=hljs-number >2</span>], newsol[<span class=hljs-number >1</span>,<span class=hljs-number >3</span>], newsol[<span class=hljs-number >2</span>, <span class=hljs-number >1</span>], newsol[<span class=hljs-number >2</span>, <span class=hljs-number >2</span>], newsol[<span class=hljs-number >2</span>, <span class=hljs-number >3</span>])
+    abs(newsol[<span class=hljs-number >2</span>, <span class=hljs-number >2</span>])
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">forced_amplitude (generic function with 1 method)</code></pre>
+<p>Chiamiamo la funzione <code>forced_amplitude</code> su un caso specifico: questo è un numero buono per essere usato in un <code>assert</code>. Notate che nel secondo punto &#40;corrispondente al tempo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>+</mo><mi>δ</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">t + \delta t</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.69841em;vertical-align:-0.08333em;"></span><span class="mord mathnormal">t</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span><span class=mbin >+</span><span class=mspace  style="margin-right:0.2222222222222222em;"></span></span><span class=base ><span class=strut  style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.03785em;">δ</span><span class="mord mathnormal">t</span></span></span></span>&#41; la velocità è nulla.</p>
+<pre><code class="julia hljs">forced_amplitude(<span class=hljs-number >9.5</span>, forcedpendulum(<span class=hljs-number >9.5</span>))</code></pre><pre><code class="plaintext hljs">t0 = 300.1000, angle = -0.1018, speed = -0.0709, t0 + δt = 300.1077, angle = -0.1020, speed = -0.0000
 0.10203379178084179</code></pre>
 <p>Ricreiamo ora il grafico presente sul sito del corso. La funzione <code>forced_amplitude</code> stampa a video i due punti su cui esegue di nuovo il RK: potete verificare che il secondo punto è effettivamente quello di massimo, perché la velocità è pressoché nulla. Usate i numeri scritti qui sotto per verificare che il vostro codice sia corretto.</p>
-<pre><code class=language-julia ># Aggiungiamo 0.01 agli estremi &#40;9 e 11&#41; per evitare la condizione di risonanza
-freq &#61; 9.01:0.1:11.01
-println&#40;&quot;The frequencies to be sampled are: &#36;&#40;collect&#40;freq&#41;&#41;&quot;&#41;
-ampl &#61; &#91;forced_amplitude&#40;ω, forcedpendulum&#40;ω&#41;&#41; for ω in freq&#93;
-plot&#40;freq, ampl,
-     label&#61;&quot;&quot;, xlabel&#61;&quot;Frequenza &#91;rad/s&#93;&quot;, ylabel&#61;&quot;Ampiezza&quot;&#41;
-scatter&#33;&#40;freq, ampl, label&#61;&quot;&quot;&#41;</code></pre><pre><code class="plaintext code-output">The frequencies to be sampled are: [9.01, 9.11, 9.21, 9.31, 9.41, 9.51, 9.61, 9.71, 9.81, 9.91, 10.01, 10.11, 10.21, 10.31, 10.41, 10.51, 10.61, 10.71, 10.81, 10.91, 11.01]
+<pre><code class="julia hljs"><span class=hljs-comment ># Aggiungiamo 0.01 agli estremi (9 e 11) per evitare la condizione di risonanza</span>
+freq = <span class=hljs-number >9.01</span>:<span class=hljs-number >0.1</span>:<span class=hljs-number >11.01</span>
+println(<span class=hljs-string >&quot;The frequencies to be sampled are: <span class=hljs-subst >$(collect(freq)</span>)&quot;</span>)
+ampl = [forced_amplitude(ω, forcedpendulum(ω)) <span class=hljs-keyword >for</span> ω <span class=hljs-keyword >in</span> freq]
+plot(freq, ampl,
+     label=<span class=hljs-string >&quot;&quot;</span>, xlabel=<span class=hljs-string >&quot;Frequenza [rad/s]&quot;</span>, ylabel=<span class=hljs-string >&quot;Ampiezza&quot;</span>)
+scatter!(freq, ampl, label=<span class=hljs-string >&quot;&quot;</span>)</code></pre><pre><code class="plaintext hljs">The frequencies to be sampled are: [9.01, 9.11, 9.21, 9.31, 9.41, 9.51, 9.61, 9.71, 9.81, 9.91, 10.01, 10.11, 10.21, 10.31, 10.41, 10.51, 10.61, 10.71, 10.81, 10.91, 11.01]
 t0 = 300.0400, angle = 0.0532, speed = 0.0013, t0 + δt = 300.0403, angle = 0.0532, speed = -0.0000
 t0 = 300.1900, angle = 0.0591, speed = 0.0229, t0 + δt = 300.1947, angle = 0.0591, speed = -0.0000
 t0 = 300.3400, angle = 0.0658, speed = 0.0330, t0 + δt = 300.3459, angle = 0.0659, speed = 0.0000
@@ -679,7 +679,7 @@ t0 = 300.2200, angle = 0.0675, speed = 0.0309, t0 + δt = 300.2240, angle = 0.06
 t0 = 300.0600, angle = -0.0595, speed = -0.0197, t0 + δt = 300.0628, angle = -0.0595, speed = 0.0000
 t0 = 300.1900, angle = -0.0529, speed = -0.0100, t0 + δt = 300.1916, angle = -0.0529, speed = 0.0000
 t0 = 300.0300, angle = 0.0471, speed = 0.0158, t0 + δt = 300.0328, angle = 0.0471, speed = -0.0000
-</code></pre>
+&quot;/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/forced-pendulum-resonance.svg&quot;</code></pre>
 <img src="/tnds-notebooks/assets/lezione08/code/output/forced-pendulum-resonance.svg" alt="">
 
 <div class=page-foot >
@@ -688,13 +688,4 @@ t0 = 300.0300, angle = 0.0471, speed = 0.0158, t0 + δt = 300.0328, angle = 0.04
   </div>
 </div>
 </div>
-    </div>  
-    
-        <script src="/tnds-notebooks/libs/katex/katex.min.js"></script>
-<script src="/tnds-notebooks/libs/katex/auto-render.min.js"></script>
-<script>renderMathInElement(document.body)</script>
-
-    
-    
-        <script src="/tnds-notebooks/libs/highlight/highlight.pack.js"></script>
-<script>hljs.initHighlightingOnLoad();hljs.configure({tabReplace: '    '});</script>
+    </div>

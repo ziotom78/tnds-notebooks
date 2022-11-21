@@ -1,1 +1,1 @@
--4.002400383183911
+"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione07/code/output/simpson-error.svg"

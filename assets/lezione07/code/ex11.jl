@@ -1,5 +1,7 @@
 # This file was generated, do not modify it. # hide
-const REF_FN = sin;  # La funzione da integrare
-const REF_A = 0;     # Estremo inferiore di integrazione
-const REF_B = pi;    # Estremo superiore di integrazione
-const REF_INT = 2.;  # Valore dell'integrale noto analiticamente
+for i in eachindex(steps)  # `i` will go from 1 to the length of `step`
+    # In Julia, writing $() in a string means that the expression
+    # within parentheses gets evaluated and the result substituted
+    # in the string. The '\t' character is the TAB, of course
+    println("$(steps[i])\t$(errors[i])")
+end

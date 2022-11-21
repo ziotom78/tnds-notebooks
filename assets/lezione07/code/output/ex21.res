@@ -1,1 +1,1 @@
--2.000357703753135
+"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione07/code/output/trapezoids-error.svg"

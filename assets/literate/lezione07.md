@@ -68,13 +68,13 @@ Iniziamo col caricare due librerie che ci serviranno. In Julia si
 caricano librerie col comando `import` (l'analogo di `#include` in
 C++):
 
-```julia:ex1
+````julia:ex1
 import Statistics
 
 # In C++ si sarebbe scritto: Statistics::mean
 # ("Statistics" è un namespace)
 Statistics.mean([1, 2, 3])
-```
+````
 
 Notate che in Julia i namespace sono molto più ordinati che in C++:
 se si scrive `import Statistics`, questo non è messo nel namespace
@@ -86,19 +86,19 @@ il namespace `std` è stato usato fino ad oggi!)
 Esiste il comando `using`, che equivale alla combinazione in C++ di
 `#include` e `using namespace`:
 
-```julia:ex2
+````julia:ex2
 using Statistics
 
 # Non è più necessario scrivere `Statistics.mean`
 mean([1, 2, 3])
-```
+````
 
 Per ora l'unica libreria che ci interessi è `Plots`, per produrre
 grafici, come ROOT o gplot++ in C++
 
-```julia:ex3
+````julia:ex3
 using Plots
-```
+````
 
 Nella lezione di oggi dovremo calcolare numericamente degli
 integrali. Useremo come esempio la funzione $f(x) = \sin(x)$,
@@ -119,8 +119,10 @@ che equivale al codice seguente:
 result = [f(input[1]), f(input[2]), f(input[3]), …]
 ```
 
-Vediamo un esempio: creiamo un array prova che contenga il quadrato
-dei valori `[1, 2, 3]`. In C++ avremmo dovuto scrivere
+Vediamo un esempio: creiamo un array `list` che contenga i valori
+`1, 2, 3`, e poi creiamo un nuovo array `out` che contenga il
+quadrato dei numeri in `list`, ossia `1, 4, 9`. In C++ avremmo
+dovuto scrivere
 
 ```cpp
 std::vector<int> list{1, 2, 3};
@@ -140,7 +142,11 @@ list = [1, 2, 3]
 out = [x * x for x in list]
 ```
 
-## Metodo del mid-point
+## Esercizio 7.0 – Integrazione con la formula del mid-point
+
+
+Testo dell'esercizio:
+[carminati-esercizi-07.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-07.html#esercizio-7.0).
 
 Il metodo del mid-point consiste nell'approssimare l'integrale con
 il valore del punto della funzione $f$ nel punto medio
@@ -166,12 +172,12 @@ di tutti quei tipi che rappresentano numeri interi (`Int`, `Int8`,
 può accettare qualsiasi tipo di valore per `f`, `a` e `b`, ma `n`
 deve essere per forza un numero intero.
 
-```julia:ex4
+````julia:ex4
 function midpoint(f, a, b, n::Integer)
     h = (b - a) / n
     h * sum([f(a + (k + 0.5) * h) for k in 0:(n - 1)])
 end
-```
+````
 
 La scrittura `[f(a + (k + 0.5) * h) for k in 0:(n - 1)]` è l'analogo
 della notazione matematica
@@ -186,28 +192,28 @@ somma. In Julia non c'è quindi bisogno di implementare un ciclo
 Verifichiamone il funzionamento (in Julia $\pi$ è memorizzato nella
 costante `pi`):
 
-```julia:ex5
+````julia:ex5
 midpoint(sin, 0, pi, 10)
-```
+````
 
 Casi come questo sono utili per implementare un `assert`. Vediamo
 cosa succede cambiando il numero di passi:
 
-```julia:ex6
+````julia:ex6
 midpoint(sin, 0, pi, 100)
-```
+````
 
 Verifichiamo anche che il segno cambi se invertiamo gli estremi:
 
-```julia:ex7
+````julia:ex7
 midpoint(sin, pi, 0, 10)
-```
+````
 
 Notate la semplicità con cui è stata chiamata la funzione: a
 differenza della programmazione OOP in C++, qui non abbiamo dovuto
 derivare una classe `Seno` dalla classe `FunzioneBase` e ridefinire
 un metodo `Eval` che chiamasse `sin`. È stato sufficiente invocare
-`midpoint` passandole sin come primo argomento.
+`midpoint` passandole `sin` come primo argomento.
 
 Il caso $\int_0^\pi \sin(x)\,\mathrm{d}x$ è troppo particolare per
 poter essere un buon caso per i test, perché (1) l'estremo inferiore
@@ -223,10 +229,10 @@ $$
 \int_1^2\sin(x)\,\mathrm{d}x.
 $$
 
-```julia:ex8
+````julia:ex8
 println("Primo integrale:   ", midpoint(sin, 0, 1, 10))
 println("Secondo integrale: ", midpoint(sin, 1, 2, 30))
-```
+````
 
 In C++ possiamo quindi usare i seguenti `assert`:
 
@@ -243,18 +249,23 @@ int test_midpoint() {
 }
 ```
 
+D'ora in poi non fornirò più liste di `assert` belle e pronte, ma
+dovrete voi ricavare i numeri dagli output di Julia e scrivere gli
+`assert` corrispondentemente. Ormai avete fatto esperienza!
+
+
 ## Errore del metodo mid-point
 
 Calcoliamo ora l'andamento dell'errore rispetto alla funzione di riferimento $f(x) = \sin(x)$.
 
-```julia:ex9
+````julia:ex9
 steps = [10, 50, 100, 500, 1000]
 errors = [abs(midpoint(sin, 0, pi, n) - 2) for n in steps]
 
 plot(steps, errors, xlabel = "Numero di passi", ylabel = "Errore")
 
 savefig(joinpath(@OUTPUT, "midpoint-error.svg")) # hide
-```
+````
 
 \fig{midpoint-error.svg}
 
@@ -275,24 +286,42 @@ y' &= \alpha x' + \log C,
 $$
 
 che è della forma $y' = m x' + q$, ossia una retta, dove il
-coefficiente angolare $m$ è proprio $\alpha$.
+coefficiente angolare $m$ è proprio l'esponente $\alpha$ che
+cerchiamo.
 
-```julia:ex10
+````julia:ex10
 plot(steps, errors,
      xscale = :log10, yscale = :log10,
      xlabel = "Numero di passi", ylabel = "Errore")
 
 savefig(joinpath(@OUTPUT, "midpoint-error-log.svg")) # hide
-```
+````
 
 \fig{midpoint-error-log.svg}
 
+Dal grafico bilogaritmico è facile stimare $\alpha$: vedete infatti
+che sull'asse $x$ c'è una escursione da 10¹ a 10³, quindi **due**
+ordini di grandezza, mentre sull'asse $y$ si va da 10⁻² a 10⁻⁶,
+ossia **meno quattro** ordini di grandezza. La pendenza della retta,
+ossia l'esponente $\alpha$, è il coefficiente angolare degli ordini
+di grandezza: $\alpha = -4/2 = -2$, che è esattamente quanto ci
+aspettavamo, perché l'errore deve essere $\epsilon \propto N^{-2}$.
+
 Nel vostro codice vorrete probabilmente creare un grafico come
 questo. Siccome la realizzazione di grafici può essere complessa, il
-mio consiglio è quello di stampare dapprima i numeri in un file
-(oppure a video, reindirizzando l'output da linea di comando con il
-carattere `>`), e solo una volta che sembrano ragionevoli procedere
-a creare il plot. Ovviamente potete usare la libreria [`fmt`](https://ziotom78.github.io/tnds-tomasi-notebooks/#fmtinstall)!
+mio consiglio è quello di stampare dapprima i numeri a video usando
+`cout` o `fmt::print`, e solo una volta che sembrano ragionevoli
+procedere a creare il plot. Dovreste quindi scrivere l'equivalente
+in C++ del seguente codice Julia:
+
+````julia:ex11
+for i in eachindex(steps)  # `i` will go from 1 to the length of `step`
+    # In Julia, writing $() in a string means that the expression
+    # within parentheses gets evaluated and the result substituted
+    # in the string. The '\t' character is the TAB, of course
+    println("$(steps[i])\t$(errors[i])")
+end
+````
 
 Per creare i grafici, potete ovviamente usare ROOT, oppure
 [gplot++](https://github.com/ziotom78/gplotpp). In quest'ultimo
@@ -334,28 +363,28 @@ che useremo come esempio, $\int_0^\pi\sin x\,\mathrm{d}x = 2$: la
 funzione da integrare (`REF_FN`), gli estremi (`REF_A` e `REF_B`), e
 il valore esatto dell'integrale (`REF_INT`).
 
-```julia:ex11
+````julia:ex12
 const REF_FN = sin;  # La funzione da integrare
 const REF_A = 0;     # Estremo inferiore di integrazione
 const REF_B = pi;    # Estremo superiore di integrazione
 const REF_INT = 2.;  # Valore dell'integrale noto analiticamente
-```
+````
 
 La funzione `compute_errors` calcola il valore assoluto della
 differenza tra la stima dell'integrale con la funzione `fn` (che può
 essere ad esempio `midpoint`) e il valore vero dell'integrale,
 `REF_INT`.
 
-```julia:ex12
+````julia:ex13
 compute_errors(fn, steps) = [abs(fn(REF_FN, REF_A, REF_B, n) - REF_INT)
                              for n in steps]
-```
+````
 
 Applichiamo `compute_errors` alla funzione `midpoint`:
 
-```julia:ex13
+````julia:ex14
 errors = compute_errors(midpoint, steps)
-```
+````
 
 Come ricavare la legge di potenza dovrebbe essere ovvio dal discorso
 fatto sopra circa i grafici bilogaritmici… Se nel grafico
@@ -364,7 +393,7 @@ pendenza della retta passante per i due punti estremi, che in Julia
 hanno indice `1` (gli array in Julia non iniziano da 0) e `end` (che
 in Julia indica l'ultima posizione in un array):
 
-```julia:ex14
+````julia:ex15
 function error_slope(steps, errors)
     deltax = log(steps[end]) - log(steps[1])
     deltay = log(errors[end]) - log(errors[1])
@@ -373,14 +402,18 @@ function error_slope(steps, errors)
 end
 
 error_slope(steps, errors)
-```
+````
 
 Domanda: È importante nell'implementazione di `error_slope` sopra
 fissare la base del logaritmo, oppure no? In altre parole, si
 ottengono risultati diversi se si usa $\log_2$, $\log_{10}$ oppure
 $\log_e$?
 
-## Metodo di Simpson
+
+## Esercizio 7.1 – Integrazione alla Simpson
+
+Testo dell'esercizio:
+[carminati-esercizi-07.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-07.html#esercizio-7.1).
 
 Si usa la formula
 
@@ -400,7 +433,7 @@ con $x_k = a + k h$.
 Come sopra, implementiamo l'algoritmo senza definire classi (come
 faremmo in C++), ma scrivendo direttamente una funzione.
 
-```julia:ex15
+````julia:ex16
 function simpson(f, a, b, n::Integer)
     # Siccome il metodo funziona solo quando il numero di
     # intervalli è pari, usiamo "truen" anziché "n" nei
@@ -415,7 +448,7 @@ function simpson(f, a, b, n::Integer)
 
     acc * h
 end
-```
+````
 
 Verifichiamone il funzionamento sul nostro caso di riferimento.
 Anche questi numeri sono utili per implementare degli assert nel
@@ -423,18 +456,24 @@ vostro codice C++; in particolare, il metodo di Simpson tratta in
 modo diverso gli estremi $f(a)$ e $f(b)$, quindi il secondo e il
 terzo test sono particolarmente importanti!
 
-```julia:ex16
+````julia:ex17
 println("Primo caso:   ", simpson(sin, 0, pi, 10))
 println("Secondo caso: ", simpson(sin, 0, pi, 100))
 println("Terzo caso:   ", simpson(sin, 0, 1, 10))
 println("Quarto caso:  ", simpson(sin, 1, 2, 30))
-```
+````
 
-Stavolta non fornisco gli `assert` da usare nel vostro codice:
-dovreste essere in grado di implementarli da soli usando i quattro
-numeri stampati sopra.
+Come ho scritto sopra, stavolta non fornisco gli `assert` da usare
+nel vostro codice: dovreste essere in grado di implementarli da soli
+usando i quattro risultati. È molto importante che implementiate
+tutti e quattro i test, perché in questo modo verificate che la
+vostra implementazione consideri correttamente il valore
+dell'integranda sui due estremi di integrazione.
 
-```julia:ex17
+Passiamo ora a calcolare gli errori del metodo di Simpson, usando
+ancora una volta un grafico bilogaritmico.
+
+````julia:ex18
 errors = compute_errors(simpson, steps)
 
 plot(steps, errors,
@@ -442,22 +481,22 @@ plot(steps, errors,
      xlabel = "Numero di passi", ylabel = "Errore")
 
 savefig(joinpath(@OUTPUT, "simpson-error.svg")) # hide
-```
+````
 
 \fig{simpson-error.svg}
 
 Verifichiamo che la pendenza sia quella attesa: l'errore $\epsilon$
-dovrebbe essere tale che $\epsilon \propto h^{-4}$.
+dovrebbe essere tale che $\epsilon \propto N^{-4}$.
 
-```julia:ex18
+````julia:ex19
 error_slope(steps, errors)
-```
+````
 
 ## Metodo dei trapezoidi
 
 In questo caso si approssima l'integrale con l'area del trapezio.
 
-```julia:ex19
+````julia:ex20
 function trapezoids(f, a, b, n::Integer)
     h = (b - a) / n
     acc = (f(a) + f(b)) / 2
@@ -472,30 +511,33 @@ println("Primo caso:   ", trapezoids(sin, 0, pi, 10))
 println("Secondo caso: ", trapezoids(sin, 0, pi, 100))
 println("Terzo caso:   ", trapezoids(sin, 0, 1, 10))
 println("Quarto caso:  ", trapezoids(sin, 1, 2, 30))
-```
+````
+
+Come al solito, usate questi quattro risultati per implementare
+degli `assert` nel vostro programma C++.
 
 Facciamo un plot come prima:
 
-```julia:ex20
+````julia:ex21
 errors = compute_errors(trapezoids, steps)
 plot(steps, errors,
      xscale = :log10, yscale = :log10,
      xlabel = "Numero di passi", ylabel = "Errore")
 
 savefig(joinpath(@OUTPUT, "trapezoids-error.svg")) # hide
-```
+````
 
 \fig{trapezoids-error.svg}
 
-Calcoliamo anche la pendenza della curva $\epsilon \propto h^\alpha$:
+Calcoliamo anche la pendenza della curva $\epsilon \propto N^\alpha$:
 
-```julia:ex21
+````julia:ex22
 error_slope(steps, errors)
-```
+````
 
 Tracciamo ora un grafico comparativo dei due metodi.
 
-```julia:ex22
+````julia:ex23
 plot(steps, compute_errors(midpoint, steps),
      label = "Mid-point",
      xscale = :log10, yscale = :log10,
@@ -507,16 +549,20 @@ plot!(steps, compute_errors(simpson, steps),
       label = "Simpson")
 
 savefig(joinpath(@OUTPUT, "error-comparison.svg")) # hide
-```
+````
 
 \fig{error-comparison.svg}
 
 Notate che il metodo del mid-point e dei trapezi hanno la stessa
 legge di scala, ma non si sovrappongono: la costante $C$ nella legge
-di scala $\epsilon = Cn^{-\alpha}$ è diversa (e quindi è diversa
-l'intercetta $q = \log C$ nel grafico bilogaritmico).
+di scala $\epsilon = CN^{-\alpha}$ è diversa (e quindi è diversa
+l'intercetta $q = \log_{10} C$ nel grafico bilogaritmico).
 
-## Ricerca della precisione
+
+## Esercizio 7.2 – Integrazione con trapezoidi a precisione fissata
+
+Testo dell'esercizio:
+[carminati-esercizi-07.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-07.html#esercizio-7.2).
 
 L'esercizio 7.2 è diverso dagli esercizi 7.0 e 7.1, perché richiede
 di iterare il calcolo finché non si raggiunge una precisione
@@ -526,13 +572,13 @@ da capo il valore approssimato dell'integrale.
 Sfruttiamo la capacità di Julia di esprimere sequenze con la
 sintassi `start:delta:end`:
 
-```julia:ex23
+````julia:ex24
 # La funzione `collect` obbliga Julia a stampare l'elenco completo
 # degli elementi di una lista anziché usare la forma compatta (poco
 # interessante in questo caso, perché vogliamo almeno per una volta
 # vedere uno per uno gli elementi dell'intervallo 1:2:10)
 collect(1:2:10)
-```
+````
 
 Ora appare chiaro perché nell'implementare `midpoint`, `simpsons` e
 `trapezoids` sopra avevamo dichiarato esplicitamente come `Integer`
@@ -542,7 +588,7 @@ il tipo dell'ultimo parametro, `n`: adesso vogliamo invece invocare
 cui derivano i tipi floating-point, come `Float16`, `Float32`, e
 `Float64`.
 
-```julia:ex24
+````julia:ex25
 function trapezoids(f, a, b, prec::AbstractFloat)
     n = 2
 
@@ -569,7 +615,7 @@ function trapezoids(f, a, b, prec::AbstractFloat)
 
     newint
 end
-```
+````
 
 Notate che dopo aver compilato la definizione precedente, Julia ha
 scritto `trapezoids (generic function with 2 methods)`. Ha quindi
@@ -582,7 +628,7 @@ possiamo verificare che l'integrale calcolato sulla nostra funzione
 di riferimento $f(x) = \sin x$ abbia un errore sempre inferiore alla
 precisione richiesta.
 
-```julia:ex25
+````julia:ex26
 prec = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
 errors = [abs(trapezoids(REF_FN, REF_A, REF_B, eps) - REF_INT)
           for eps in prec]
@@ -595,7 +641,7 @@ plot(prec, errors,
 plot!(prec, prec, label = "Caso teorico peggiore")
 
 savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")) # hide
-```
+````
 
 \fig{trapezoids-vs-theory.svg}
 

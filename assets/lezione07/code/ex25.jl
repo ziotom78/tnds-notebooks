@@ -1,13 +1,27 @@
 # This file was generated, do not modify it. # hide
-prec = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
-errors = [abs(trapezoids(REF_FN, REF_A, REF_B, eps) - REF_INT)
-          for eps in prec]
+function trapezoids(f, a, b, prec::AbstractFloat)
+    n = 2
 
-plot(prec, errors,
-     label = "Misurato",
-     xscale = :log10, yscale = :log10,
-     xlabel = "Precisione impostata",
-     ylabel = "Precisione ottenuta")
-plot!(prec, prec, label = "Caso teorico peggiore")
+    h = (b - a) / n
+    # Valore dell'integrale nel caso n = 2
+    acc = (f(a) + f(b)) / 2 + f((a + b) / 2)
+    newint = acc * h
+    while true
+        oldint = newint
+        n *= 2
+        h /= 2
 
-savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")) # hide
+        for k in 1:2:(n - 1) # Just iterate on odd numbers
+            acc += f(a + k * h)
+        end
+
+        newint = acc * h
+        # In Julia, the / operator always returns a floating-point
+        # number. This is not true in C++, so remember to write 4.0/3
+        if 4/3 * abs(newint - oldint) < prec
+            break
+        end
+    end
+
+    newint
+end

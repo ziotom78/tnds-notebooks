@@ -9,14 +9,14 @@
 
   <channel>
     <title>
-      <![CDATA[  {{fd2rss website_title}}  ]]>
+      <![CDATA[  Notebook per il corso di TNDS  ]]>
     </title>
-    <link> {{website_url}} </link>
+    <link> https://ziotom78.github.io/tnds-tomasi-notebooks/ </link>
     <description>
-      <![CDATA[  {{fd2rss website_description}}  ]]>
+      <![CDATA[  Notebook Julia del turno del prof. Maurizio Tomasi  ]]>
     </description>
     <atom:link
-      href="{{fd_rss_feed_url}}"
+      href="https://ziotom78.github.io/tnds-tomasi-notebooks/feed.xml"
       rel="self"
       type="application/rss+xml" />
 

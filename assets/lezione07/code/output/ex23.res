@@ -1,6 +1,1 @@
-5-element Vector{Int64}:
- 1
- 3
- 5
- 7
- 9
+"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione07/code/output/error-comparison.svg"
