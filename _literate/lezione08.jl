@@ -42,32 +42,19 @@ t = 0
 h = 0.1
 t += h
 
-# Nulla di sorprendente… Incrementiamo ancora una volta:
+# Nulla di sorprendente… Incrementiamo ancora un paio di volte:
 
 t += h
+t += h
 
-# Sembra ancora tutto regolare. Proviamo allora ad incrementare `t`
-# per dieci volte:
-
-## Esegue per `nruns` volte l'incremento `increment`, partendo da
-## `start`
-function simulate(nruns, start, increment)
-    t = start
-    for i in 1:nruns
-        t += increment
-    end
-    println("Incrementando di $increment per $nruns volte, il risultato è $t")
-end
-
-simulate(10, 0, h)
-
-# Sorpresa! Con 10 incrementi si è rivelato un piccolo errore di
-# arrotondamento che era nascosto già nel primo passaggio: il numero
-# `0.1` non è rappresentabile nel formato *floating-point* usato dai
+# Sorpresa! Con tre incrementi si è rivelato un piccolo errore di
+# arrotondamento che era nascosto già nel primo passaggio. Il problema
+# è che il numero `0.1` con cui incrementavamo ogni volta la variabile
+# `t` non è rappresentabile nel formato *floating-point* usato dai
 # calcolatori moderni, che usano lo [standard IEE
 # 754](https://en.wikipedia.org/wiki/IEEE_754). L'errore si è
 # accumulato, passaggio dopo passaggio, diventando visibile solo al
-# decimo passaggio.
+# terzo passaggio.
 # 
 # Considerate ora un codice come questo, che vorrebbe iterare per `t`
 # che va da `0` a `1` in step di `h = 0.1`:
