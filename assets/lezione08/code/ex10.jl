@@ -1,2 +1,3 @@
 # This file was generated, do not modify it. # hide
-oscillatore(time, x) = [x[2], -x[1]]  # ω0 = 1
+h = 0.1
+result = euler(oscillatore, [0., 1.], 0.0, 70.0, h);

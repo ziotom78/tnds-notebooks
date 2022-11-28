@@ -1,2 +1,3 @@
 # This file was generated, do not modify it. # hide
-[angles ampl]
+ω0 = 10;
+α = 1.0 / 30;

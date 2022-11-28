@@ -45,41 +45,26 @@ h = 0.1
 t += h
 ````
 
-Nulla di sorprendente… Incrementiamo ancora una volta:
+Nulla di sorprendente… Incrementiamo ancora un paio di volte:
 
 ````julia:ex3
 t += h
+t += h
 ````
 
-Sembra ancora tutto regolare. Proviamo allora ad incrementare `t`
-per dieci volte:
-
-````julia:ex4
-# Esegue per `nruns` volte l'incremento `increment`, partendo da
-# `start`
-function simulate(nruns, start, increment)
-    t = start
-    for i in 1:nruns
-        t += increment
-    end
-    println("Incrementando di $increment per $nruns volte, il risultato è $t")
-end
-
-simulate(10, 0, h)
-````
-
-Sorpresa! Con 10 incrementi si è rivelato un piccolo errore di
-arrotondamento che era nascosto già nel primo passaggio: il numero
-`0.1` non è rappresentabile nel formato *floating-point* usato dai
+Sorpresa! Con tre incrementi si è rivelato un piccolo errore di
+arrotondamento che era nascosto già nel primo passaggio. Il problema
+è che il numero `0.1` con cui incrementavamo ogni volta la variabile
+`t` non è rappresentabile nel formato *floating-point* usato dai
 calcolatori moderni, che usano lo [standard IEE
 754](https://en.wikipedia.org/wiki/IEEE_754). L'errore si è
 accumulato, passaggio dopo passaggio, diventando visibile solo al
-decimo passaggio.
+terzo passaggio.
 
 Considerate ora un codice come questo, che vorrebbe iterare per `t`
 che va da `0` a `1` in step di `h = 0.1`:
 
-````julia:ex5
+````julia:ex4
 function simulate(t0, tf, increment)
     t = t0
 
@@ -104,7 +89,7 @@ ovviamente **sbagliata**. Il modo giusto per implementare questo
 genere di ciclo è di calcolare il numero di iterazioni (come un
 intero) e poi fare un ciclo for usando solo variabili intere:
 
-````julia:ex6
+````julia:ex5
 function simulate_method1(t0, tf, increment)
     println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
 
@@ -131,7 +116,7 @@ Un secondo metodo è quello di evitare di «accumulare» l'incremento
 `h` nella variabile `t` ad ogni iterazione, ma calcolare ogni volta
 da capo quest'ultima:
 
-````julia:ex7
+````julia:ex6
 function simulate_method2(t0, tf, increment)
     println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
 
@@ -165,7 +150,7 @@ vettori, perché sono già implementate: basta porre un punto `.`
 davanti all'operatore perché questo venga automaticamente propagato
 sugli elementi di vettori:
 
-````julia:ex8
+````julia:ex7
 [1, 2, 4] .+ [3, 7, -5]
 ````
 
@@ -191,7 +176,7 @@ visto nella lezione precedente usando i template, anche se in Julia
 la risoluzione dei template avviene a *runtime* anziché in fase di
 compilazione come in C++.
 
-````julia:ex9
+````julia:ex8
 function euler(fn, x0, startt, endt, h)
     # La scrittura startt:h:endt indica il vettore
     #
@@ -215,7 +200,7 @@ end
 
 Definiamo ora una funzione che descriva l'oscillatore armonico del problema 8.1.
 
-````julia:ex10
+````julia:ex9
 oscillatore(time, x) = [x[2], -x[1]]  # ω0 = 1
 ````
 
@@ -224,20 +209,20 @@ Invochiamo `oscillatore` usando come condizione iniziale $(x, v) =
 usando come passo $h = 10^{-1}$. La funzione restituisce una matrice
 a tre colonne, contenenti il tempo, la posizione e la velocità.
 
-````julia:ex11
+````julia:ex10
 h = 0.1
 result = euler(oscillatore, [0., 1.], 0.0, 70.0, h);
 ````
 
 Questi sono i primi step (tempo, posizione e velocità):
 
-````julia:ex12
+````julia:ex11
 result[1:10, :]
 ````
 
 Questi sono invece gli ultimi:
 
-````julia:ex13
+````julia:ex12
 result[(end - 10):end, :]
 ````
 
@@ -287,7 +272,7 @@ variabile `lastt` (nel vostro codice dovreste definirla come un
 `const double`, ma in un notebook destinato all'uso interattivo come
 questo non è mai consigliato definire costanti).
 
-````julia:ex14
+````julia:ex13
 lastt = 70.0;
 ````
 
@@ -307,7 +292,7 @@ forma $7\times 10^k$, con $k \in [2, 2.2, 2.4, 2.6, \ldots, 3.8,
 10^{-1}$ e $h = 10^{-3}$. Il valore di `nsteps` deve ovviamente
 essere sempre arrotondato ad un intero (mediante round).
 
-````julia:ex15
+````julia:ex14
 nsteps = 7 * round.(Int, exp10.(2:0.2:4))
 ````
 
@@ -317,7 +302,7 @@ in Julia l'operatore `./` è come l'operatore `/` di divisione, ma
 viene applicato uno ad uno ad ogni elemento dell'array, e risparmia
 la noia di dover implementare un ciclo `for`.
 
-````julia:ex16
+````julia:ex15
 deltat = lastt ./ nsteps
 ````
 
@@ -328,7 +313,7 @@ macro `@animate` del pacchetto
 [Plots](https://github.com/JuliaPlots/Plots.jl/), e poi salvare il
 risultato in un file GIF.
 
-````julia:ex17
+````julia:ex16
 anim = @animate for h in deltat
     result = euler(oscillatore, [0., 1.], 0.0, 70.0, h)
     plot(result[:, 1], result[:, 2],
@@ -347,7 +332,7 @@ Vediamo che l'errore è estremamente significativo se $h = 10^{-2}$.
 Facciamo un confronto più quantitativo confrontando il valore della
 posizione all'istante $t=70\,\text{s}$ con quello teorico.
 
-````julia:ex18
+````julia:ex17
 lastpos = [euler(oscillatore, [0., 1.], 0.0, lastt, h)[end, 2] for h in deltat]
 error_euler = abs.(lastpos .- sin(lastt))
 
@@ -361,7 +346,7 @@ I numeri sopra vi saranno preziosi per fare test sul vostro codice
 usando `assert`. Creiamo ora un plot che mostri l'andamento
 dell'errore in funzione del passo $h$, come mostrato sul sito.
 
-````julia:ex19
+````julia:ex18
 plot(deltat, error_euler,
      xscale = :log10, yscale = :log10,
      xlabel = "Passo d'integrazione",
@@ -383,7 +368,7 @@ La funzione `rungekutta` implementa l'integrazione di Runge-Kutta
 usando lo stesso approccio della funzione `euler` vista sopra: è
 quindi un po' diverso dal modo in cui la implementerete voi.
 
-````julia:ex20
+````julia:ex19
 function rungekutta(fn, x0, startt, endt, h)
     timerange = startt:h:endt
     result = Array{Float64}(undef, length(timerange), 1 + length(x0))
@@ -408,20 +393,20 @@ Il funzionamento di `rungekutta` è però il medesimo di `euler`: le
 due funzioni accettano gli stessi parametri e restituiscono matrici
 a tre colonne.
 
-````julia:ex21
+````julia:ex20
 result = rungekutta(oscillatore, [0., 1.], 0.0, 70.0, 0.1);
 ````
 
 Come sopra, consideriamo la posizione e la velocità all'inizio della
 simulazione:
 
-````julia:ex22
+````julia:ex21
 result[1:10, :]
 ````
 
 Questi sono i dati alla fine della simulazione:
 
-````julia:ex23
+````julia:ex22
 result[(end - 10):end, :]
 ````
 
@@ -452,7 +437,7 @@ void test_runge_kutta() {
 Nel caso di Runge-Kutta, l'animazione è molto meno interessante: la
 convergenza è eccellente anche per $h = 10^{-1}$.
 
-````julia:ex24
+````julia:ex23
 anim = @animate for h in deltat
     cur_result = rungekutta(oscillatore, [0., 1.], 0.0, 70.0, h)
     plot(cur_result[:, 1], cur_result[:, 2],
@@ -471,7 +456,7 @@ Confrontiamo il grafico dell'errore di Runge-Kutta con quello di
 Eulero, per rendere evidente la differenza nella velocità di
 convergenza.
 
-````julia:ex25
+````julia:ex24
 lastpos = [rungekutta(oscillatore, [0., 1.], 0.0, lastt, h)[end, 2] for h in deltat]
 error_rk = abs.(lastpos .- sin(lastt))
 ````
@@ -479,7 +464,7 @@ error_rk = abs.(lastpos .- sin(lastt))
 Questa è la corrispondenza tra $\delta t$ e la posizione finale (a
 $t = 70\,\text{s}$):
 
-````julia:ex26
+````julia:ex25
 @printf("%-14s\t%-14s\n", "δt [s]", "x(70) [m]")
 for i in 1:length(deltat)
     @printf("%.12f\t%.12f\n", deltat[i], lastpos[i])
@@ -488,7 +473,7 @@ end
 
 Creiamo un plot che mostri visivamente la differenza tra i due metodi:
 
-````julia:ex27
+````julia:ex26
 plot(deltat, error_euler, label = "")
 scatter!(deltat, error_euler, label = "Eulero")
 
@@ -513,7 +498,7 @@ Questo esercizio richiede di studiare il comportamento di un pendolo
 di lunghezza $l$ sottoposto ad un'accelerazione di gravità $g$.
 Impostiamo un paio di costanti.
 
-````julia:ex28
+````julia:ex27
 rodlength = 1.;
 g = 9.81;
 ````
@@ -521,7 +506,7 @@ g = 9.81;
 La funzione `pendulum` definisce i due membri dell'equazione
 differenziale di secondo grado.
 
-````julia:ex29
+````julia:ex28
 pendulum(t, x) = [x[2], -g / rodlength * sin(x[1])]
 ````
 
@@ -530,14 +515,14 @@ norma studiare il comportamento della soluzione in un caso
 particolare. Usiamo `rungekutta` per analizzare il caso in cui
 $\theta_0 = \pi / 3$:
 
-````julia:ex30
+````julia:ex29
 oscillations = rungekutta(pendulum, [π / 3, 0.], 0.0, 3.0, 0.01)
 oscillations[1:10, :]
 ````
 
 Visualizziamo anche le ultime righe:
 
-````julia:ex31
+````julia:ex30
 oscillations[(end - 10):end, :]
 ````
 
@@ -562,7 +547,7 @@ Pkg.add("Luxor")
 
 Quando è installato, possiamo importarlo come al solito:
 
-````julia:ex32
+````julia:ex31
 import Luxor
 ````
 
@@ -578,7 +563,7 @@ pieno di colore nero. (Notate che Julia offre il comando `sincos`,
 che calcola simultaneamente il valore del seno e del coseno di un
 angolo).
 
-````julia:ex33
+````julia:ex32
 function plot_pendulum(angle)
     radius = 200  # Lunghezza del braccio del pendolo
     y, x = radius .* sincos(π / 2 + angle)
@@ -597,7 +582,7 @@ il numero di righe (corrispondente agli step temporali) dipende dal
 passo $h$ e dalla lunghezza della simulazione. Vediamo di quanti
 step si tratta:
 
-````julia:ex34
+````julia:ex33
 size(oscillations, 1)
 ````
 
@@ -605,7 +590,7 @@ Creeremo ora un'immagine GIF animata chiamando ripetutamente il
 comando `plot_pendulum`. Notate la comodità di Luxor: in poche righe
 è possibile creare un'intera animazione e salvarla su disco.
 
-````julia:ex35
+````julia:ex34
 anim = Luxor.Movie(500, 500, "Pendulum")
 
 function animframe(scene, framenumber)
@@ -626,7 +611,7 @@ momento in cui la velocità angolare inverte il segno. Osserviamo
 allora il grafico della velocità (seconda componente del sistema di
 equazioni differenziali).
 
-````julia:ex36
+````julia:ex35
 plot(oscillations[:, 1], oscillations[:, 3],
      label = "",
      xlabel = "Tempo [s]",
@@ -646,7 +631,7 @@ punto `.` che «propaga» un operatore sugli elementi di un vettore.
 Ecco quindi come troviamo tutte le iterazioni della soluzione per
 cui la velocità $v_i$ è tale per cui $\left| v_i \right| < 0.1$:
 
-````julia:ex37
+````julia:ex36
 oscillations[abs.(oscillations[:, 3]) .< 0.1, :]
 ````
 
@@ -664,7 +649,7 @@ $(2.15, 2.16)$. Facciamo un grafico ingrandito nell'intervallo
 temporale $t = 1\ldots 1.2\,\text{s}$ per renderci meglio conto
 della cosa:
 
-````julia:ex38
+````julia:ex37
 scatter(oscillations[:, 1], oscillations[:, 3],
         label = "",
         xlim = (1.0, 1.2),
@@ -682,7 +667,7 @@ il segno di due elementi consecutivi cambia, restituendo la
 posizione del primo di questi due elementi. (È buona cosa che anche
 voi implementiate una funzione del genere nel vostro codice C++).
 
-````julia:ex39
+````julia:ex38
 function search_inversion(vect)
     prevval = vect[1]
     for i in 2:length(vect)
@@ -710,7 +695,7 @@ Verifichiamone il funzionamento su un vettore (ricordando che in
 Julia gli elementi dei vettori si contano da 1 anziché da 0 come in
 C++!).
 
-````julia:ex40
+````julia:ex39
 search_inversion([4, 3, 1, -2, -5])
 ````
 
@@ -753,7 +738,7 @@ comportamento di ciascuna. Qui introduciamo due implementazioni di
 `interp`: la seconda è più specifica e calcola l'ascissa del punto
 di intersezione della retta con l'asse delle ordinate.
 
-````julia:ex41
+````julia:ex40
 interp(ptA, ptB, y) = ptA[1] + (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (y - ptA[2])
 interp(ptA, ptB) = interp(ptA, ptB, 0)
 ````
@@ -762,7 +747,7 @@ Eseguiamo una volta `interp` per trovare il valore dell'ordinata $y$
 in corrispondenza dell'ordinata $y = 0.3$ di una una retta passante
 per i punti $(-0.4, -0.7)$ e $(0.5, 0.8)$:
 
-````julia:ex42
+````julia:ex41
 let p1x = -0.4, p1y = -0.7, p2x = 0.5, p2y = 0.8, y = 0.3
     # Il comando `plot` richiede di passare un array con le ascisse
     # e uno con le coordinate…
@@ -796,7 +781,7 @@ Introduciamo ora un'altra funzione, `invtime`, che mette insieme
 `search_inversion` e `interp` per restituire l'istante temporale in
 cui avviene l'inversione del segno del vettore `vec`:
 
-````julia:ex43
+````julia:ex42
 function invtime(time, vec)
     idx = search_inversion(vec)
     timeA, timeB = time[idx:idx + 1]
@@ -811,27 +796,27 @@ posizione $\theta = 0$, il valore del periodo è semplicemente il
 doppio del tempo necessario per osservare l'inversione
 (nell'esercizio 9.4 questo **non sarà più vero**, ricordatevelo!).
 
-````julia:ex44
+````julia:ex43
 period(oscillations) = 2 * invtime(oscillations[:, 1], oscillations[:, 3])
 ````
 
 Chiamando `period` su una matrice restituita da `euler` o da
 `rungekutta` si ottiene quindi il periodo di oscillazione.
 
-````julia:ex45
+````julia:ex44
 period(oscillations)
 ````
 
 Confrontiamola col periodo ideale di un pendolo sottoposto a piccole oscillazioni.
 
-````julia:ex46
+````julia:ex45
 ideal_period = 2π / √(g / rodlength)
 ````
 
 Creiamo ora il grafico analogo a quello riportato nel testo
 dell'esercizio.
 
-````julia:ex47
+````julia:ex46
 angles = 0.1:0.1:3.0
 ampl = [period(rungekutta(pendulum, [angle, 0.], 0.0, 3.0, 0.01))
         for angle in angles]
@@ -848,7 +833,7 @@ radianti) e periodo (in secondi). In questo modo potrete
 confrontarli con l'output del vostro programma, magari mediante
 alcuni test con `assert` (usate ad esempio il primo e l'ultimo).
 
-````julia:ex48
+````julia:ex47
 [angles ampl]
 ````
 
@@ -858,7 +843,7 @@ Testo dell'esercizio: [carminati-esercizi-08.html](https://ziotom78.github.io/tn
 
 Come sopra, definiamo i parametri numerici del problema.
 
-````julia:ex49
+````julia:ex48
 ω0 = 10;
 α = 1.0 / 30;
 ````
@@ -869,7 +854,7 @@ invochi `rungekutta` con dei parametri sensati. Notate la sintassi
 una funzione (nel nostro caso appunto `rungekutta`) una seconda
 funzione. Questa sintassi è molto comoda per casi come il nostro.
 
-````julia:ex50
+````julia:ex49
 function forcedpendulum(ω; init=[0., 0.], startt=0., endt=15. / α, deltat=0.01)
     rungekutta(init, startt, endt, deltat) do t, x
         [x[2], -ω0^2 * x[1] - α * x[2] + sin(ω * t)]
@@ -881,7 +866,7 @@ Il valore di ritorno di `forcedpendulum` è come al solito una
 matrice a tre colonne. Il plot mostra come il pendolo forzato con
 smorzante arrivi presto ad una situazione di equilibrio:
 
-````julia:ex51
+````julia:ex50
 oscillations = forcedpendulum(8.)
 plot(oscillations[:, 1], oscillations[:, 2], label="")
 
@@ -921,7 +906,7 @@ Il modo migliore di procedere è quindi il seguente:
    $\left|v\right| \leq 10^{-6}\,\text{rad/s}$, il valore della
    posizione in questo punto corrisponde all'ampiezza.
 
-````julia:ex52
+````julia:ex51
 function forced_amplitude(ω, oscillations)
     # Per comodità estraggo la prima colonna della matrice (quella che
     # contiene i tempi) nel vettore "timevec"
@@ -958,7 +943,7 @@ questo è un numero buono per essere usato in un `assert`. Notate che
 nel secondo punto (corrispondente al tempo $t + \delta t$) la
 velocità è nulla.
 
-````julia:ex53
+````julia:ex52
 forced_amplitude(9.5, forcedpendulum(9.5))
 ````
 
@@ -969,7 +954,7 @@ quello di massimo, perché la velocità è pressoché nulla. Usate i
 numeri scritti qui sotto per verificare che il vostro codice sia
 corretto.
 
-````julia:ex54
+````julia:ex53
 # Aggiungiamo 0.01 agli estremi (9 e 11) per evitare la condizione di risonanza
 freq = 9.01:0.1:11.01
 println("The frequencies to be sampled are: $(collect(freq))")

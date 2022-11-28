@@ -1,1 +1,1 @@
-0.10203379178084179
+"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/forced-pendulum-resonance.svg"

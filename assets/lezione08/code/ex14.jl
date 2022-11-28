@@ -1,2 +1,2 @@
 # This file was generated, do not modify it. # hide
-lastt = 70.0;
+nsteps = 7 * round.(Int, exp10.(2:0.2:4))

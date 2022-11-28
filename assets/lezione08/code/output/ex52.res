@@ -1,1 +1,1 @@
-forced_amplitude (generic function with 1 method)
+0.10203379178084179

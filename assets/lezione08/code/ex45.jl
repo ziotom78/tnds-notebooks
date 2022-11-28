@@ -1,2 +1,2 @@
 # This file was generated, do not modify it. # hide
-period(oscillations)
+ideal_period = 2π / √(g / rodlength)

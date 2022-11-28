@@ -1,1 +1,7 @@
-"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/oscillations1.svg"
+6×3 Matrix{Float64}:
+ 0.0    1.0472    0.0
+ 0.01   1.04677  -0.0849501
+ 1.07  -1.04702  -0.0546879
+ 1.08  -1.04714   0.030267
+ 2.15   1.04716   0.0244223
+ 2.16   1.04698  -0.0605321

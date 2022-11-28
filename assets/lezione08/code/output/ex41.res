@@ -1,1 +1,1 @@
-interp (generic function with 2 methods)
+"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/interp-test.svg"

@@ -1,1 +1,1 @@
-"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/interp-test.svg"
+invtime (generic function with 1 method)

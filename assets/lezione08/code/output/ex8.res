@@ -1,4 +1,1 @@
-3-element Vector{Int64}:
-  4
-  9
- -1
+euler (generic function with 1 method)

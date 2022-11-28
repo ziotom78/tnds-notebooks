@@ -1,1 +1,1 @@
-forcedpendulum (generic function with 1 method)
+"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/forced-pendulum.svg"

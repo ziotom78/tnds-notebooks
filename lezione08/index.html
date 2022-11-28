@@ -7,22 +7,10 @@
 }</code></pre> <p>È importante scrivere bene la condizione nel ciclo <code>while</code>, perché è una cosa che gli studenti sbagliano spesso&#33; Il problema sta negli errori di arrotondamento, che sono dovuti al modo in cui il computer memorizza i numeri <em>floating-point</em> e sono quindi identici sia in C&#43;&#43; che in Julia.</p> <p>Vediamo quindi in cosa consiste il problema usando Julia. Creiamo una variabile <code>t &#61; 0</code> che poi incrementiamo in passi di <code>h &#61; 0.1</code> secondi: in questo modo simuliamo quello che farebbe il ciclo per risolvere una equazione differenziale</p> <pre><code class="julia hljs">t = <span class=hljs-number >0</span>
 h = <span class=hljs-number >0.1</span>
 t += h</code></pre><pre><code class="plaintext hljs">0.1</code></pre>
-<p>Nulla di sorprendente… Incrementiamo ancora una volta:</p>
-<pre><code class="julia hljs">t += h</code></pre><pre><code class="plaintext hljs">0.2</code></pre>
-<p>Sembra ancora tutto regolare. Proviamo allora ad incrementare <code>t</code> per dieci volte:</p>
-<pre><code class="julia hljs"><span class=hljs-comment ># Esegue per `nruns` volte l&#x27;incremento `increment`, partendo da</span>
-<span class=hljs-comment ># `start`</span>
-<span class=hljs-keyword >function</span> simulate(nruns, start, increment)
-    t = start
-    <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:nruns
-        t += increment
-    <span class=hljs-keyword >end</span>
-    println(<span class=hljs-string >&quot;Incrementando di <span class=hljs-variable >$increment</span> per <span class=hljs-variable >$nruns</span> volte, il risultato è <span class=hljs-variable >$t</span>&quot;</span>)
-<span class=hljs-keyword >end</span>
-
-simulate(<span class=hljs-number >10</span>, <span class=hljs-number >0</span>, h)</code></pre><pre><code class="plaintext hljs">Incrementando di 0.1 per 10 volte, il risultato è 0.9999999999999999
-</code></pre>
-<p>Sorpresa&#33; Con 10 incrementi si è rivelato un piccolo errore di arrotondamento che era nascosto già nel primo passaggio: il numero <code>0.1</code> non è rappresentabile nel formato <em>floating-point</em> usato dai calcolatori moderni, che usano lo <a href="https://en.wikipedia.org/wiki/IEEE_754">standard IEE 754</a>. L&#39;errore si è accumulato, passaggio dopo passaggio, diventando visibile solo al decimo passaggio.</p>
+<p>Nulla di sorprendente… Incrementiamo ancora un paio di volte:</p>
+<pre><code class="julia hljs">t += h
+t += h</code></pre><pre><code class="plaintext hljs">0.30000000000000004</code></pre>
+<p>Sorpresa&#33; Con tre incrementi si è rivelato un piccolo errore di arrotondamento che era nascosto già nel primo passaggio. Il problema è che il numero <code>0.1</code> con cui incrementavamo ogni volta la variabile <code>t</code> non è rappresentabile nel formato <em>floating-point</em> usato dai calcolatori moderni, che usano lo <a href="https://en.wikipedia.org/wiki/IEEE_754">standard IEE 754</a>. L&#39;errore si è accumulato, passaggio dopo passaggio, diventando visibile solo al terzo passaggio.</p>
 <p>Considerate ora un codice come questo, che vorrebbe iterare per <code>t</code> che va da <code>0</code> a <code>1</code> in step di <code>h &#61; 0.1</code>:</p>
 <pre><code class="julia hljs"><span class=hljs-keyword >function</span> simulate(t0, tf, increment)
     t = t0
@@ -684,7 +672,7 @@ t0 = 300.0300, angle = 0.0471, speed = 0.0158, t0 + δt = 300.0328, angle = 0.04
 
 <div class=page-foot >
   <div class=copyright >
-    &copy; Maurizio Tomasi. Last modified: November 21, 2022. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+    &copy; Maurizio Tomasi. Last modified: November 28, 2022. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
   </div>
 </div>
 </div>

@@ -1,12 +1,16 @@
 # This file was generated, do not modify it. # hide
-# Esegue per `nruns` volte l'incremento `increment`, partendo da
-# `start`
-function simulate(nruns, start, increment)
-    t = start
-    for i in 1:nruns
+function simulate(t0, tf, increment)
+    t = t0
+
+    println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
+
+    # Itera finché non abbiamo raggiunto il tempo finale
+    while t < tf
+        println("  t = $t")
         t += increment
     end
-    println("Incrementando di $increment per $nruns volte, il risultato è $t")
+
+    println("Simulazione terminata a t = $t")
 end
 
-simulate(10, 0, h)
+simulate(0.0, 1.0, 0.1)

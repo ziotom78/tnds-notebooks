@@ -1,5 +1,5 @@
-Inizia la simulazione, da t=0.0 a 1.0 con h=0.1
-  t = 0.0
+Inizia la simulazione, da t=0 a 1 con h=0.1
+  t = 0
   t = 0.1
   t = 0.2
   t = 0.30000000000000004
@@ -9,5 +9,4 @@ Inizia la simulazione, da t=0.0 a 1.0 con h=0.1
   t = 0.7
   t = 0.7999999999999999
   t = 0.8999999999999999
-  t = 0.9999999999999999
-Simulazione terminata a t = 1.0999999999999999
+Simulazione terminata a t = 0.9999999999999999

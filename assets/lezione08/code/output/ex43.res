@@ -1,1 +1,1 @@
-invtime (generic function with 1 method)
+period (generic function with 1 method)

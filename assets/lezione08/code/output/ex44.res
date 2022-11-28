@@ -1,1 +1,1 @@
-period (generic function with 1 method)
+2.152874570427233
