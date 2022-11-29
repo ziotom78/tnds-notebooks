@@ -264,7 +264,7 @@ errors = [abs(midpoint(sin, 0, pi, n) - 2) for n in steps]
 
 plot(steps, errors, xlabel = "Numero di passi", ylabel = "Errore")
 
-savefig(joinpath(@OUTPUT, "midpoint-error.svg")) # hide
+savefig(joinpath(@OUTPUT, "midpoint-error.svg")); # hide
 ````
 
 \fig{midpoint-error.svg}
@@ -294,7 +294,7 @@ plot(steps, errors,
      xscale = :log10, yscale = :log10,
      xlabel = "Numero di passi", ylabel = "Errore")
 
-savefig(joinpath(@OUTPUT, "midpoint-error-log.svg")) # hide
+savefig(joinpath(@OUTPUT, "midpoint-error-log.svg")); # hide
 ````
 
 \fig{midpoint-error-log.svg}
@@ -480,7 +480,7 @@ plot(steps, errors,
      xscale = :log10, yscale = :log10,
      xlabel = "Numero di passi", ylabel = "Errore")
 
-savefig(joinpath(@OUTPUT, "simpson-error.svg")) # hide
+savefig(joinpath(@OUTPUT, "simpson-error.svg")); # hide
 ````
 
 \fig{simpson-error.svg}
@@ -524,7 +524,7 @@ plot(steps, errors,
      xscale = :log10, yscale = :log10,
      xlabel = "Numero di passi", ylabel = "Errore")
 
-savefig(joinpath(@OUTPUT, "trapezoids-error.svg")) # hide
+savefig(joinpath(@OUTPUT, "trapezoids-error.svg")); # hide
 ````
 
 \fig{trapezoids-error.svg}
@@ -548,7 +548,7 @@ plot!(steps, compute_errors(trapezoids, steps),
 plot!(steps, compute_errors(simpson, steps),
       label = "Simpson")
 
-savefig(joinpath(@OUTPUT, "error-comparison.svg")) # hide
+savefig(joinpath(@OUTPUT, "error-comparison.svg")); # hide
 ````
 
 \fig{error-comparison.svg}
@@ -629,18 +629,35 @@ di riferimento $f(x) = \sin x$ abbia un errore sempre inferiore alla
 precisione richiesta.
 
 ````julia:ex26
-prec = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
-errors = [abs(trapezoids(REF_FN, REF_A, REF_B, eps) - REF_INT)
-          for eps in prec]
+prec = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5];
+values = [trapezoids(REF_FN, REF_A, REF_B, eps) for eps in prec];
+errors = [abs(x - REF_INT) for x in values];
+````
 
+Stampiamo innanzitutto i valori di `prec` (precisione), `values`
+(integrale col metodo dei trapezoidi) ed `errors` (discrepanza dal
+valore vero), così che possiate avere dei riferimenti con cui
+implementare dei test mediante `assert`:
+
+````julia:ex27
+println("Prec\tValue of the integral\tAbsolute error")
+
+for (cur_prec, cur_value, cur_error) in zip(prec, values, errors)
+    println("$cur_prec\t$cur_value\t$cur_error")
+end
+````
+
+Infine, facciamo un grafico bilogaritmico:
+
+````julia:ex28
 plot(prec, errors,
      label = "Misurato",
      xscale = :log10, yscale = :log10,
      xlabel = "Precisione impostata",
      ylabel = "Precisione ottenuta")
-plot!(prec, prec, label = "Caso teorico peggiore")
+plot!(prec, prec, label = "Caso teorico peggiore");
 
-savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")) # hide
+savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")); # hide
 ````
 
 \fig{trapezoids-vs-theory.svg}

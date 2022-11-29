@@ -32,13 +32,13 @@ errors = [abs(midpoint(sin, 0, pi, n) - 2) for n in steps]
 
 plot(steps, errors, xlabel = "Numero di passi", ylabel = "Errore")
 
-savefig(joinpath(@OUTPUT, "midpoint-error.svg")) # hide
+savefig(joinpath(@OUTPUT, "midpoint-error.svg")); # hide
 
 plot(steps, errors,
      xscale = :log10, yscale = :log10,
      xlabel = "Numero di passi", ylabel = "Errore")
 
-savefig(joinpath(@OUTPUT, "midpoint-error-log.svg")) # hide
+savefig(joinpath(@OUTPUT, "midpoint-error-log.svg")); # hide
 
 for i in eachindex(steps)  # `i` will go from 1 to the length of `step`
     # In Julia, writing $() in a string means that the expression
@@ -92,7 +92,7 @@ plot(steps, errors,
      xscale = :log10, yscale = :log10,
      xlabel = "Numero di passi", ylabel = "Errore")
 
-savefig(joinpath(@OUTPUT, "simpson-error.svg")) # hide
+savefig(joinpath(@OUTPUT, "simpson-error.svg")); # hide
 
 error_slope(steps, errors)
 
@@ -116,7 +116,7 @@ plot(steps, errors,
      xscale = :log10, yscale = :log10,
      xlabel = "Numero di passi", ylabel = "Errore")
 
-savefig(joinpath(@OUTPUT, "trapezoids-error.svg")) # hide
+savefig(joinpath(@OUTPUT, "trapezoids-error.svg")); # hide
 
 error_slope(steps, errors)
 
@@ -130,7 +130,7 @@ plot!(steps, compute_errors(trapezoids, steps),
 plot!(steps, compute_errors(simpson, steps),
       label = "Simpson")
 
-savefig(joinpath(@OUTPUT, "error-comparison.svg")) # hide
+savefig(joinpath(@OUTPUT, "error-comparison.svg")); # hide
 
 # La funzione `collect` obbliga Julia a stampare l'elenco completo
 # degli elementi di una lista anziché usare la forma compatta (poco
@@ -165,16 +165,22 @@ function trapezoids(f, a, b, prec::AbstractFloat)
     newint
 end
 
-prec = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
-errors = [abs(trapezoids(REF_FN, REF_A, REF_B, eps) - REF_INT)
-          for eps in prec]
+prec = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5];
+values = [trapezoids(REF_FN, REF_A, REF_B, eps) for eps in prec];
+errors = [abs(x - REF_INT) for x in values];
+
+println("Prec\tValue of the integral\tAbsolute error")
+
+for (cur_prec, cur_value, cur_error) in zip(prec, values, errors)
+    println("$cur_prec\t$cur_value\t$cur_error")
+end
 
 plot(prec, errors,
      label = "Misurato",
      xscale = :log10, yscale = :log10,
      xlabel = "Precisione impostata",
      ylabel = "Precisione ottenuta")
-plot!(prec, prec, label = "Caso teorico peggiore")
+plot!(prec, prec, label = "Caso teorico peggiore");
 
-savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")) # hide
+savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")); # hide
 

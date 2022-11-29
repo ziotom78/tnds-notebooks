@@ -4,4 +4,4 @@ errors = [abs(midpoint(sin, 0, pi, n) - 2) for n in steps]
 
 plot(steps, errors, xlabel = "Numero di passi", ylabel = "Errore")
 
-savefig(joinpath(@OUTPUT, "midpoint-error.svg")) # hide
+savefig(joinpath(@OUTPUT, "midpoint-error.svg")); # hide

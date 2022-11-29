@@ -5,4 +5,4 @@ plot(steps, errors,
      xscale = :log10, yscale = :log10,
      xlabel = "Numero di passi", ylabel = "Errore")
 
-savefig(joinpath(@OUTPUT, "simpson-error.svg")) # hide
+savefig(joinpath(@OUTPUT, "simpson-error.svg")); # hide

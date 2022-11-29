@@ -9,4 +9,4 @@ plot!(steps, compute_errors(trapezoids, steps),
 plot!(steps, compute_errors(simpson, steps),
       label = "Simpson")
 
-savefig(joinpath(@OUTPUT, "error-comparison.svg")) # hide
+savefig(joinpath(@OUTPUT, "error-comparison.svg")); # hide
