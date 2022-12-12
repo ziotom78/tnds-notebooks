@@ -9,5 +9,5 @@ for i in 1:N
 end
 
 histogram(η2, label=@sprintf("R = %.3f m", R_true[2]))
-histogram!(η1, label=@sprintf("R = %.3f m", R_true[1]))
+histogram!(η1, label=@sprintf("R = %.3f m", R_true[1]));
 savefig(joinpath(@OUTPUT, "hist_eta1_eta2.svg")) # hide
