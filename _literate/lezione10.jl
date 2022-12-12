@@ -1,3 +1,5 @@
+# # Metodi Monte Carlo (Lezioni 10 e 11)
+#
 # Iniziamo importando i pacchetti che ci serviranno.
 
 using Printf
@@ -8,7 +10,9 @@ using Statistics
 #
 # In Julia non esiste il concetto di «classe», ma esistono le `struct`
 # che funzionano in modo concettualmente simile. Non permettono di
-# associare metodi, tranne eventualmente un semplice costruttore.
+# associare metodi, tranne eventualmente un semplice costruttore, e
+# tutti i campi sono pubblici di default.
+#
 # Definiamo una classe `GLC` che sia equivalente alla classe `Random`
 # che vi viene richiesto di implementare in C++.
 
@@ -75,7 +79,7 @@ end
 # verifichiamo che siano uniformemente distribuiti nell'intervallo [0,
 # 1).
 
-histogram([rand(glc) for i in 1:10000], label="")
+histogram([rand(glc) for i in 1:10000], label="");
 savefig(joinpath(@OUTPUT, "rand_hist.svg")) # hide
 
 # \fig{rand_hist.svg}
@@ -102,7 +106,7 @@ end
 
 # Questo è l'istogramma
 
-histogram([randexp(glc, 1) for i in 1:10000], label="")
+histogram([randexp(glc, 1) for i in 1:10000], label="");
 savefig(joinpath(@OUTPUT, "randexp_hist.svg")) # hide
 
 # \fig{randexp_hist.svg}
@@ -133,7 +137,7 @@ end
 
 # Questo è l'istogramma:
 
-histogram([randgauss(glc, 2, 1) for i in 1:10000], label="")
+histogram([randgauss(glc, 2, 1) for i in 1:10000], label="");
 savefig(joinpath(@OUTPUT, "randgauss_hist.svg")) # hide
 
 # \fig{randgauss_hist.svg}
@@ -166,7 +170,7 @@ end
 
 # Questo è l'istogramma:
 
-histogram([randgauss_ar(glc, 2, 1) for i in 1:10000], label="")
+histogram([randgauss_ar(glc, 2, 1) for i in 1:10000], label="");
 savefig(joinpath(@OUTPUT, "randgauss_ar_hist.svg")) # hide
 
 # \fig{randgauss_ar_hist.svg}
@@ -229,8 +233,7 @@ histogram(mean_samples, label="Media")
 
 glc = GLC(1)  # Reset the random generator
 mean_hm = [inthm(glc, sin, 0, π, 1, 100) for i in 1:10_000]
-histogram!(mean_hm, label="Hit-or-miss")
-
+histogram!(mean_hm, label="Hit-or-miss");
 savefig(joinpath(@OUTPUT, "mc_integrals.svg")) # hide
 
 # \fig{mc_integrals.svg}
@@ -263,7 +266,7 @@ println("N (hit-or-miss) = ", noptim_hm)
 
 glc = GLC(1)
 values = [intmean(glc, sin, 0, π, noptim_mean) for i in 1:1000]
-histogram(values, label="")
+histogram(values, label="");
 savefig(joinpath(@OUTPUT, "mc_intmean.svg")) # hide
 
 # \fig{mc_intmean.svg}
@@ -376,12 +379,12 @@ end
 
 histogram([n1_simul, n2_simul],
           label = ["n₁", "n₂"],
-          layout = (2, 1))
+          layout = (2, 1));
 savefig(joinpath(@OUTPUT, "hist_n1_n2.svg")) # hide
 
 # \fig{hist_n1_n2.svg}
 
-scatter(n1_simul, n2_simul, label="")
+scatter(n1_simul, n2_simul, label="");
 savefig(joinpath(@OUTPUT, "scatter_n1_n2.svg")) # hide
 
 # \fig{scatter_n1_n2.svg}
@@ -411,7 +414,7 @@ savefig(joinpath(@OUTPUT, "hist_A_B.svg")) # hide
 
 #
 
-scatter(A_simul, B_simul * 1e14, label="")
+scatter(A_simul, B_simul * 1e14, label="");
 savefig(joinpath(@OUTPUT, "scatter_A_B.svg")) # hide
 
 # \fig{scatter_A_B.svg}
@@ -441,21 +444,21 @@ println("Correlazione tra A e B: ", corr(A_simul, B_simul))
 # Definiamo le costanti numeriche del problema, esprimendole tutte nel S.I.
 # (anche `x0`, `x1` e `Δx`!)
 
-δt, δx, δR = 0.01, 0.001, 0.0001
-ρ, ρ0 = 2700.0, 1250.0
-g = 9.81
-η_true = 0.83
-R_true = Float64[0.01, 0.005]
-x0 = 0.2
-x1 = 0.6
-Δx_true = x1 - x0
+δt, δx, δR = 0.01, 0.001, 0.0001;
+ρ, ρ0 = 2700.0, 1250.0;
+g = 9.81;
+η_true = 0.83;
+R_true = Float64[0.01, 0.005];
+x0 = 0.2;
+x1 = 0.6;
+Δx_true = x1 - x0;
 
 # Definiamo anche alcune relazioni matematiche.
 
-v_L(R, η) = 2R^2 / (9η) * (ρ - ρ0) * g
-Δt(R, Δx, η) = Δx / v_L(R, η)
-Δt_true = Float64[Δt(R, Δx_true, η_true) for R in R_true]
-η(R, Δt, Δx) = 2R^2 * g * Δt / (9Δx) * (ρ - ρ0)
+v_L(R, η) = 2R^2 / (9η) * (ρ - ρ0) * g;
+Δt(R, Δx, η) = Δx / v_L(R, η);
+Δt_true = Float64[Δt(R, Δx_true, η_true) for R in R_true];
+η(R, Δt, Δx) = 2R^2 * g * Δt / (9Δx) * (ρ - ρ0);
 
 # Definiamo ora la funzione `simulate`, che effettua _due_ esperimenti: uno con
 # $R = 0.01\,\text{m}$ e l'altro con $R = 0.005\,\text{m}$.
@@ -497,7 +500,7 @@ for i in 1:N
 end
 
 histogram(η2, label=@sprintf("R = %.3f m", R_true[2]))
-histogram!(η1, label=@sprintf("R = %.3f m", R_true[1]))
+histogram!(η1, label=@sprintf("R = %.3f m", R_true[1]));
 savefig(joinpath(@OUTPUT, "hist_eta1_eta2.svg")) # hide
 
 # \fig{hist_eta1_eta2.svg}
