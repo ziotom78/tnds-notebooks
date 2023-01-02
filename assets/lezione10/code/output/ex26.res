@@ -1,1 +1,1 @@
-δ (generic function with 1 method)
+n_cauchy (generic function with 2 methods)

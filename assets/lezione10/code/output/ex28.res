@@ -1,1 +1,1 @@
-(1.6967362539886182, 1.751096919705952)
+A_and_B (generic function with 1 method)

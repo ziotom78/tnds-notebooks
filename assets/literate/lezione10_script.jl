@@ -38,7 +38,7 @@ for i in 1:5
 end
 
 histogram([rand(glc) for i in 1:10000], label="");
-savefig(joinpath(@OUTPUT, "rand_hist.svg")) # hide
+savefig(joinpath(@OUTPUT, "rand_hist.svg")); # hide
 
 """
     randexp(glc::GLC)
@@ -54,7 +54,7 @@ for i in 1:5
 end
 
 histogram([randexp(glc, 1) for i in 1:10000], label="");
-savefig(joinpath(@OUTPUT, "randexp_hist.svg")) # hide
+savefig(joinpath(@OUTPUT, "randexp_hist.svg")); # hide
 
 @doc raw"""
     randgauss(glc::GLC, μ, σ)
@@ -77,7 +77,7 @@ for i in 1:5
 end
 
 histogram([randgauss(glc, 2, 1) for i in 1:10000], label="");
-savefig(joinpath(@OUTPUT, "randgauss_hist.svg")) # hide
+savefig(joinpath(@OUTPUT, "randgauss_hist.svg")); # hide
 
 @doc raw"""
     randgauss_ar(glc::GLC, μ, σ)
@@ -102,7 +102,7 @@ for i in 1:5
 end
 
 histogram([randgauss_ar(glc, 2, 1) for i in 1:10000], label="");
-savefig(joinpath(@OUTPUT, "randgauss_ar_hist.svg")) # hide
+savefig(joinpath(@OUTPUT, "randgauss_ar_hist.svg")); # hide
 
 """
     intmean(glc::GLC, fn, a, b, N)
@@ -142,7 +142,7 @@ histogram(mean_samples, label="Media")
 glc = GLC(1)  # Reset the random generator
 mean_hm = [inthm(glc, sin, 0, π, 1, 100) for i in 1:10_000]
 histogram!(mean_hm, label="Hit-or-miss");
-savefig(joinpath(@OUTPUT, "mc_integrals.svg")) # hide
+savefig(joinpath(@OUTPUT, "mc_integrals.svg")); # hide
 
 k_mean = √100 * std(mean_samples)
 k_hm = √100 * std(mean_hm)
@@ -159,23 +159,26 @@ println("N (hit-or-miss) = ", noptim_hm)
 glc = GLC(1)
 values = [intmean(glc, sin, 0, π, noptim_mean) for i in 1:1000]
 histogram(values, label="");
-savefig(joinpath(@OUTPUT, "mc_intmean.svg")) # hide
+savefig(joinpath(@OUTPUT, "mc_intmean.svg")); # hide
 
 std(values)
 
-σ_θ = 0.3e-3;
-θ0_ref = π / 2;
+using Unitful
+import Unitful: m, cm, mm, nm, s, °, mrad, @u_str
+
+σ_θ = 0.3mrad;       # I could have written σ_θ = 0.3u"mrad"
+θ0_ref = 90°;        # Similarly,           θ0_ref = 90u"°"
 Aref = 2.7;
-Bref = 60_000e-18;
-α = deg2rad(60.0);
-λ1 = 579.1e-9;
-λ2 = 404.7e-9;
+Bref = 6e4u"nm^2";
+α = 60.0°;
+λ1 = 579.1nm;
+λ2 = 404.7nm;
 
 n_cauchy(λ, A, B) = sqrt(A + B / λ^2)
 n_cauchy(λ) = n_cauchy(λ, Aref, Bref)
 
 n(δ) = sin((δ + α) / 2) / sin(α / 2)
-δ(n) = 2asin(n * sin(α / 2)) - α
+δ(n) = uconvert(u"°", 2asin(n * sin(α / 2)) - α)
 
 A(λ1, δ1, λ2, δ2) = (λ2^2 * n(δ2)^2 - λ1^2 * n(δ1)^2) / (λ2^2 - λ1^2)
 B(λ1, δ1, λ2, δ2) = (n(δ2)^2 - n(δ1)^2) / (1/λ2^2 - 1/λ1^2)
@@ -185,12 +188,17 @@ n1_ref, n2_ref = n_cauchy(λ1), n_cauchy(λ2)
 
 δ1_ref, δ2_ref = δ(n1_ref), δ(n2_ref)
 
+println("δ1_ref = ", uconvert(u"rad", δ1_ref))
+println("δ2_ref = ", uconvert(u"rad", δ2_ref))
+
 function simulate_experiment(glc, nsim)
     n1_simul = Array{Float64}(undef, nsim)
     n2_simul = Array{Float64}(undef, nsim)
 
     A_simul = Array{Float64}(undef, nsim)
-    B_simul = Array{Float64}(undef, nsim)
+    # Here I create an array of values whose measurement unit
+    # must be the same as `Bref`
+    B_simul = Array{typeof(Bref)}(undef, nsim)
 
     for i in 1:nsim
         θ0 = randgauss(glc, θ0_ref, σ_θ)
@@ -213,51 +221,53 @@ end
 glc = GLC(1)
 n1_simul, n2_simul, A_simul, B_simul = simulate_experiment(glc, 1000)
 
-@printf("%14s %14s %14s %14s\n", "n₁", "n₂", "A", "B")
+@printf("%14s %14s %14s %14s\n", "n₁", "n₂", "A", "B [nm²]")
 println(repeat('-', 62))
 for i = 1:5
-    # We use scientific notation for B, as it is ≪1
+    # We use scientific notation for B, as it is ≪1. As we want to
+    # avoid printing units for B (they are already in the table header),
+    # we just «strip» nm² from it.
     @printf("%14.6f %14.6f %14.6f %14.6e\n",
-            n1_simul[i], n2_simul[i], A_simul[i], B_simul[i])
+            n1_simul[i], n2_simul[i], A_simul[i], ustrip(u"nm^2", B_simul[i]))
 end
 
 histogram([n1_simul, n2_simul],
           label = ["n₁", "n₂"],
           layout = (2, 1));
-savefig(joinpath(@OUTPUT, "hist_n1_n2.svg")) # hide
+savefig(joinpath(@OUTPUT, "hist_n1_n2.svg")); # hide
 
 scatter(n1_simul, n2_simul, label="");
-savefig(joinpath(@OUTPUT, "scatter_n1_n2.svg")) # hide
+savefig(joinpath(@OUTPUT, "scatter_n1_n2.svg")); # hide
 
 corr(x, y) = cov(x, y) / (std(x) * std(y))
 
 corr(n1_simul, n2_simul)
 
-histogram([A_simul, B_simul * 1e14],
-          label = ["A" "B × 10^14"],
+histogram([A_simul, ustrip.(u"nm^2", B_simul)],
+          label = ["A" "B"],
           layout = (2, 1))
-savefig(joinpath(@OUTPUT, "hist_A_B.svg")) # hide
+savefig(joinpath(@OUTPUT, "hist_A_B.svg")); # hide
 
-scatter(A_simul, B_simul * 1e14, label="");
-savefig(joinpath(@OUTPUT, "scatter_A_B.svg")) # hide
+scatter(A_simul, B_simul, label="");
+savefig(joinpath(@OUTPUT, "scatter_A_B.svg")); # hide
 
 glc = GLC(1)
 (n1_simul, n2_simul, A_simul, B_simul) = simulate_experiment(glc, 10_000)
 println("Correlazione tra n1 e n2: ", corr(n1_simul, n2_simul))
 println("Correlazione tra A e B: ", corr(A_simul, B_simul))
 
-δt, δx, δR = 0.01, 0.001, 0.0001;
-ρ, ρ0 = 2700.0, 1250.0;
-g = 9.81;
-η_true = 0.83;
-R_true = Float64[0.01, 0.005];
-x0 = 0.2;
-x1 = 0.6;
+δt, δx, δR = 0.01s, 0.001m, 0.0001m;
+ρ, ρ0 = 2700.0u"kg/m^3", 1250.0u"kg/m^3";
+g = 9.81u"m/s^2";
+η_true = 0.83u"kg/m/s";
+R_true = [0.01m, 0.005m];
+x0 = 20cm;
+x1 = 60cm;
 Δx_true = x1 - x0;
 
 v_L(R, η) = 2R^2 / (9η) * (ρ - ρ0) * g;
 Δt(R, Δx, η) = Δx / v_L(R, η);
-Δt_true = Float64[Δt(R, Δx_true, η_true) for R in R_true];
+Δt_true = [Δt(R, Δx_true, η_true) for R in R_true];
 η(R, Δt, Δx) = 2R^2 * g * Δt / (9Δx) * (ρ - ρ0);
 
 function simulate(glc::GLC, δx, δt, δR)
@@ -268,7 +278,7 @@ function simulate(glc::GLC, δx, δt, δR)
 
     # Questo array di 2 elementi conterrà le due stime di η
     # (corrispondenti ai due possibili raggi della sferetta)
-    estimated_η = zeros(2)
+    estimated_η = zeros(typeof(η_true), 2)
     for case in [1, 2]
         # Misura delle dimensioni della sferetta
         cur_R = randgauss(glc, R_true[case], δR)
@@ -287,40 +297,40 @@ end
 N = 1_000
 glc = GLC(1)
 
-η1 = Array{Float64}(undef, N)
-η2 = Array{Float64}(undef, N)
+η1 = Array{typeof(η_true)}(undef, N)
+η2 = Array{typeof(η_true)}(undef, N)
 for i in 1:N
     (η1[i], η2[i]) = simulate(glc, δx, δt, δR)
 end
 
-histogram(η2, label=@sprintf("R = %.3f m", R_true[2]))
-histogram!(η1, label=@sprintf("R = %.3f m", R_true[1]));
-savefig(joinpath(@OUTPUT, "hist_eta1_eta2.svg")) # hide
+histogram(η2, label="R = $(R_true[2])")
+histogram!(η1, label="R = $(R_true[1])");
+savefig(joinpath(@OUTPUT, "hist_eta1_eta2.svg")); # hide
 
 # In η1 ed η2 abbiamo già le stime di η considerando tutti
 # e tre gli errori
-@printf("Tutti gli errori: δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
+println("Tutti gli errori: δη(R1) = ", round(u"kg/m/s", std(η1), digits = 4))
+println("                    (R2) = ", round(u"kg/m/s", std(η2), digits = 4))
 
 # Ora dobbiamo eseguire di nuovo N esperimenti, assumendo che
 # l'errore sia presente in una sola delle tre quantità
 for i in 1:N
-    (η1[i], η2[i]) = simulate(glc, 0.0, 0.0, δR)
+    (η1[i], η2[i]) = simulate(glc, 0.0m, 0.0s, δR)
 end
-@printf("Solo δR:          δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
+println("Solo δR:          δη(R1) = ", round(u"kg/m/s", std(η1), digits = 4))
+println("                    (R2) = ", round(u"kg/m/s", std(η2), digits = 4))
 
 # Idem
 for i in 1:N
-    (η1[i], η2[i]) = simulate(glc, 0.0, δt, 0.0)
+    (η1[i], η2[i]) = simulate(glc, 0.0m, δt, 0.0m)
 end
-@printf("Solo δt:          δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
+println("Solo δt:          δη(R1) = ", round(u"kg/m/s", std(η1), digits = 4))
+println("                    (R2) = ", round(u"kg/m/s", std(η2), digits = 4))
 
 # Idem
 for i in 1:N
-    (η1[i], η2[i]) = simulate(glc, δx, 0.0, 0.0)
+    (η1[i], η2[i]) = simulate(glc, δx, 0.0s, 0.0m)
 end
-@printf("Solo δx:          δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
+println("Solo δx:          δη(R1) = ", round(u"kg/m/s", std(η1), digits = 4))
+println("                    (R2) = ", round(u"kg/m/s", std(η2), digits = 4))
 

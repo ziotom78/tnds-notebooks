@@ -1,1 +1,1 @@
-"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione10/code/output/scatter_n1_n2.svg"
+nothing

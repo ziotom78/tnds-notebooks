@@ -1,1 +1,1 @@
-"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione10/code/output/hist_A_B.svg"
+corr (generic function with 1 method)

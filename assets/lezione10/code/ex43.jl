@@ -1,27 +1,24 @@
 # This file was generated, do not modify it. # hide
-# In η1 ed η2 abbiamo già le stime di η considerando tutti
-# e tre gli errori
-@printf("Tutti gli errori: δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
+function simulate(glc::GLC, δx, δt, δR)
+    # Misura dell'altezza iniziale
+    cur_x0 = randgauss(glc, x0, δx)
+    # Misura dell'altezza finale
+    cur_x1 = randgauss(glc, x1, δx)
 
-# Ora dobbiamo eseguire di nuovo N esperimenti, assumendo che
-# l'errore sia presente in una sola delle tre quantità
-for i in 1:N
-    (η1[i], η2[i]) = simulate(glc, 0.0, 0.0, δR)
-end
-@printf("Solo δR:          δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
+    # Questo array di 2 elementi conterrà le due stime di η
+    # (corrispondenti ai due possibili raggi della sferetta)
+    estimated_η = zeros(typeof(η_true), 2)
+    for case in [1, 2]
+        # Misura delle dimensioni della sferetta
+        cur_R = randgauss(glc, R_true[case], δR)
+        cur_Δx = cur_x1 - cur_x0
 
-# Idem
-for i in 1:N
-    (η1[i], η2[i]) = simulate(glc, 0.0, δt, 0.0)
-end
-@printf("Solo δt:          δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
+        # Misura del tempo necessario per cadere da cur_x0 a cur_x1
+        cur_Δt = randgauss(glc, Δt_true[case], δt)
 
-# Idem
-for i in 1:N
-    (η1[i], η2[i]) = simulate(glc, δx, 0.0, 0.0)
+        # Stima di η
+        estimated_η[case] = η(cur_R, cur_Δt, cur_Δx)
+    end
+
+    estimated_η
 end
-@printf("Solo δx:          δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
