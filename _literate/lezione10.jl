@@ -80,7 +80,7 @@ end
 # 1).
 
 histogram([rand(glc) for i in 1:10000], label="");
-savefig(joinpath(@OUTPUT, "rand_hist.svg")) # hide
+savefig(joinpath(@OUTPUT, "rand_hist.svg")); # hide
 
 # \fig{rand_hist.svg}
 
@@ -107,7 +107,7 @@ end
 # Questo è l'istogramma
 
 histogram([randexp(glc, 1) for i in 1:10000], label="");
-savefig(joinpath(@OUTPUT, "randexp_hist.svg")) # hide
+savefig(joinpath(@OUTPUT, "randexp_hist.svg")); # hide
 
 # \fig{randexp_hist.svg}
 
@@ -138,7 +138,7 @@ end
 # Questo è l'istogramma:
 
 histogram([randgauss(glc, 2, 1) for i in 1:10000], label="");
-savefig(joinpath(@OUTPUT, "randgauss_hist.svg")) # hide
+savefig(joinpath(@OUTPUT, "randgauss_hist.svg")); # hide
 
 # \fig{randgauss_hist.svg}
 
@@ -171,7 +171,7 @@ end
 # Questo è l'istogramma:
 
 histogram([randgauss_ar(glc, 2, 1) for i in 1:10000], label="");
-savefig(joinpath(@OUTPUT, "randgauss_ar_hist.svg")) # hide
+savefig(joinpath(@OUTPUT, "randgauss_ar_hist.svg")); # hide
 
 # \fig{randgauss_ar_hist.svg}
 
@@ -234,7 +234,7 @@ histogram(mean_samples, label="Media")
 glc = GLC(1)  # Reset the random generator
 mean_hm = [inthm(glc, sin, 0, π, 1, 100) for i in 1:10_000]
 histogram!(mean_hm, label="Hit-or-miss");
-savefig(joinpath(@OUTPUT, "mc_integrals.svg")) # hide
+savefig(joinpath(@OUTPUT, "mc_integrals.svg")); # hide
 
 # \fig{mc_integrals.svg}
 
@@ -267,7 +267,7 @@ println("N (hit-or-miss) = ", noptim_hm)
 glc = GLC(1)
 values = [intmean(glc, sin, 0, π, noptim_mean) for i in 1:1000]
 histogram(values, label="");
-savefig(joinpath(@OUTPUT, "mc_intmean.svg")) # hide
+savefig(joinpath(@OUTPUT, "mc_intmean.svg")); # hide
 
 # \fig{mc_intmean.svg}
 
@@ -277,17 +277,101 @@ std(values)
 
 # # Lezione 11: Metodi Monte Carlo
 #
+# L'esercizio di questa lezione è **estremamente** importante, perché
+# le tecniche Monte Carlo sono molto diffuse in fisica. (E inoltre
+# questo è un tipo di tema d'esame che ricorre spesso!)
+#
+# Ne approfitto anche per mostrarvi un modo di scrivere codice che
+# espliciti le unità di misura e faccia automaticamente un controllo
+# dimensionale. In C++ questo sarebbe fattibile usando la
+# programmazione template, che non è stata però quasi mai usata per lo
+# svolgimento degli esercizi; tenete presente nei vostri futuri
+# progetti che librerie come
+# [Boost.units](https://www.boost.org/doc/libs/1_65_0/doc/html/boost_units.html),
+# [SI](https://github.com/bernedom/SI) o
+# [units](https://github.com/nholthaus/units) possono essere usate per
+# specificare le unità di misura di variabili e costanti, e per
+# verificarne la consistenza nel proprio codice.
+#
+# Sfortunatamente, il modo in cui avete scritto programmi in questo
+# semestre fa uso della programmazione *object-oriented*, che non è
+# adatta per usare questo genere di librerie (e più in generale per il
+# calcolo numerico), perché avete dichiarato come `double` tutti i
+# parametri di metodi come `Solutore::CercaZeri` o
+# `Integral::integrate`, mentre per usare queste librerie C++ avreste
+# dovuto definire sia `Solutore` che `integral` come classi template.
+# Ad esempio:
+#
+# ```cpp
+# template <typename T, typename Fn>
+# class Solutore {
+# public:
+#   Solutore();
+#   
+#   virtual T CercaZeri(T xmin, T xmax, Fn f,
+#                       T prec = 1e-3, int nmax = 100) = 0;
+# };
+# ```
+#
+# In questo modo, supponendo di usare la libreria
+# [units](https://github.com/nholthaus/units), avreste potuto poi
+# passare a `Solutore::CercaZeri` variabili dimensionali, perché il
+# compilatore avrebbe selezionato il tipo `T` giusto (lunghezza,
+# tempo, etc.):
+#
+# ```cpp
+# using namespace units::length;
+# using namespace units::time;
+#
+# Bisezione sol{};
+#
+# // We find the zero of a function f(x), where x is a length
+# auto result1 = sol.CercaZeri(0.5_m, 1.5_m, my_function, 1e-4_m);
+#
+# // We find the zero of a function g(t), where t is a time
+# auto result2 = sol.CercaZeri(10.0_s, 15.0_s, another_function, 1e-2_s);
+# ```
+#
+# Ovviamente, né `my_function` né `another_function` sarebbero più
+# state derivate da `FunzioneBase`, dovendo invece essere funzioni che
+# accettano quantità delle dimensioni giuste. Ecco per quale motivo la
+# programmazione *object-oriented* non è indicata per codici numerici:
+# non permette la versatilità nei tipi dei dati garantita invece dalla
+# programmazione con i template.
+#
+# (In un certo senso, Julia è invece un linguaggio dove *tutto* è un
+# template, e ciò lo rende ideale per il calcolo scientifico).
+#
 # ## Esercizio 11.0
 #
+# Iniziamo con l'importare la libreria
+# [Unitful.jl](https://github.com/PainterQubits/Unitful.jl), che
+# implementa le unità di misura che ci servono. Importeremo
+# esplicitamente quelle unità di misura che ci serviranno, perché la
+# libreria di default non ne importa nessuno (simboli come `m`, `s`,
+# `mm`, etc., sono molto usati come nomi di variabili, e sarebbe un
+# disastro se venissero tutti importati senza criterio!).
+
+using Unitful
+import Unitful: m, cm, mm, nm, s, °, mrad, @u_str
+
+# I simboli `nm`, `°` e `mrad` sono unità di misura che si possono
+# usare direttamente nelle definizioni, come `x = 10nm`. La macro
+# `@u_str`, terminando con `_str`, indica che è una macro che può
+# essere usata aggiungendo `u` dopo le stringhe per specificare le
+# unità di misura. Questo è indispensabile per tipi più complessi dei
+# semplici `m`, `cm`, `mm`, etc., che richiedano espressioni
+# matematiche, come ad esempio `E = 10u"N/C"` (campo elettrico).
+
 # Definiamo una serie di variabili per le costanti fisiche del problema:
 
-σ_θ = 0.3e-3;
-θ0_ref = π / 2;
+σ_θ = 0.3mrad;       # I could have written σ_θ = 0.3u"mrad"
+θ0_ref = 90°;        # Similarly,           θ0_ref = 90u"°"
 Aref = 2.7;
-Bref = 60_000e-18;
-α = deg2rad(60.0);
-λ1 = 579.1e-9;
-λ2 = 404.7e-9;
+Bref = 6e4u"nm^2";
+α = 60.0°;
+λ1 = 579.1nm;
+λ2 = 404.7nm;
 
 # La funzione `n_cauchy` restituisce $n$ supponendo vera la formula di Cauchy.
 # La sintassi con un parametro usa i valori di riferimento di $A$ e $B$ scritti
@@ -298,10 +382,12 @@ n_cauchy(λ) = n_cauchy(λ, Aref, Bref)
 
 # La funzione `n` invece restituisce $n$ in funzione della deviazione
 # misurata `δ` dal prisma, dove $\alpha$ è il suo angolo di apertura
-# (definito sopra).
+# (definito sopra). Siccome la funzione `asin` (arcoseno) restituisce
+# il valore in radianti, che è scomodo da leggere, definiamo `δ` in modo
+# che esprima sempre il risultato in gradi.
 
 n(δ) = sin((δ + α) / 2) / sin(α / 2)
-δ(n) = 2asin(n * sin(α / 2)) - α
+δ(n) = uconvert(u"°", 2asin(n * sin(α / 2)) - α)
 
 # Queste formule si ricavano banalmente dall'inversione della formula di Cauchy;
 # la funzione `A_and_B` calcola contemporaneamente $A$ e $B$, ed è stata
@@ -322,6 +408,13 @@ n1_ref, n2_ref = n_cauchy(λ1), n_cauchy(λ2)
 
 δ1_ref, δ2_ref = δ(n1_ref), δ(n2_ref)
 
+# Il vostro codice probabilmente stamperà angoli in radianti (è la
+# convenzione di `asin` in C++), quindi convertiamo i valori sopra in
+# modo che possiate confrontarli col risultato del vostro programma:
+
+println("δ1_ref = ", uconvert(u"rad", δ1_ref))
+println("δ2_ref = ", uconvert(u"rad", δ2_ref))
+
 # A questo punto possiamo simulare l'esperimento. La simulazione della
 # misura di $\delta_1$ e $\delta_2$ va fatta usando l'approssimazione
 # Gaussiana con i valori medi `δ1_ref` e `δ2_ref`, e la deviazione
@@ -332,7 +425,9 @@ function simulate_experiment(glc, nsim)
     n2_simul = Array{Float64}(undef, nsim)
 
     A_simul = Array{Float64}(undef, nsim)
-    B_simul = Array{Float64}(undef, nsim)
+    ## Here I create an array of values whose measurement unit
+    ## must be the same as `Bref`
+    B_simul = Array{typeof(Bref)}(undef, nsim)
 
     for i in 1:nsim
         θ0 = randgauss(glc, θ0_ref, σ_θ)
@@ -367,12 +462,14 @@ end
 glc = GLC(1)
 n1_simul, n2_simul, A_simul, B_simul = simulate_experiment(glc, 1000)
 
-@printf("%14s %14s %14s %14s\n", "n₁", "n₂", "A", "B")
+@printf("%14s %14s %14s %14s\n", "n₁", "n₂", "A", "B [nm²]")
 println(repeat('-', 62))
 for i = 1:5
-    ## We use scientific notation for B, as it is ≪1
+    ## We use scientific notation for B, as it is ≪1. As we want to
+    ## avoid printing units for B (they are already in the table header),
+    ## we just «strip» nm² from it.
     @printf("%14.6f %14.6f %14.6f %14.6e\n",
-            n1_simul[i], n2_simul[i], A_simul[i], B_simul[i])
+            n1_simul[i], n2_simul[i], A_simul[i], ustrip(u"nm^2", B_simul[i]))
 end
 
 #
@@ -380,12 +477,12 @@ end
 histogram([n1_simul, n2_simul],
           label = ["n₁", "n₂"],
           layout = (2, 1));
-savefig(joinpath(@OUTPUT, "hist_n1_n2.svg")) # hide
+savefig(joinpath(@OUTPUT, "hist_n1_n2.svg")); # hide
 
 # \fig{hist_n1_n2.svg}
 
 scatter(n1_simul, n2_simul, label="");
-savefig(joinpath(@OUTPUT, "scatter_n1_n2.svg")) # hide
+savefig(joinpath(@OUTPUT, "scatter_n1_n2.svg")); # hide
 
 # \fig{scatter_n1_n2.svg}
 
@@ -402,20 +499,22 @@ corr(x, y) = cov(x, y) / (std(x) * std(y))
 
 corr(n1_simul, n2_simul)
 
-# Dal momento che $B \ll 1$, applichiamo ad esso un fattore di scala
-# $10^{14}$:
+# Nel fare l'istogramma di $A$ e $B$, rimuoviamo le unità di misura da
+# quest'ultimo, perché altrimenti Julia segnalerebbe che `A_simul` e
+# `B_simul` sono incompatibili (essendo combinati nella stessa
+# chiamata ad `histogram`):
 
-histogram([A_simul, B_simul * 1e14],
-          label = ["A" "B × 10^14"],
+histogram([A_simul, ustrip.(u"nm^2", B_simul)],
+          label = ["A" "B"],
           layout = (2, 1))
-savefig(joinpath(@OUTPUT, "hist_A_B.svg")) # hide
+savefig(joinpath(@OUTPUT, "hist_A_B.svg")); # hide
 
 # \fig{hist_A_B.svg}
 
-#
+# Facciamo anche un grafico X-Y
 
-scatter(A_simul, B_simul * 1e14, label="");
-savefig(joinpath(@OUTPUT, "scatter_A_B.svg")) # hide
+scatter(A_simul, B_simul, label="");
+savefig(joinpath(@OUTPUT, "scatter_A_B.svg")); # hide
 
 # \fig{scatter_A_B.svg}
 
@@ -441,23 +540,22 @@ println("Correlazione tra A e B: ", corr(A_simul, B_simul))
 # quantità misurate in ognuno degli esperimenti Monte Carlo sono $R$, $\Delta x
 # = x_1 - x_0$, e $\Delta t$.
 #
-# Definiamo le costanti numeriche del problema, esprimendole tutte nel S.I.
-# (anche `x0`, `x1` e `Δx`!)
+# Definiamo le costanti numeriche del problema, usando ancora Unitful.jl:
 
-δt, δx, δR = 0.01, 0.001, 0.0001;
-ρ, ρ0 = 2700.0, 1250.0;
-g = 9.81;
-η_true = 0.83;
-R_true = Float64[0.01, 0.005];
-x0 = 0.2;
-x1 = 0.6;
+δt, δx, δR = 0.01s, 0.001m, 0.0001m;
+ρ, ρ0 = 2700.0u"kg/m^3", 1250.0u"kg/m^3";
+g = 9.81u"m/s^2";
+η_true = 0.83u"kg/m/s";
+R_true = [0.01m, 0.005m];
+x0 = 20cm;
+x1 = 60cm;
 Δx_true = x1 - x0;
 
 # Definiamo anche alcune relazioni matematiche.
 
 v_L(R, η) = 2R^2 / (9η) * (ρ - ρ0) * g;
 Δt(R, Δx, η) = Δx / v_L(R, η);
-Δt_true = Float64[Δt(R, Δx_true, η_true) for R in R_true];
+Δt_true = [Δt(R, Δx_true, η_true) for R in R_true];
 η(R, Δt, Δx) = 2R^2 * g * Δt / (9Δx) * (ρ - ρ0);
 
 # Definiamo ora la funzione `simulate`, che effettua _due_ esperimenti: uno con
@@ -471,7 +569,7 @@ function simulate(glc::GLC, δx, δt, δR)
 
     ## Questo array di 2 elementi conterrà le due stime di η
     ## (corrispondenti ai due possibili raggi della sferetta)
-    estimated_η = zeros(2)
+    estimated_η = zeros(typeof(η_true), 2)
     for case in [1, 2]
         ## Misura delle dimensioni della sferetta
         cur_R = randgauss(glc, R_true[case], δR)
@@ -493,44 +591,47 @@ end
 N = 1_000
 glc = GLC(1)
 
-η1 = Array{Float64}(undef, N)
-η2 = Array{Float64}(undef, N)
+η1 = Array{typeof(η_true)}(undef, N)
+η2 = Array{typeof(η_true)}(undef, N)
 for i in 1:N
     (η1[i], η2[i]) = simulate(glc, δx, δt, δR)
 end
 
-histogram(η2, label=@sprintf("R = %.3f m", R_true[2]))
-histogram!(η1, label=@sprintf("R = %.3f m", R_true[1]));
-savefig(joinpath(@OUTPUT, "hist_eta1_eta2.svg")) # hide
+histogram(η2, label="R = $(R_true[2])")
+histogram!(η1, label="R = $(R_true[1])");
+savefig(joinpath(@OUTPUT, "hist_eta1_eta2.svg")); # hide
 
 # \fig{hist_eta1_eta2.svg}
 
-# Si tratta ora di stimare le incertezze di $\eta$ al variare degli errori
-# considerati.
+# Si tratta ora di stimare le incertezze di $\eta$ al variare degli
+# errori considerati. Notate che per usare `round` con quantità
+# associate ad unità di misura è necessario specificare l'unità di
+# misura usata per arrotondare: con 4 cifre, il valore `1 m` potrebbe
+# essere scritto come `1.0000 m` oppure `100.0000 cm`!
 
 ## In η1 ed η2 abbiamo già le stime di η considerando tutti
 ## e tre gli errori
-@printf("Tutti gli errori: δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
+println("Tutti gli errori: δη(R1) = ", round(u"kg/m/s", std(η1), digits = 4))
+println("                    (R2) = ", round(u"kg/m/s", std(η2), digits = 4))
 
 ## Ora dobbiamo eseguire di nuovo N esperimenti, assumendo che
 ## l'errore sia presente in una sola delle tre quantità
 for i in 1:N
-    (η1[i], η2[i]) = simulate(glc, 0.0, 0.0, δR)
+    (η1[i], η2[i]) = simulate(glc, 0.0m, 0.0s, δR)
 end
-@printf("Solo δR:          δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
+println("Solo δR:          δη(R1) = ", round(u"kg/m/s", std(η1), digits = 4))
+println("                    (R2) = ", round(u"kg/m/s", std(η2), digits = 4))
 
 ## Idem
 for i in 1:N
-    (η1[i], η2[i]) = simulate(glc, 0.0, δt, 0.0)
+    (η1[i], η2[i]) = simulate(glc, 0.0m, δt, 0.0m)
 end
-@printf("Solo δt:          δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
+println("Solo δt:          δη(R1) = ", round(u"kg/m/s", std(η1), digits = 4))
+println("                    (R2) = ", round(u"kg/m/s", std(η2), digits = 4))
 
 ## Idem
 for i in 1:N
-    (η1[i], η2[i]) = simulate(glc, δx, 0.0, 0.0)
+    (η1[i], η2[i]) = simulate(glc, δx, 0.0s, 0.0m)
 end
-@printf("Solo δx:          δη = %.4f kg/m/s (R1)\n", std(η1))
-@printf("                     = %.4f kg/m/s (R2)\n", std(η2))
+println("Solo δx:          δη(R1) = ", round(u"kg/m/s", std(η1), digits = 4))
+println("                    (R2) = ", round(u"kg/m/s", std(η2), digits = 4))
