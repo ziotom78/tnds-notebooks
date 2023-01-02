@@ -1,6 +1,8 @@
 <!--This file was generated, do not modify it.-->
 # Metodi Monte Carlo (Lezioni 10 e 11)
 
+## Lezione 10
+
 Iniziamo importando i pacchetti che ci serviranno.
 
 ````julia:ex1
@@ -9,7 +11,7 @@ using Plots
 using Statistics
 ````
 
-## Esercizio 10.1
+### Esercizio 10.1
 
 In Julia non esiste il concetto di «classe», ma esistono le `struct`
 che funzionano in modo concettualmente simile. Non permettono di
@@ -19,7 +21,7 @@ tutti i campi sono pubblici di default.
 Definiamo una classe `GLC` che sia equivalente alla classe `Random`
 che vi viene richiesto di implementare in C++.
 
-### Generatore Lineare Congruenziale
+#### Generatore Lineare Congruenziale
 
 ````julia:ex2
 mutable struct GLC
@@ -97,7 +99,7 @@ savefig(joinpath(@OUTPUT, "rand_hist.svg")); # hide
 
 \fig{rand_hist.svg}
 
-### Distribuzione esponenziale
+#### Distribuzione esponenziale
 
 Trattandosi di una formula semplice, in Julia si può definire
 `randexp` con una sola riga di codice:
@@ -130,7 +132,7 @@ savefig(joinpath(@OUTPUT, "randexp_hist.svg")); # hide
 
 \fig{randexp_hist.svg}
 
-### Distribuzione Gaussiana
+#### Distribuzione Gaussiana
 
 ````julia:ex10
 @doc raw"""
@@ -167,7 +169,7 @@ savefig(joinpath(@OUTPUT, "randgauss_hist.svg")); # hide
 
 \fig{randgauss_hist.svg}
 
-### Distribuzione Gaussiana con metodo Accept-Reject
+#### Distribuzione Gaussiana con metodo Accept-Reject
 
 ````julia:ex13
 @doc raw"""
@@ -206,7 +208,7 @@ savefig(joinpath(@OUTPUT, "randgauss_ar_hist.svg")); # hide
 
 \fig{randgauss_ar_hist.svg}
 
-## Esercizio 10.2
+### Esercizio 10.2
 
 Questa è una semplice implementazione dell'integrale della media:
 
@@ -321,7 +323,7 @@ Il risultato è effettivamente corretto:
 std(values)
 ````
 
-# Lezione 11: Metodi Monte Carlo
+## Lezione 11: Metodi Monte Carlo
 
 L'esercizio di questa lezione è **estremamente** importante, perché
 le tecniche Monte Carlo sono molto diffuse in fisica. (E inoltre
@@ -388,7 +390,7 @@ programmazione con i template.
 (In un certo senso, Julia è invece un linguaggio dove *tutto* è un
 template, e ciò lo rende ideale per il calcolo scientifico).
 
-## Esercizio 11.0
+### Esercizio 11.0
 
 Iniziamo con l'importare la libreria
 [Unitful.jl](https://github.com/PainterQubits/Unitful.jl), che
@@ -605,7 +607,7 @@ println("Correlazione tra n1 e n2: ", corr(n1_simul, n2_simul))
 println("Correlazione tra A e B: ", corr(A_simul, B_simul))
 ````
 
-## Esercizio 11.1
+### Esercizio 11.1
 
 L'esercizio 11.1 è preso da un vecchio tema d'esame, e va svolto in modo molto
 simile al precedente. Si tratta di misurare il coefficiente di viscosità
