@@ -407,11 +407,11 @@ import Unitful: m, cm, mm, nm, s, °, mrad, @u_str
 
 I simboli `nm`, `°` e `mrad` sono unità di misura che si possono
 usare direttamente nelle definizioni, come `x = 10nm`. La macro
-`@u_str`, terminando con `_str`, indica che è una macro che può
-essere usata aggiungendo `u` dopo le stringhe per specificare le
-unità di misura. Questo è indispensabile per tipi più complessi dei
-semplici `m`, `cm`, `mm`, etc., che richiedano espressioni
-matematiche, come ad esempio `E = 10u"N/C"` (campo elettrico).
+`@u_str`, terminando con `_str`, indica che può essere usata
+aggiungendo `u` dopo le stringhe per specificare le unità di misura.
+Questo è indispensabile per tipi più complessi dei semplici `m`,
+`cm`, `mm`, etc., che richiedano espressioni matematiche, come ad
+esempio i campi elettrici: `E = 10u"N/C"`.
 
 Definiamo una serie di variabili per le costanti fisiche del problema:
 

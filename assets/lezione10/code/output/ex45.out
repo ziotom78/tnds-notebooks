@@ -1,2 +1,8 @@
-LoadError: UndefVarError: @u_str not defined
-in expression starting at none:3
+Tutti gli errori: δη(R1) = 0.0186 kg m^-1 s^-1
+                    (R2) = 0.0334 kg m^-1 s^-1
+Solo δR:          δη(R1) = 0.016 kg m^-1 s^-1
+                    (R2) = 0.0327 kg m^-1 s^-1
+Solo δt:          δη(R1) = 0.0078 kg m^-1 s^-1
+                    (R2) = 0.002 kg m^-1 s^-1
+Solo δx:          δη(R1) = 0.0028 kg m^-1 s^-1
+                    (R2) = 0.0028 kg m^-1 s^-1
