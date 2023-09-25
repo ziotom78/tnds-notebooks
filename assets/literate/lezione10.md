@@ -11,7 +11,7 @@ using Plots
 using Statistics
 ````
 
-### Esercizio 10.1
+### Esercizio 10.0
 
 In Julia non esiste il concetto di «classe», ma esistono le `struct`
 che funzionano in modo concettualmente simile. Non permettono di
@@ -323,7 +323,7 @@ Il risultato è effettivamente corretto:
 std(values)
 ````
 
-## Lezione 11: Metodi Monte Carlo
+## Lezione 12: Simulazione di un esperimento
 
 L'esercizio di questa lezione è **estremamente** importante, perché
 le tecniche Monte Carlo sono molto diffuse in fisica. (E inoltre
@@ -390,7 +390,7 @@ programmazione con i template.
 (In un certo senso, Julia è invece un linguaggio dove *tutto* è un
 template, e ciò lo rende ideale per il calcolo scientifico).
 
-### Esercizio 11.0
+### Esercizio 12.0
 
 Iniziamo con l'importare la libreria
 [Unitful.jl](https://github.com/PainterQubits/Unitful.jl), che
@@ -607,9 +607,9 @@ println("Correlazione tra n1 e n2: ", corr(n1_simul, n2_simul))
 println("Correlazione tra A e B: ", corr(A_simul, B_simul))
 ````
 
-### Esercizio 11.1
+### Esercizio 12.1 — Attrito viscoso (facoltativo)
 
-L'esercizio 11.1 è preso da un vecchio tema d'esame, e va svolto in modo molto
+L'esercizio 12.1 è preso da un vecchio tema d'esame, e va svolto in modo molto
 simile al precedente. Si tratta di misurare il coefficiente di viscosità
 $\eta$ partendo dalla velocità di caduta di una sferetta di metallo
 all'interno di un cilindro pieno di glicerina, tramite la formula $$ v_L =
