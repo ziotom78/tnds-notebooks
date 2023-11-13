@@ -221,8 +221,8 @@ poter essere un buon caso per i test, perché (1) l'estremo inferiore
 Alcune formule di integrazione che vedremo oggi richiedono un
 trattamento speciale agli estremi di integrazione, e un caso come
 questo potrebbe far passare inosservati dei bug importanti (**è
-successo in passato!**). Calcoliamo il valore dell'integrale con
-questo algoritmo in due casi più rappresentativi:
+successo a molti studenti in passato!**). Calcoliamo il valore
+dell'integrale con questo algoritmo in due casi più rappresentativi:
 
 $$
 \int_0^1\sin(x)\,\mathrm{d}x, \qquad
@@ -322,36 +322,6 @@ for i in eachindex(steps)  # `i` will go from 1 to the length of `step`
     println("$(steps[i])\t$(errors[i])")
 end
 ````
-
-Per creare i grafici, potete ovviamente usare ROOT, oppure
-[gplot++](https://github.com/ziotom78/gplotpp). In quest'ultimo
-caso, scaricate il file
-[gplot++.h](https://raw.githubusercontent.com/ziotom78/gplotpp/master/gplot%2B%2B.h)
-(facendo click col tasto destro sul link) e scrivete un codice del
-genere:
-
-```cpp
-std::vector<double> steps{10, 50, 100, 500, 1000};
-std::vector<double> errors(steps.size());
-
-for (size_t i{}; i < errors.size(); ++i) {
-    errors[i] = ...; // Fill with the correct value
-}
-
-Gnuplot plt{};
-const std::string output_file_name{"midpoint-error.png"};
-plt.redirect_to_png(output_file_name, "800,600");
-
-plt.set_logscale(Gnuplot::AxisScale::LOGXY);
-plt.plot(steps, errors);
-plt.set_xlabel("Numero di passi");
-plt.set_ylabel("Errore");
-plt.show();
-
-// It's always advisable to warn the user that a file has been
-// created. Include the name of the file too!
-fmt::print("Plot saved in '{}'\n", output_file_name);
-```
 
 Implementiamo ora una funzione che consenta di calcolare rapidamente
 l'errore di una funzione di integrazione numerica per un dato numero

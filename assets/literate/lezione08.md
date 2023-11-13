@@ -20,10 +20,10 @@ di partire dalla condizione iniziale al tempo $t = t_0$ e procedere
 a incrementi di $h$ finché non si raggiunge il tempo finale $t_f$:
 
 ```cpp
-std::vector<double> current{...};  // Condizione iniziale
+std::array<double, 2> x{...};  // Condizione iniziale
 while (...) {
-    // Sovrascrive "current" al tempo t con "current" al tempo t + h
-    current = evolve(current, t, h);
+    // Sovrascrive "x" al tempo t con "x" al tempo t + h
+    x = myRK.Passo(t, x, h);
     t += h;
 }
 ```
@@ -226,42 +226,7 @@ Questi sono invece gli ultimi:
 result[(end - 10):end, :]
 ````
 
-Il risultato sopra dovrebbe esservi utile per scrivere dei test nel
-vostro codice C++ usando `assert`:
-
-```cpp
-#include "EquazioniDifferenziali.hpp"
-#include <cstdio>
-#include <cassert>
-#include <cmath>
-
-bool is_close(double a, double b, double epsilon = 1e-8) {
-    return std::fabs(a - b) < epsilon;
-}
-
-void test_euler() {
-  Eulero eulero;
-  OscillatoreArmonico oa{1.0};
-  const double lastt{70.0};      // Simula il sistema per 70 s
-  const double h{0.1};
-  const int nsteps{static_cast<int>(lasttt / h + 0.5)};
-  std::vector<double> pos{0.0, 1.0};
-
-  // Esegue la simulazione
-  double t{};
-  for (int idx{}; idx < nsteps; ++idx) {
-    pos = eulero.Passo(t, pos, h, &oa);
-    t += h;
-  }
-
-  assert(is_close(pos[0], 19.773746013860173));
-  assert(is_close(pos[1], 25.848774751522960));
-}
-```
-
-Notate che il ciclo `for` è implementato calcolando preventivamente
-il numero di passi in `nsteps`: è quello che sopra avevamo chiamato
-il «Metodo 1» (`simulate_method1`).
+Il risultato sopra è utile per scrivere dei test in C++ usando `assert`.
 
 Per studiare il funzionamento di `euler`, consideriamo la
 simulazione nell'intervallo usato sopra, $0 \leq t \leq
@@ -411,28 +376,7 @@ result[(end - 10):end, :]
 ````
 
 Possiamo usare questi valori per scrivere una funzione
-`test_runge_kutta`, simile a `test_euler` (v. sopra):
-
-```cpp
-void test_runge_kutta() {
-  RungeKutta rk;
-  OscillatoreArmonico oa{1.0};
-  const double lastt{70.0};
-  const double h{0.1};
-  const int nsteps{static_cast<double>(lasttt / h + 0.5)};
-  std::vector<double> pos{0.0, 1.0};
-
-  // Esegue la simulazione
-  double t{};
-  for (int idx{}; idx < nsteps; ++idx) {
-    pos = rk.Passo(t, pos, h, &oa);
-    t += h;
-  }
-
-  assert(is_close(pos[0], 0.7738501114078689));
-  assert(is_close(pos[1], 0.6333611095194112));
-}
-```
+`test_runge_kutta` che verifichi l'implementazione.
 
 Nel caso di Runge-Kutta, l'animazione è molto meno interessante: la
 convergenza è eccellente anche per $h = 10^{-1}$.
@@ -794,7 +738,7 @@ end
 Siccome in questo esercizio assumiamo sempre di iniziare dalla
 posizione $\theta = 0$, il valore del periodo è semplicemente il
 doppio del tempo necessario per osservare l'inversione
-(nell'esercizio 9.4 questo **non sarà più vero**, ricordatevelo!).
+(nell'esercizio 8.4 questo **non sarà più vero**, ricordatevelo!).
 
 ````julia:ex43
 period(oscillations) = 2 * invtime(oscillations[:, 1], oscillations[:, 3])
@@ -855,7 +799,13 @@ una funzione (nel nostro caso appunto `rungekutta`) una seconda
 funzione. Questa sintassi è molto comoda per casi come il nostro.
 
 ````julia:ex49
-function forcedpendulum(ω; init=[0., 0.], startt=0., endt=15. / α, deltat=0.01)
+function forcedpendulum(
+    ω;
+    init = [0., 0.],
+    startt = 0.,
+    endt = 600.0,  # Deve essere ≫ 1/α
+    deltat = 0.01,
+)
     rungekutta(init, startt, endt, deltat) do t, x
         [x[2], -ω0^2 * x[1] - α * x[2] + sin(ω * t)]
     end
@@ -932,8 +882,15 @@ function forced_amplitude(ω, oscillations)
         endt=oscill_tail[idx0, 1] + 1.1 * δt,
         deltat=δt)
 
-    @printf("t0 = %.4f, angle = %.4f, speed = %.4f, t0 + δt = %.4f, angle = %.4f, speed = %.4f\n",
-        newsol[1, 1], newsol[1, 2], newsol[1,3], newsol[2, 1], newsol[2, 2], newsol[2, 3])
+    @printf("""ω = %.4f:
+·  t₀ = %.5f, angle(t₀) = %.5f, speed(t₀) = %.5f
+·  δt = %.5f
+·  t₀ + δt = %.5f, angle(t₀ + δt) = %.5f, speed(t₀ + δt) = %.5f
+""",
+        ω,
+        newsol[1, 1], newsol[1, 2], newsol[1,3],
+        δt,
+        newsol[2, 1], newsol[2, 2], newsol[2, 3])
     abs(newsol[2, 2])
 end
 ````

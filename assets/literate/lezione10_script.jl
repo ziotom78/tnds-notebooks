@@ -333,4 +333,3 @@ for i in 1:N
 end
 println("Solo δx:          δη(R1) = ", round(u"kg/m/s", std(η1), digits = 4))
 println("                    (R2) = ", round(u"kg/m/s", std(η2), digits = 4))
-

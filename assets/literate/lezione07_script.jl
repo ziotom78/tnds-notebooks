@@ -183,4 +183,3 @@ plot(prec, errors,
 plot!(prec, prec, label = "Caso teorico peggiore");
 
 savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")); # hide
-

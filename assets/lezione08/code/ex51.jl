@@ -24,7 +24,14 @@ function forced_amplitude(ω, oscillations)
         endt=oscill_tail[idx0, 1] + 1.1 * δt,
         deltat=δt)
 
-    @printf("t0 = %.4f, angle = %.4f, speed = %.4f, t0 + δt = %.4f, angle = %.4f, speed = %.4f\n",
-        newsol[1, 1], newsol[1, 2], newsol[1,3], newsol[2, 1], newsol[2, 2], newsol[2, 3])
+    @printf("""ω = %.4f:
+·  t₀ = %.5f, angle(t₀) = %.5f, speed(t₀) = %.5f
+·  δt = %.5f
+·  t₀ + δt = %.5f, angle(t₀ + δt) = %.5f, speed(t₀ + δt) = %.5f
+""",
+        ω,
+        newsol[1, 1], newsol[1, 2], newsol[1,3],
+        δt,
+        newsol[2, 1], newsol[2, 2], newsol[2, 3])
     abs(newsol[2, 2])
 end

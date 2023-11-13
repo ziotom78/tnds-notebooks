@@ -296,7 +296,13 @@ savefig(joinpath(@OUTPUT, "period-vs-angle.svg")) # hide
 ω0 = 10;
 α = 1.0 / 30;
 
-function forcedpendulum(ω; init=[0., 0.], startt=0., endt=15. / α, deltat=0.01)
+function forcedpendulum(
+    ω;
+    init = [0., 0.],
+    startt = 0.,
+    endt = 600.0,  # Deve essere ≫ 1/α
+    deltat = 0.01,
+)
     rungekutta(init, startt, endt, deltat) do t, x
         [x[2], -ω0^2 * x[1] - α * x[2] + sin(ω * t)]
     end
@@ -332,8 +338,15 @@ function forced_amplitude(ω, oscillations)
         endt=oscill_tail[idx0, 1] + 1.1 * δt,
         deltat=δt)
 
-    @printf("t0 = %.4f, angle = %.4f, speed = %.4f, t0 + δt = %.4f, angle = %.4f, speed = %.4f\n",
-        newsol[1, 1], newsol[1, 2], newsol[1,3], newsol[2, 1], newsol[2, 2], newsol[2, 3])
+    @printf("""ω = %.4f:
+·  t₀ = %.5f, angle(t₀) = %.5f, speed(t₀) = %.5f
+·  δt = %.5f
+·  t₀ + δt = %.5f, angle(t₀ + δt) = %.5f, speed(t₀ + δt) = %.5f
+""",
+        ω,
+        newsol[1, 1], newsol[1, 2], newsol[1,3],
+        δt,
+        newsol[2, 1], newsol[2, 2], newsol[2, 3])
     abs(newsol[2, 2])
 end
 
@@ -348,4 +361,3 @@ plot(freq, ampl,
 scatter!(freq, ampl, label="")
 
 savefig(joinpath(@OUTPUT, "forced-pendulum-resonance.svg")) # hide
-
