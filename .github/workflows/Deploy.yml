@@ -16,11 +16,11 @@ jobs:
     - name: Install python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.8'
+        python-version: '3.10'
     - name: Install Julia
       uses: julia-actions/setup-julia@v1
       with:
-        version: 1.8
+        version: 1.9
     # NOTE
     #   The steps below ensure that NodeJS and Franklin are loaded then it
     #   installs highlight.js which is needed for the prerendering step
