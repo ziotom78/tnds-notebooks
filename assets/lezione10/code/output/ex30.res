@@ -1,1 +1,1 @@
-(56.06923804490447°, 62.21990453258211°)
+n_cauchy (generic function with 2 methods)

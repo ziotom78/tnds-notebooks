@@ -1,3 +1,3 @@
 # This file was generated, do not modify it. # hide
-scatter(A_simul, B_simul, label="");
-savefig(joinpath(@OUTPUT, "scatter_A_B.svg")); # hide
+scatter(n1_simul, n2_simul, label="");
+savefig(joinpath(@OUTPUT, "scatter_n1_n2.svg")); # hide

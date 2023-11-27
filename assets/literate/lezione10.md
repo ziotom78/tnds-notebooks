@@ -208,11 +208,190 @@ savefig(joinpath(@OUTPUT, "randgauss_ar_hist.svg")); # hide
 
 \fig{randgauss_ar_hist.svg}
 
+### Esercizio 10.1
+
+L'esercizio è molto semplice da implementare, ma richiede comunque una
+certa attenzione: bisogna studiare infatti molti casi (ben 12 istogrammi),
+e questo richiede molto ordine e pulizia! Imparare a scrivere codice
+ordinato è importante soprattutto per il giorno dell'esame: capita spesso
+che nei temi d'esame si chieda di ripetere più volte un calcolo o una
+simulazione, ed è bene non usare copia-e-incolla ma strutturare il
+codice usando dei cicli `for` e implementando funzioni di supporto
+anziché rendere il `main` lungo centinaia di righe.
+
+Iniziamo con l'implementazione di un codice che riempia un vettore
+con i campioni casuali sommati $N$ alla volta:
+
+````julia:ex16
+function computesums!(glc::GLC, n, vec)
+    for i in eachindex(vec)
+        accum = 0.0
+        for k in 1:n
+            accum += rand(glc)
+        end
+        vec[i] = accum
+    end
+end
+````
+
+(in Julia c'è la convenzione di mettere il carattere `!` alla fine delle
+funzioni che modificano uno dei loro argomenti: questo è proprio il nostro
+caso, perché `vec` viene modificato da `computesums!`)
+
+Facciamo una prova semplice:
+
+````julia:ex17
+glc = GLC(1)
+# Array di *due* elementi
+vec = Array{Float64}(undef, 2)
+# Chiediamo che in ogni elemento vengano sommati *cinque*
+# numeri. Quindi ogni elemento di `vec` sarà un numero
+# casuale nell'intervallo 0…5.
+computesums!(glc, 5, vec)
+println("vec[1] = ", vec[1])
+println("vec[2] = ", vec[2])
+````
+
+Potete usare questi numeri in un `assert` per verificare la
+vostra implementazione di `compute_sums` (mettete pure tutto
+nello stesso file del `main`):
+
+```cpp
+void test_compute_sums() {
+  std::vector<double> vec(2);  // Attenzione, parentesi *tonde* qui!
+
+  RandomGen rng{1};
+  compute_sums(rng, 5, vec);
+  assert(are_close(rng[0], 1.7307902472093701));
+  assert(are_close(rng[1], 1.7124183257110417));
+}
+```
+
+Ora ci occorre invocare questa funzione più volte facendo variare $N$
+da 1 a 12, e producendo un istogramma ogni volta.
+
+````julia:ex18
+glc = GLC(1)
+vec = Array{Float64}(undef, 100_000)
+
+list_of_N = 1:12
+list_of_histograms = []
+list_of_sigmas = Float64[]
+for n in list_of_N
+    computesums!(glc, n, vec)
+    push!(list_of_histograms, histogram(vec, bins = 20, title = "N = $n"))
+    push!(list_of_sigmas, std(vec))
+end
+plot(list_of_histograms...,
+     layout = (3, 4),
+     size = (900, 600),
+     legend = false)
+savefig(joinpath(@OUTPUT, "es10_1_histogram.svg")); # hide
+````
+
+\fig{es10_1_histogram.svg}
+
+Notate che, grazie alla definizione della funzione `computesums!`,
+il ciclo `for` è stato ridotto ad appena tre righe. Inoltre proprio
+l'uso del `for` ha evitato quegli orribili copia-e-incolla che
+spesso i docenti trovano nelle correzioni degli esami scritti.
+Il seguente è un esempio di come **non** implementare questo esercizio:
+è una vera e propria “galleria degli orrori”!
+
+```cpp
+// 👿 NON BASATEVI SU QUESTO CODICE! ESSO È IMPURO E IMMONDO! 👿
+
+std::vector<double> vec(100'000);
+
+// Aargh! Qui ripeto il numero 100'000 anziché scrivere (int) vec.size():
+// cosa succede se poi durante l'esame voglio usare un numero minore
+// per risparmiare tempo? Devo cambiare tutte le occorrenze!
+for(int k{}; k < 100'000; ++k) {
+  vec[k] = 0.0;   // Per giunta qui non uso neppure vec.at(k),
+                  // quindi se riduco il numero 100'000 nella
+                  // definizione di `vec` ma non nel ciclo `for`,
+                  // qui potrei avere un “segmentation fault”!
+  for(int i{}; i < 1; ++i)
+    vec[k] += rand.Unif(0.0, 1.0);
+}
+
+// Ok, invece che fare una sola figura con 12 grafici scelgo di
+// creare 12 file PNG distinti… è più faticoso però poi
+// controllare i risultati e confrontare gli istogrammi!
+Gnuplot plt1{};
+plt1.redirect_to_svg("n1.png");
+plt1.histogram(vec, 20, "N = 1");
+plt1.show();
+
+// Caso con n = 2
+
+// NOOOO! Tutto quanto segue è un copia-e-incolla del codice sopra!
+// Terribile!
+for(int k{}; k < 100'000; ++k) {
+  vec[k] = 0.0;
+  for(int i{}; i < 2; ++i)
+    vec[k] += rand.Unif(0.0, 1.0);
+}
+
+Gnuplot plt2{};
+plt3.redirect_to_svg("n3.png");
+plt3.histogram(vec, 20, "N = 3");
+plt3.show();
+
+// Caso con n = 3
+for(int k{}; k < 100'000; ++k) {
+  vec[k] = 0.0;
+  for(int i{}; i < 3; ++i)
+    vec[k] += rand.Unif(0.0, 1.0);
+}
+
+Gnuplot plt3{};
+plt3.redirect_to_svg("n3.png");
+plt3.histogram(vec, 20, "N = 3");
+plt3.show();
+
+// Il codice continua tutto così… ci siamo capiti!
+// …
+```
+
+Il codice Julia evita di ricorrere ai copia-e-incolla implementando
+una funzione `computesums!` e chiamandola più volte all'interno di
+un ciclo `for`. Questo approccio è estremamente elegante 😇 e ha molti
+vantaggi rispetto al disperato copia-e-incolla del malefico esempio 👿:
+
+-   Ci mettete meno tempo a scriverlo, e in un esame il tempo è sempre prezioso;
+-   Se scegliete l'approccio “copia-e-incolla” 👿 e vi rendete conto di un
+    errore nel codice che avete appena copiato (ad esempio, una parentesi non chiusa),
+    dovete correggerlo dodici volte… ma nel caso 😇 l'errore va corretto una
+    volta sola! E anche questo è un bel risparmio di tempo.
+-   Il codice 😇 è più semplice da leggere, e quindi è più facile individuare
+    errori (ci sono meno posti in cui il problema potrebbe nascondersi)
+-   Se vi rendete conto che il programma ci mette troppo per essere eseguito, e
+    questo vi è di impiccio perché i risultati non vi convincono e prevedete
+    di doverlo eseguire molte volte, è semplice limitare ad esempio i valori
+    di `N` da esplorare nel codice 😇, cambiando ad esempio la riga `list_of_N = 1:12`
+    con `list_of_N = 1:5`. Nel codice 👿 invece, dovete commentare decine di righe
+    di codice, col rischio di commentare qualche variabile importante che vi serve
+    alla fine del programma e che quindi causa errori di compilazione…
+
+Ora creiamo il grafico con l'andamento della deviazione standard (calcolata
+nell'esempio sopra con la funzione `Statistics.std`), memorizzata in
+`list_of_sigmas`:
+
+````julia:ex19
+plot(list_of_N, list_of_sigmas,
+     xaxis = :log10, yaxis = :log10, label = "",
+     xlabel = "N", ylabel = "Standard deviation σ")
+savefig(joinpath(@OUTPUT, "es10_1_std.svg")); # hide
+````
+
+\fig{es10_1_std.svg}
+
 ### Esercizio 10.2
 
 Questa è una semplice implementazione dell'integrale della media:
 
-````julia:ex16
+````julia:ex20
 """
     intmean(glc::GLC, fn, a, b, N)
 
@@ -226,7 +405,7 @@ end
 
 L'integrale *hit-or-miss* è solo lievemente più complicato:
 
-````julia:ex17
+````julia:ex21
 """
     inthm(glc::GLC, fn, a, b, fmax, N)
 
@@ -251,7 +430,7 @@ Teniamo presente che $\int_0^\pi \sin x\,\mathrm{d}x = 2$; inoltre, siccome
 $\sin(x)$ è una funzione limitata in $[0, 1]$, possiamo porre `fmax=1` nella
 chiamata a `inthm`:
 
-````julia:ex18
+````julia:ex22
 println("Integrale (metodo media):", intmean(GLC(1), sin, 0, π, 100))
 println("Integrale (metodo hit-or-miss):", inthm(GLC(1), sin, 0, π, 1, 100))
 ````
@@ -265,7 +444,7 @@ Eseguiamo ora il calcolo per 10.000 volte e facciamone l'istogramma:
 osserviamo che la distribuzione è approssimativamente una Gaussiana,
 come previsto.
 
-````julia:ex19
+````julia:ex23
 glc = GLC(1)
 mean_samples = [intmean(glc, sin, 0, π, 100) for i in 1:10_000]
 histogram(mean_samples, label="Media")
@@ -283,7 +462,7 @@ numero di punti, allora nel nostro caso possiamo stimare $k$ immediatamente
 dalla deviazione standard dei valori in `values` mediante la formula $k =
 \sqrt{N} \times \epsilon(N)$:
 
-````julia:ex20
+````julia:ex24
 k_mean = √100 * std(mean_samples)
 k_hm = √100 * std(mean_hm)
 
@@ -295,7 +474,7 @@ A questo punto, per rispondere alla domanda del problema, è sufficiente
 risolvere l'equazione $0.001 = k/\sqrt{N}$ per $N$, ossia $$N =
 \left(\frac{k}{0.001}\right)^2$$.
 
-````julia:ex21
+````julia:ex25
 noptim_mean = round(Int, (k_mean/0.001)^2)
 noptim_hm = round(Int, (k_hm/0.001)^2)
 
@@ -308,7 +487,7 @@ ci vuole molto tempo per ottenere il risultato, verifichiamo il risultato solo
 nel caso del metodo della media, e per un numero ridotto di realizzazioni
 (1000 anziché 10.000):
 
-````julia:ex22
+````julia:ex26
 glc = GLC(1)
 values = [intmean(glc, sin, 0, π, noptim_mean) for i in 1:1000]
 histogram(values, label="");
@@ -319,7 +498,7 @@ savefig(joinpath(@OUTPUT, "mc_intmean.svg")); # hide
 
 Il risultato è effettivamente corretto:
 
-````julia:ex23
+````julia:ex27
 std(values)
 ````
 
@@ -400,7 +579,7 @@ libreria di default non ne importa nessuno (simboli come `m`, `s`,
 `mm`, etc., sono molto usati come nomi di variabili, e sarebbe un
 disastro se venissero tutti importati senza criterio!).
 
-````julia:ex24
+````julia:ex28
 using Unitful
 import Unitful: m, cm, mm, nm, s, °, mrad, @u_str
 ````
@@ -415,11 +594,11 @@ esempio i campi elettrici: `E = 10u"N/C"`.
 
 Definiamo una serie di variabili per le costanti fisiche del problema:
 
-````julia:ex25
-σ_θ = 0.3mrad;       # I could have written σ_θ = 0.3u"mrad"
-θ0_ref = 90°;        # Similarly,           θ0_ref = 90u"°"
+````julia:ex29
+σ_θ = 0.3mrad;       # Avrei potuto scrivere σ_θ = 0.3u"mrad"
+θ0_ref = 90°;        # Ugualmente,           θ0_ref = 90u"°"
 Aref = 2.7;
-Bref = 6e4u"nm^2";
+Bref = 6e4u"nm^2";   # Qui devo usare `u` perché nm² è troppo complicato
 α = 60.0°;
 λ1 = 579.1nm;
 λ2 = 404.7nm;
@@ -429,7 +608,7 @@ La funzione `n_cauchy` restituisce $n$ supponendo vera la formula di Cauchy.
 La sintassi con un parametro usa i valori di riferimento di $A$ e $B$ scritti
 sopra.
 
-````julia:ex26
+````julia:ex30
 n_cauchy(λ, A, B) = sqrt(A + B / λ^2)
 n_cauchy(λ) = n_cauchy(λ, Aref, Bref)
 ````
@@ -438,9 +617,11 @@ La funzione `n` invece restituisce $n$ in funzione della deviazione
 misurata `δ` dal prisma, dove $\alpha$ è il suo angolo di apertura
 (definito sopra). Siccome la funzione `asin` (arcoseno) restituisce
 il valore in radianti, che è scomodo da leggere, definiamo `δ` in modo
-che esprima sempre il risultato in gradi.
+che esprima sempre il risultato in gradi: per questo scopo c'è la
+funzione `uconvert`, che richiede come primo parametro l'unità di
+misura di *destinazione* (nel nostro caso gradi, quindi `u"°"`).
 
-````julia:ex27
+````julia:ex31
 n(δ) = sin((δ + α) / 2) / sin(α / 2)
 δ(n) = uconvert(u"°", 2asin(n * sin(α / 2)) - α)
 ````
@@ -449,7 +630,7 @@ Queste formule si ricavano banalmente dall'inversione della formula di Cauchy;
 la funzione `A_and_B` calcola contemporaneamente $A$ e $B$, ed è stata
 definita per comodità:
 
-````julia:ex28
+````julia:ex32
 A(λ1, δ1, λ2, δ2) = (λ2^2 * n(δ2)^2 - λ1^2 * n(δ1)^2) / (λ2^2 - λ1^2)
 B(λ1, δ1, λ2, δ2) = (n(δ2)^2 - n(δ1)^2) / (1/λ2^2 - 1/λ1^2)
 A_and_B(λ1, δ1, λ2, δ2) = (A(λ1, δ1, λ2, δ2), B(λ1, δ1, λ2, δ2))
@@ -459,14 +640,14 @@ Calcoliamo allora i valori di riferimento di $n(\lambda_1) = n_1$ e
 $n(\lambda_2) = n_2$, supponendo veri i valori di $A$ e $B$ scritti sopra
 r(`A_ref` e `B_ref`):
 
-````julia:ex29
+````julia:ex33
 n1_ref, n2_ref = n_cauchy(λ1), n_cauchy(λ2)
 ````
 
 Da $n_1$ e $n_2$ calcoliamo quanto aspettarci per $\delta_1$ e
 $\delta_2$:
 
-````julia:ex30
+````julia:ex34
 δ1_ref, δ2_ref = δ(n1_ref), δ(n2_ref)
 ````
 
@@ -474,7 +655,7 @@ Il vostro codice probabilmente stamperà angoli in radianti (è la
 convenzione di `asin` in C++), quindi convertiamo i valori sopra in
 modo che possiate confrontarli col risultato del vostro programma:
 
-````julia:ex31
+````julia:ex35
 println("δ1_ref = ", uconvert(u"rad", δ1_ref))
 println("δ2_ref = ", uconvert(u"rad", δ2_ref))
 ````
@@ -484,7 +665,7 @@ misura di $\delta_1$ e $\delta_2$ va fatta usando l'approssimazione
 Gaussiana con i valori medi `δ1_ref` e `δ2_ref`, e la deviazione
 standard `σ_θ` data dal testo dell'esercizio:
 
-````julia:ex32
+````julia:ex36
 function simulate_experiment(glc, nsim)
     n1_simul = Array{Float64}(undef, nsim)
     n2_simul = Array{Float64}(undef, nsim)
@@ -525,7 +706,7 @@ Nel fare i plot qui sotto mi limito a ripetere l'esperimento 1000
 volte (il testo richiede 10.000 volte). I risultati non cambiano
 molto.
 
-````julia:ex33
+````julia:ex37
 glc = GLC(1)
 n1_simul, n2_simul, A_simul, B_simul = simulate_experiment(glc, 1000)
 
@@ -540,16 +721,16 @@ for i = 1:5
 end
 ````
 
-````julia:ex34
+````julia:ex38
 histogram([n1_simul, n2_simul],
-          label = ["n₁", "n₂"],
+          label = ["n₁" "n₂"],
           layout = (2, 1));
 savefig(joinpath(@OUTPUT, "hist_n1_n2.svg")); # hide
 ````
 
 \fig{hist_n1_n2.svg}
 
-````julia:ex35
+````julia:ex39
 scatter(n1_simul, n2_simul, label="");
 savefig(joinpath(@OUTPUT, "scatter_n1_n2.svg")); # hide
 ````
@@ -562,14 +743,14 @@ una normalizzazione. Definiamo quindi la funzione `corr`, che
 calcola il coefficiente di correlazione, analogamente a questa; nel
 vostro codice C++ dovrete invece implementarla usando la formula.
 
-````julia:ex36
+````julia:ex40
 corr(x, y) = cov(x, y) / (std(x) * std(y))
 ````
 
 I valori di $n_1$ ed $n_2$ sono correlati, perché sono entrambi
 stati ricavati dalla medesima stima di $\theta_0$.
 
-````julia:ex37
+````julia:ex41
 corr(n1_simul, n2_simul)
 ````
 
@@ -578,7 +759,7 @@ quest'ultimo, perché altrimenti Julia segnalerebbe che `A_simul` e
 `B_simul` sono incompatibili (essendo combinati nella stessa
 chiamata ad `histogram`):
 
-````julia:ex38
+````julia:ex42
 histogram([A_simul, ustrip.(u"nm^2", B_simul)],
           label = ["A" "B"],
           layout = (2, 1))
@@ -589,7 +770,7 @@ savefig(joinpath(@OUTPUT, "hist_A_B.svg")); # hide
 
 Facciamo anche un grafico X-Y
 
-````julia:ex39
+````julia:ex43
 scatter(A_simul, B_simul, label="");
 savefig(joinpath(@OUTPUT, "scatter_A_B.svg")); # hide
 ````
@@ -600,7 +781,7 @@ Ricalcoliamo qui i coefficienti di correlazione nel caso in cui
 l'esperimento sia rifatto 10.000 volte. Notate che creo di nuovo un
 generatore di numeri casuali.
 
-````julia:ex40
+````julia:ex44
 glc = GLC(1)
 (n1_simul, n2_simul, A_simul, B_simul) = simulate_experiment(glc, 10_000)
 println("Correlazione tra n1 e n2: ", corr(n1_simul, n2_simul))
@@ -622,7 +803,7 @@ quantità misurate in ognuno degli esperimenti Monte Carlo sono $R$, $\Delta x
 
 Definiamo le costanti numeriche del problema, usando ancora Unitful.jl:
 
-````julia:ex41
+````julia:ex45
 δt, δx, δR = 0.01s, 0.001m, 0.0001m;
 ρ, ρ0 = 2700.0u"kg/m^3", 1250.0u"kg/m^3";
 g = 9.81u"m/s^2";
@@ -635,7 +816,7 @@ x1 = 60cm;
 
 Definiamo anche alcune relazioni matematiche.
 
-````julia:ex42
+````julia:ex46
 v_L(R, η) = 2R^2 / (9η) * (ρ - ρ0) * g;
 Δt(R, Δx, η) = Δx / v_L(R, η);
 Δt_true = [Δt(R, Δx_true, η_true) for R in R_true];
@@ -645,7 +826,7 @@ v_L(R, η) = 2R^2 / (9η) * (ρ - ρ0) * g;
 Definiamo ora la funzione `simulate`, che effettua _due_ esperimenti: uno con
 $R = 0.01\,\text{m}$ e l'altro con $R = 0.005\,\text{m}$.
 
-````julia:ex43
+````julia:ex47
 function simulate(glc::GLC, δx, δt, δR)
     # Misura dell'altezza iniziale
     cur_x0 = randgauss(glc, x0, δx)
@@ -674,7 +855,7 @@ end
 Eseguiamo ora 1000 simulazioni e facciamo l'istogramma della stima di $\eta$
 per i due raggi della sferetta.
 
-````julia:ex44
+````julia:ex48
 N = 1_000
 glc = GLC(1)
 
@@ -697,7 +878,7 @@ associate ad unità di misura è necessario specificare l'unità di
 misura usata per arrotondare: con 4 cifre, il valore `1 m` potrebbe
 essere scritto come `1.0000 m` oppure `100.0000 cm`!
 
-````julia:ex45
+````julia:ex49
 # In η1 ed η2 abbiamo già le stime di η considerando tutti
 # e tre gli errori
 println("Tutti gli errori: δη(R1) = ", round(u"kg/m/s", std(η1), digits = 4))

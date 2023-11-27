@@ -1,10 +1,10 @@
 # This file was generated, do not modify it. # hide
-"""
-    intmean(glc::GLC, fn, a, b, N)
-
-Evaluate the integral of `fn(x)` in the interval ``[a, b]``
-using the mean method with ``N`` points.
-"""
-function intmean(glc::GLC, fn, a, b, N)
-    (b - a) * sum([fn(rand(glc, a, b)) for i in 1:N]) / N
+function computesums!(glc::GLC, n, vec)
+    for i in eachindex(vec)
+        accum = 0.0
+        for k in 1:n
+            accum += rand(glc)
+        end
+        vec[i] = accum
+    end
 end

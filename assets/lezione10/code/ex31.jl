@@ -1,3 +1,3 @@
 # This file was generated, do not modify it. # hide
-println("δ1_ref = ", uconvert(u"rad", δ1_ref))
-println("δ2_ref = ", uconvert(u"rad", δ2_ref))
+n(δ) = sin((δ + α) / 2) / sin(α / 2)
+δ(n) = uconvert(u"°", 2asin(n * sin(α / 2)) - α)

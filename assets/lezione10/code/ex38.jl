@@ -1,5 +1,5 @@
 # This file was generated, do not modify it. # hide
-histogram([A_simul, ustrip.(u"nm^2", B_simul)],
-          label = ["A" "B"],
-          layout = (2, 1))
-savefig(joinpath(@OUTPUT, "hist_A_B.svg")); # hide
+histogram([n1_simul, n2_simul],
+          label = ["n₁" "n₂"],
+          layout = (2, 1));
+savefig(joinpath(@OUTPUT, "hist_n1_n2.svg")); # hide

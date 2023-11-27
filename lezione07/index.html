@@ -266,6 +266,11 @@ collect(<span class=hljs-number >1</span>:<span class=hljs-number >2</span>:<spa
         <span class=hljs-keyword >end</span>
     <span class=hljs-keyword >end</span>
 
+    <span class=hljs-comment ># L&#x27;errore 4/3 × (newint - oldint) è teoricamente</span>
+    <span class=hljs-comment ># quello associato al valore `oldint` (che si riferisce</span>
+    <span class=hljs-comment ># al passo h), ma restituiamo `newint` perché comunque</span>
+    <span class=hljs-comment ># l&#x27;abbiamo già calcolato, e comunque sicuramente ha</span>
+    <span class=hljs-comment ># un errore ≤ prec.</span>
     newint
 <span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">trapezoids (generic function with 2 methods)</code></pre>
 <p>Notate che dopo aver compilato la definizione precedente, Julia ha scritto <code>trapezoids &#40;generic function with 2 methods&#41;</code>. Ha quindi capito che abbiamo fornito una nuova implementazione di <code>trapezoids</code>, e non ha quindi sovrascritto la vecchia &#40;che accettava come ultimo argomento un intero, ossia il numero di passaggi&#41;.</p>
@@ -296,7 +301,7 @@ plot!(prec, prec, label = <span class=hljs-string >&quot;Caso teorico peggiore&q
 
 <div class=page-foot >
   <div class=copyright >
-    &copy; Maurizio Tomasi. Last modified: November 13, 2023. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+    &copy; Maurizio Tomasi. Last modified: November 27, 2023. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
   </div>
 </div>
 </div>

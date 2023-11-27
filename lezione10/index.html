@@ -1,4 +1,4 @@
-<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/tnds-notebooks/libs/katex/katex.min.css"> <link rel=stylesheet  href="/tnds-notebooks/libs/highlight/github.min.css"> <link rel=stylesheet  href="/tnds-notebooks/css/franklin.css"> <link rel=stylesheet  href="/tnds-notebooks/css/poole_hyde.css"> <style> html {font-size: 17px;} .franklin-content {position: relative; padding-left: 8%; padding-right: 5%; line-height: 1.35em;} @media (min-width: 940px) { .franklin-content {width: 100%; margin-left: auto; margin-right: auto;} } @media (max-width: 768px) { .franklin-content {padding-left: 6%; padding-right: 6%;} } </style> <link rel=icon  href="/tnds-notebooks/assets/favicon.png"> <title>Lezioni 10 e 11</title> <div class=sidebar > <div class="container sidebar-sticky"> <div class=sidebar-about > <h1><a href="/tnds-notebooks/">TNDS</a></h1> <p class=lead >Prof. M.&nbsp;Tomasi</p> </div> <nav class=sidebar-nav > <a class="sidebar-nav-item " href="/tnds-notebooks/">Home</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione07/">Lezione 07</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione08/">Lezione 08</a> <a class="sidebar-nav-item active" href="/tnds-notebooks/lezione10/">Lezioni 10 e 11</a> </nav> <p>&copy; Maurizio Tomasi.</p> </div> </div> <div class="content container"> <div class=franklin-content > <p><div class=franklin-toc ><ol><li><a href="#lezione_10">Lezione 10</a><ol><li><a href="#esercizio_100">Esercizio 10.0</a><ol><li><a href="#generatore_lineare_congruenziale">Generatore Lineare Congruenziale</a></ol><li><a href="#distribuzione_esponenziale">Distribuzione esponenziale</a><li><a href="#distribuzione_gaussiana">Distribuzione Gaussiana</a><li><a href="#distribuzione_gaussiana_con_metodo_accept-reject">Distribuzione Gaussiana con metodo Accept-Reject</a><li><a href="#esercizio_102">Esercizio 10.2</a></ol><li><a href="#lezione_12_simulazione_di_un_esperimento">Lezione 12: Simulazione di un esperimento</a><ol><li><a href="#esercizio_120">Esercizio 12.0</a><li><a href="#esercizio_121_attrito_viscoso_facoltativo">Esercizio 12.1 — Attrito viscoso &#40;facoltativo&#41;</a></ol></ol></div> </p> <p>Dal momento che la lezione 11 richiede di impiegare i codici sviluppati nella lezione 10, presento gli esercizi delle due lezioni in un&#39;unica pagina.</p> <h1 id=metodi_monte_carlo_lezioni_10_e_11 ><a href="#metodi_monte_carlo_lezioni_10_e_11" class=header-anchor >Metodi Monte Carlo &#40;Lezioni 10 e 11&#41;</a></h1> <h2 id=lezione_10 ><a href="#lezione_10" class=header-anchor >Lezione 10</a></h2> <p>Iniziamo importando i pacchetti che ci serviranno.</p> <pre><code class="julia hljs"><span class=hljs-keyword >using</span> Printf
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/tnds-notebooks/libs/katex/katex.min.css"> <link rel=stylesheet  href="/tnds-notebooks/libs/highlight/github.min.css"> <link rel=stylesheet  href="/tnds-notebooks/css/franklin.css"> <link rel=stylesheet  href="/tnds-notebooks/css/poole_hyde.css"> <style> html {font-size: 17px;} .franklin-content {position: relative; padding-left: 8%; padding-right: 5%; line-height: 1.35em;} @media (min-width: 940px) { .franklin-content {width: 100%; margin-left: auto; margin-right: auto;} } @media (max-width: 768px) { .franklin-content {padding-left: 6%; padding-right: 6%;} } </style> <link rel=icon  href="/tnds-notebooks/assets/favicon.png"> <title>Lezioni 10 e 11</title> <div class=sidebar > <div class="container sidebar-sticky"> <div class=sidebar-about > <h1><a href="/tnds-notebooks/">TNDS</a></h1> <p class=lead >Prof. M.&nbsp;Tomasi</p> </div> <nav class=sidebar-nav > <a class="sidebar-nav-item " href="/tnds-notebooks/">Home</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione07/">Lezione 07</a> <a class="sidebar-nav-item " href="/tnds-notebooks/lezione08/">Lezione 08</a> <a class="sidebar-nav-item active" href="/tnds-notebooks/lezione10/">Lezioni 10 e 11</a> </nav> <p>&copy; Maurizio Tomasi.</p> </div> </div> <div class="content container"> <div class=franklin-content > <p><div class=franklin-toc ><ol><li><a href="#lezione_10">Lezione 10</a><ol><li><a href="#esercizio_100">Esercizio 10.0</a><ol><li><a href="#generatore_lineare_congruenziale">Generatore Lineare Congruenziale</a></ol><li><a href="#distribuzione_esponenziale">Distribuzione esponenziale</a><li><a href="#distribuzione_gaussiana">Distribuzione Gaussiana</a><li><a href="#distribuzione_gaussiana_con_metodo_accept-reject">Distribuzione Gaussiana con metodo Accept-Reject</a><li><a href="#esercizio_101">Esercizio 10.1</a><li><a href="#esercizio_102">Esercizio 10.2</a></ol><li><a href="#lezione_12_simulazione_di_un_esperimento">Lezione 12: Simulazione di un esperimento</a><ol><li><a href="#esercizio_120">Esercizio 12.0</a><li><a href="#esercizio_121_attrito_viscoso_facoltativo">Esercizio 12.1 — Attrito viscoso &#40;facoltativo&#41;</a></ol></ol></div> </p> <p>Dal momento che la lezione 11 richiede di impiegare i codici sviluppati nella lezione 10, presento gli esercizi delle due lezioni in un&#39;unica pagina.</p> <h1 id=metodi_monte_carlo_lezioni_10_e_11 ><a href="#metodi_monte_carlo_lezioni_10_e_11" class=header-anchor >Metodi Monte Carlo &#40;Lezioni 10 e 11&#41;</a></h1> <h2 id=lezione_10 ><a href="#lezione_10" class=header-anchor >Lezione 10</a></h2> <p>Iniziamo importando i pacchetti che ci serviranno.</p> <pre><code class="julia hljs"><span class=hljs-keyword >using</span> Printf
 <span class=hljs-keyword >using</span> Plots
 <span class=hljs-keyword >using</span> Statistics</code></pre> <h3 id=esercizio_100 ><a href="#esercizio_100" class=header-anchor >Esercizio 10.0</a></h3> <p>In Julia non esiste il concetto di «classe», ma esistono le <code>struct</code> che funzionano in modo concettualmente simile. Non permettono di associare metodi, tranne eventualmente un semplice costruttore, e tutti i campi sono pubblici di default.</p> <p>Definiamo una classe <code>GLC</code> che sia equivalente alla classe <code>Random</code> che vi viene richiesto di implementare in C&#43;&#43;.</p> <h4 id=generatore_lineare_congruenziale ><a href="#generatore_lineare_congruenziale" class=header-anchor >Generatore Lineare Congruenziale</a></h4> <pre><code class="julia hljs"><span class=hljs-keyword >mutable struct</span> GLC
     a::<span class=hljs-built_in >UInt64</span>
@@ -121,6 +121,127 @@ accept-reject algorithm.
 <p>Questo è l&#39;istogramma:</p>
 <pre><code class="julia hljs">histogram([randgauss_ar(glc, <span class=hljs-number >2</span>, <span class=hljs-number >1</span>) <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:<span class=hljs-number >10000</span>], label=<span class=hljs-string >&quot;&quot;</span>);</code></pre>
 <img src="/tnds-notebooks/assets/lezione10/code/output/randgauss_ar_hist.svg" alt="">
+<h3 id=esercizio_101 ><a href="#esercizio_101" class=header-anchor >Esercizio 10.1</a></h3>
+<p>L&#39;esercizio è molto semplice da implementare, ma richiede comunque una certa attenzione: bisogna studiare infatti molti casi &#40;ben 12 istogrammi&#41;, e questo richiede molto ordine e pulizia&#33; Imparare a scrivere codice ordinato è importante soprattutto per il giorno dell&#39;esame: capita spesso che nei temi d&#39;esame si chieda di ripetere più volte un calcolo o una simulazione, ed è bene non usare copia-e-incolla ma strutturare il codice usando dei cicli <code>for</code> e implementando funzioni di supporto anziché rendere il <code>main</code> lungo centinaia di righe.</p>
+<p>Iniziamo con l&#39;implementazione di un codice che riempia un vettore con i campioni casuali sommati <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> alla volta:</p>
+<pre><code class="julia hljs"><span class=hljs-keyword >function</span> computesums!(glc::GLC, n, vec)
+    <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> eachindex(vec)
+        accum = <span class=hljs-number >0.0</span>
+        <span class=hljs-keyword >for</span> k <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:n
+            accum += rand(glc)
+        <span class=hljs-keyword >end</span>
+        vec[i] = accum
+    <span class=hljs-keyword >end</span>
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">computesums! (generic function with 1 method)</code></pre>
+<p>&#40;in Julia c&#39;è la convenzione di mettere il carattere <code>&#33;</code> alla fine delle funzioni che modificano uno dei loro argomenti: questo è proprio il nostro caso, perché <code>vec</code> viene modificato da <code>computesums&#33;</code>&#41;</p>
+<p>Facciamo una prova semplice:</p>
+<pre><code class="julia hljs">glc = GLC(<span class=hljs-number >1</span>)
+<span class=hljs-comment ># Array di *due* elementi</span>
+vec = <span class=hljs-built_in >Array</span>{<span class=hljs-built_in >Float64</span>}(<span class=hljs-literal >undef</span>, <span class=hljs-number >2</span>)
+<span class=hljs-comment ># Chiediamo che in ogni elemento vengano sommati *cinque*</span>
+<span class=hljs-comment ># numeri. Quindi ogni elemento di `vec` sarà un numero</span>
+<span class=hljs-comment ># casuale nell&#x27;intervallo 0…5.</span>
+computesums!(glc, <span class=hljs-number >5</span>, vec)
+println(<span class=hljs-string >&quot;vec[1] = &quot;</span>, vec[<span class=hljs-number >1</span>])
+println(<span class=hljs-string >&quot;vec[2] = &quot;</span>, vec[<span class=hljs-number >2</span>])</code></pre><pre><code class="plaintext hljs">vec[1] = 1.7307902472093701
+vec[2] = 1.7124183257110417
+</code></pre>
+<p>Potete usare questi numeri in un <code>assert</code> per verificare la vostra implementazione di <code>compute_sums</code> &#40;mettete pure tutto nello stesso file del <code>main</code>&#41;:</p>
+<pre><code class="cpp hljs"><span class=hljs-function ><span class=hljs-type >void</span> <span class=hljs-title >test_compute_sums</span><span class=hljs-params >()</span> </span>{
+  <span class=hljs-function >std::vector&lt;<span class=hljs-type >double</span>&gt; <span class=hljs-title >vec</span><span class=hljs-params >(<span class=hljs-number >2</span>)</span></span>;  <span class=hljs-comment >// Attenzione, parentesi *tonde* qui!</span>
+
+  RandomGen rng{<span class=hljs-number >1</span>};
+  <span class=hljs-built_in >compute_sums</span>(rng, <span class=hljs-number >5</span>, vec);
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(rng[<span class=hljs-number >0</span>], <span class=hljs-number >1.7307902472093701</span>));
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(rng[<span class=hljs-number >1</span>], <span class=hljs-number >1.7124183257110417</span>));
+}</code></pre>
+<p>Ora ci occorre invocare questa funzione più volte facendo variare <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> da 1 a 12, e producendo un istogramma ogni volta.</p>
+<pre><code class="julia hljs">glc = GLC(<span class=hljs-number >1</span>)
+vec = <span class=hljs-built_in >Array</span>{<span class=hljs-built_in >Float64</span>}(<span class=hljs-literal >undef</span>, <span class=hljs-number >100_000</span>)
+
+list_of_N = <span class=hljs-number >1</span>:<span class=hljs-number >12</span>
+list_of_histograms = []
+list_of_sigmas = <span class=hljs-built_in >Float64</span>[]
+<span class=hljs-keyword >for</span> n <span class=hljs-keyword >in</span> list_of_N
+    computesums!(glc, n, vec)
+    push!(list_of_histograms, histogram(vec, bins = <span class=hljs-number >20</span>, title = <span class=hljs-string >&quot;N = <span class=hljs-variable >$n</span>&quot;</span>))
+    push!(list_of_sigmas, std(vec))
+<span class=hljs-keyword >end</span>
+plot(list_of_histograms...,
+     layout = (<span class=hljs-number >3</span>, <span class=hljs-number >4</span>),
+     size = (<span class=hljs-number >900</span>, <span class=hljs-number >600</span>),
+     legend = <span class=hljs-literal >false</span>)</code></pre>
+<img src="/tnds-notebooks/assets/lezione10/code/output/es10_1_histogram.svg" alt="">
+<p>Notate che, grazie alla definizione della funzione <code>computesums&#33;</code>, il ciclo <code>for</code> è stato ridotto ad appena tre righe. Inoltre proprio l&#39;uso del <code>for</code> ha evitato quegli orribili copia-e-incolla che spesso i docenti trovano nelle correzioni degli esami scritti. Il seguente è un esempio di come <strong>non</strong> implementare questo esercizio: è una vera e propria “galleria degli orrori”&#33;</p>
+<pre><code class="cpp hljs"><span class=hljs-comment >// 👿 NON BASATEVI SU QUESTO CODICE! ESSO È IMPURO E IMMONDO! 👿</span>
+
+<span class=hljs-function >std::vector&lt;<span class=hljs-type >double</span>&gt; <span class=hljs-title >vec</span><span class=hljs-params >(<span class=hljs-number >100&#x27;000</span>)</span></span>;
+
+<span class=hljs-comment >// Aargh! Qui ripeto il numero 100&#x27;000 anziché scrivere (int) vec.size():</span>
+<span class=hljs-comment >// cosa succede se poi durante l&#x27;esame voglio usare un numero minore</span>
+<span class=hljs-comment >// per risparmiare tempo? Devo cambiare tutte le occorrenze!</span>
+<span class=hljs-keyword >for</span>(<span class=hljs-type >int</span> k{}; k &lt; <span class=hljs-number >100&#x27;000</span>; ++k) {
+  vec[k] = <span class=hljs-number >0.0</span>;   <span class=hljs-comment >// Per giunta qui non uso neppure vec.at(k),</span>
+                  <span class=hljs-comment >// quindi se riduco il numero 100&#x27;000 nella</span>
+                  <span class=hljs-comment >// definizione di `vec` ma non nel ciclo `for`,</span>
+                  <span class=hljs-comment >// qui potrei avere un “segmentation fault”!</span>
+  <span class=hljs-keyword >for</span>(<span class=hljs-type >int</span> i{}; i &lt; <span class=hljs-number >1</span>; ++i)
+    vec[k] += rand.<span class=hljs-built_in >Unif</span>(<span class=hljs-number >0.0</span>, <span class=hljs-number >1.0</span>);
+}
+
+<span class=hljs-comment >// Ok, invece che fare una sola figura con 12 grafici scelgo di</span>
+<span class=hljs-comment >// creare 12 file PNG distinti… è più faticoso però poi</span>
+<span class=hljs-comment >// controllare i risultati e confrontare gli istogrammi!</span>
+Gnuplot plt1{};
+plt1.<span class=hljs-built_in >redirect_to_svg</span>(<span class=hljs-string >&quot;n1.png&quot;</span>);
+plt1.<span class=hljs-built_in >histogram</span>(vec, <span class=hljs-number >20</span>, <span class=hljs-string >&quot;N = 1&quot;</span>);
+plt1.<span class=hljs-built_in >show</span>();
+
+<span class=hljs-comment >// Caso con n = 2</span>
+
+<span class=hljs-comment >// NOOOO! Tutto quanto segue è un copia-e-incolla del codice sopra!</span>
+<span class=hljs-comment >// Terribile!</span>
+<span class=hljs-keyword >for</span>(<span class=hljs-type >int</span> k{}; k &lt; <span class=hljs-number >100&#x27;000</span>; ++k) {
+  vec[k] = <span class=hljs-number >0.0</span>;
+  <span class=hljs-keyword >for</span>(<span class=hljs-type >int</span> i{}; i &lt; <span class=hljs-number >2</span>; ++i)
+    vec[k] += rand.<span class=hljs-built_in >Unif</span>(<span class=hljs-number >0.0</span>, <span class=hljs-number >1.0</span>);
+}
+
+Gnuplot plt2{};
+plt3.<span class=hljs-built_in >redirect_to_svg</span>(<span class=hljs-string >&quot;n3.png&quot;</span>);
+plt3.<span class=hljs-built_in >histogram</span>(vec, <span class=hljs-number >20</span>, <span class=hljs-string >&quot;N = 3&quot;</span>);
+plt3.<span class=hljs-built_in >show</span>();
+
+<span class=hljs-comment >// Caso con n = 3</span>
+<span class=hljs-keyword >for</span>(<span class=hljs-type >int</span> k{}; k &lt; <span class=hljs-number >100&#x27;000</span>; ++k) {
+  vec[k] = <span class=hljs-number >0.0</span>;
+  <span class=hljs-keyword >for</span>(<span class=hljs-type >int</span> i{}; i &lt; <span class=hljs-number >3</span>; ++i)
+    vec[k] += rand.<span class=hljs-built_in >Unif</span>(<span class=hljs-number >0.0</span>, <span class=hljs-number >1.0</span>);
+}
+
+Gnuplot plt3{};
+plt3.<span class=hljs-built_in >redirect_to_svg</span>(<span class=hljs-string >&quot;n3.png&quot;</span>);
+plt3.<span class=hljs-built_in >histogram</span>(vec, <span class=hljs-number >20</span>, <span class=hljs-string >&quot;N = 3&quot;</span>);
+plt3.<span class=hljs-built_in >show</span>();
+
+<span class=hljs-comment >// Il codice continua tutto così… ci siamo capiti!</span>
+<span class=hljs-comment >// …</span></code></pre>
+<p>Il codice Julia evita di ricorrere ai copia-e-incolla implementando una funzione <code>computesums&#33;</code> e chiamandola più volte all&#39;interno di un ciclo <code>for</code>. Questo approccio è estremamente elegante 😇 e ha molti vantaggi rispetto al disperato copia-e-incolla del malefico esempio 👿:</p>
+<ul>
+<li><p>Ci mettete meno tempo a scriverlo, e in un esame il tempo è sempre prezioso;</p>
+
+<li><p>Se scegliete l&#39;approccio “copia-e-incolla” 👿 e vi rendete conto di un   errore nel codice che avete appena copiato &#40;ad esempio, una parentesi non chiusa&#41;,   dovete correggerlo dodici volte… ma nel caso 😇 l&#39;errore va corretto una   volta sola&#33; E anche questo è un bel risparmio di tempo.</p>
+
+<li><p>Il codice 😇 è più semplice da leggere, e quindi è più facile individuare   errori &#40;ci sono meno posti in cui il problema potrebbe nascondersi&#41;</p>
+
+<li><p>Se vi rendete conto che il programma ci mette troppo per essere eseguito, e   questo vi è di impiccio perché i risultati non vi convincono e prevedete   di doverlo eseguire molte volte, è semplice limitare ad esempio i valori   di <code>N</code> da esplorare nel codice 😇, cambiando ad esempio la riga <code>list_of_N &#61; 1:12</code>   con <code>list_of_N &#61; 1:5</code>. Nel codice 👿 invece, dovete commentare decine di righe   di codice, col rischio di commentare qualche variabile importante che vi serve   alla fine del programma e che quindi causa errori di compilazione…</p>
+
+</ul>
+<p>Ora creiamo il grafico con l&#39;andamento della deviazione standard &#40;calcolata nell&#39;esempio sopra con la funzione <code>Statistics.std</code>&#41;, memorizzata in <code>list_of_sigmas</code>:</p>
+<pre><code class="julia hljs">plot(list_of_N, list_of_sigmas,
+     xaxis = :log10, yaxis = :log10, label = <span class=hljs-string >&quot;&quot;</span>,
+     xlabel = <span class=hljs-string >&quot;N&quot;</span>, ylabel = <span class=hljs-string >&quot;Standard deviation σ&quot;</span>)</code></pre>
+<img src="/tnds-notebooks/assets/lezione10/code/output/es10_1_std.svg" alt="">
 <h3 id=esercizio_102 ><a href="#esercizio_102" class=header-anchor >Esercizio 10.2</a></h3>
 <p>Questa è una semplice implementazione dell&#39;integrale della media:</p>
 <pre><code class="julia hljs"><span class=hljs-string >&quot;&quot;&quot;
@@ -256,17 +377,17 @@ Bisezione sol{};
 <span class=hljs-keyword >import</span> Unitful: m, cm, mm, nm, s, °, mrad, <span class=hljs-meta >@u_str</span></code></pre>
 <p>I simboli <code>nm</code>, <code>°</code> e <code>mrad</code> sono unità di misura che si possono usare direttamente nelle definizioni, come <code>x &#61; 10nm</code>. La macro <code>@u_str</code>, terminando con <code>_str</code>, indica che può essere usata aggiungendo <code>u</code> dopo le stringhe per specificare le unità di misura. Questo è indispensabile per tipi più complessi dei semplici <code>m</code>, <code>cm</code>, <code>mm</code>, etc., che richiedano espressioni matematiche, come ad esempio i campi elettrici: <code>E &#61; 10u&quot;N/C&quot;</code>.</p>
 <p>Definiamo una serie di variabili per le costanti fisiche del problema:</p>
-<pre><code class="julia hljs">σ_θ = <span class=hljs-number >0.3</span>mrad;       <span class=hljs-comment ># I could have written σ_θ = 0.3u&quot;mrad&quot;</span>
-θ<span class=hljs-number >0_</span>ref = <span class=hljs-number >90</span>°;        <span class=hljs-comment ># Similarly,           θ0_ref = 90u&quot;°&quot;</span>
+<pre><code class="julia hljs">σ_θ = <span class=hljs-number >0.3</span>mrad;       <span class=hljs-comment ># Avrei potuto scrivere σ_θ = 0.3u&quot;mrad&quot;</span>
+θ<span class=hljs-number >0_</span>ref = <span class=hljs-number >90</span>°;        <span class=hljs-comment ># Ugualmente,           θ0_ref = 90u&quot;°&quot;</span>
 Aref = <span class=hljs-number >2.7</span>;
-Bref = <span class=hljs-number >6e4</span><span class=hljs-string >u&quot;nm^2&quot;</span>;
+Bref = <span class=hljs-number >6e4</span><span class=hljs-string >u&quot;nm^2&quot;</span>;   <span class=hljs-comment ># Qui devo usare `u` perché nm² è troppo complicato</span>
 α = <span class=hljs-number >60.0</span>°;
 λ<span class=hljs-number >1</span> = <span class=hljs-number >579.1</span>nm;
 λ<span class=hljs-number >2</span> = <span class=hljs-number >404.7</span>nm;</code></pre>
 <p>La funzione <code>n_cauchy</code> restituisce <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">n</span></span></span></span> supponendo vera la formula di Cauchy. La sintassi con un parametro usa i valori di riferimento di <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal">A</span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>B</mi></mrow><annotation encoding="application/x-tex">B</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span></span></span></span> scritti sopra.</p>
 <pre><code class="julia hljs">n_cauchy(λ, A, B) = sqrt(A + B / λ^<span class=hljs-number >2</span>)
 n_cauchy(λ) = n_cauchy(λ, Aref, Bref)</code></pre><pre><code class="plaintext hljs">n_cauchy (generic function with 2 methods)</code></pre>
-<p>La funzione <code>n</code> invece restituisce <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">n</span></span></span></span> in funzione della deviazione misurata <code>δ</code> dal prisma, dove <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi></mrow><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span></span></span></span> è il suo angolo di apertura &#40;definito sopra&#41;. Siccome la funzione <code>asin</code> &#40;arcoseno&#41; restituisce il valore in radianti, che è scomodo da leggere, definiamo <code>δ</code> in modo che esprima sempre il risultato in gradi.</p>
+<p>La funzione <code>n</code> invece restituisce <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">n</span></span></span></span> in funzione della deviazione misurata <code>δ</code> dal prisma, dove <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi></mrow><annotation encoding="application/x-tex">\alpha</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span></span></span></span> è il suo angolo di apertura &#40;definito sopra&#41;. Siccome la funzione <code>asin</code> &#40;arcoseno&#41; restituisce il valore in radianti, che è scomodo da leggere, definiamo <code>δ</code> in modo che esprima sempre il risultato in gradi: per questo scopo c&#39;è la funzione <code>uconvert</code>, che richiede come primo parametro l&#39;unità di misura di <em>destinazione</em> &#40;nel nostro caso gradi, quindi <code>u&quot;°&quot;</code>&#41;.</p>
 <pre><code class="julia hljs">n(δ) = sin((δ + α) / <span class=hljs-number >2</span>) / sin(α / <span class=hljs-number >2</span>)
 δ(n) = uconvert(<span class=hljs-string >u&quot;°&quot;</span>, <span class=hljs-number >2</span>asin(n * sin(α / <span class=hljs-number >2</span>)) - α)</code></pre><pre><code class="plaintext hljs">δ (generic function with 1 method)</code></pre>
 <p>Queste formule si ricavano banalmente dall&#39;inversione della formula di Cauchy; la funzione <code>A_and_B</code> calcola contemporaneamente <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal">A</span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>B</mi></mrow><annotation encoding="application/x-tex">B</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span></span></span></span>, ed è stata definita per comodità:</p>
@@ -337,7 +458,7 @@ println(repeat(<span class=hljs-string >&#x27;-&#x27;</span>, <span class=hljs-n
       1.696847       1.751016       2.701005   5.978917e+04
 </code></pre>
 <pre><code class="julia hljs">histogram([n1_simul, n2_simul],
-          label = [<span class=hljs-string >&quot;n₁&quot;</span>, <span class=hljs-string >&quot;n₂&quot;</span>],
+          label = [<span class=hljs-string >&quot;n₁&quot;</span> <span class=hljs-string >&quot;n₂&quot;</span>],
           layout = (<span class=hljs-number >2</span>, <span class=hljs-number >1</span>));</code></pre>
 <img src="/tnds-notebooks/assets/lezione10/code/output/hist_n1_n2.svg" alt="">
 <pre><code class="julia hljs">scatter(n1_simul, n2_simul, label=<span class=hljs-string >&quot;&quot;</span>);</code></pre>
@@ -345,7 +466,7 @@ println(repeat(<span class=hljs-string >&#x27;-&#x27;</span>, <span class=hljs-n
 <p>Il package <code>Statistics</code> di Julia implementa il calcolo della covarianza tra due serie, che è uguale alla correlazione a meno di una normalizzazione. Definiamo quindi la funzione <code>corr</code>, che calcola il coefficiente di correlazione, analogamente a questa; nel vostro codice C&#43;&#43; dovrete invece implementarla usando la formula.</p>
 <pre><code class="julia hljs">corr(x, y) = cov(x, y) / (std(x) * std(y))</code></pre><pre><code class="plaintext hljs">corr (generic function with 1 method)</code></pre>
 <p>I valori di <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>n</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">n_1</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.58056em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">n</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> ed <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>n</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">n_2</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.58056em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">n</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> sono correlati, perché sono entrambi stati ricavati dalla medesima stima di <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>θ</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\theta_0</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.84444em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>.</p>
-<pre><code class="julia hljs">corr(n1_simul, n2_simul)</code></pre><pre><code class="plaintext hljs">0.4886624014617019</code></pre>
+<pre><code class="julia hljs">corr(n1_simul, n2_simul)</code></pre><pre><code class="plaintext hljs">0.4886624014617018</code></pre>
 <p>Nel fare l&#39;istogramma di <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal">A</span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>B</mi></mrow><annotation encoding="application/x-tex">B</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span></span></span></span>, rimuoviamo le unità di misura da quest&#39;ultimo, perché altrimenti Julia segnalerebbe che <code>A_simul</code> e <code>B_simul</code> sono incompatibili &#40;essendo combinati nella stessa chiamata ad <code>histogram</code>&#41;:</p>
 <pre><code class="julia hljs">histogram([A_simul, ustrip.(<span class=hljs-string >u&quot;nm^2&quot;</span>, B_simul)],
           label = [<span class=hljs-string >&quot;A&quot;</span> <span class=hljs-string >&quot;B&quot;</span>],
@@ -459,7 +580,7 @@ Solo δx:          δη(R1) = 0.0028 kg m^-1 s^-1
 
 <div class=page-foot >
   <div class=copyright >
-    &copy; Maurizio Tomasi. Last modified: November 13, 2023. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+    &copy; Maurizio Tomasi. Last modified: November 27, 2023. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
   </div>
 </div>
 </div>

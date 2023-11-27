@@ -104,6 +104,48 @@ end
 histogram([randgauss_ar(glc, 2, 1) for i in 1:10000], label="");
 savefig(joinpath(@OUTPUT, "randgauss_ar_hist.svg")); # hide
 
+function computesums!(glc::GLC, n, vec)
+    for i in eachindex(vec)
+        accum = 0.0
+        for k in 1:n
+            accum += rand(glc)
+        end
+        vec[i] = accum
+    end
+end
+
+glc = GLC(1)
+# Array di *due* elementi
+vec = Array{Float64}(undef, 2)
+# Chiediamo che in ogni elemento vengano sommati *cinque*
+# numeri. Quindi ogni elemento di `vec` sarà un numero
+# casuale nell'intervallo 0…5.
+computesums!(glc, 5, vec)
+println("vec[1] = ", vec[1])
+println("vec[2] = ", vec[2])
+
+glc = GLC(1)
+vec = Array{Float64}(undef, 100_000)
+
+list_of_N = 1:12
+list_of_histograms = []
+list_of_sigmas = Float64[]
+for n in list_of_N
+    computesums!(glc, n, vec)
+    push!(list_of_histograms, histogram(vec, bins = 20, title = "N = $n"))
+    push!(list_of_sigmas, std(vec))
+end
+plot(list_of_histograms...,
+     layout = (3, 4),
+     size = (900, 600),
+     legend = false)
+savefig(joinpath(@OUTPUT, "es10_1_histogram.svg")); # hide
+
+plot(list_of_N, list_of_sigmas,
+     xaxis = :log10, yaxis = :log10, label = "",
+     xlabel = "N", ylabel = "Standard deviation σ")
+savefig(joinpath(@OUTPUT, "es10_1_std.svg")); # hide
+
 """
     intmean(glc::GLC, fn, a, b, N)
 
@@ -166,10 +208,10 @@ std(values)
 using Unitful
 import Unitful: m, cm, mm, nm, s, °, mrad, @u_str
 
-σ_θ = 0.3mrad;       # I could have written σ_θ = 0.3u"mrad"
-θ0_ref = 90°;        # Similarly,           θ0_ref = 90u"°"
+σ_θ = 0.3mrad;       # Avrei potuto scrivere σ_θ = 0.3u"mrad"
+θ0_ref = 90°;        # Ugualmente,           θ0_ref = 90u"°"
 Aref = 2.7;
-Bref = 6e4u"nm^2";
+Bref = 6e4u"nm^2";   # Qui devo usare `u` perché nm² è troppo complicato
 α = 60.0°;
 λ1 = 579.1nm;
 λ2 = 404.7nm;
@@ -232,7 +274,7 @@ for i = 1:5
 end
 
 histogram([n1_simul, n2_simul],
-          label = ["n₁", "n₂"],
+          label = ["n₁" "n₂"],
           layout = (2, 1));
 savefig(joinpath(@OUTPUT, "hist_n1_n2.svg")); # hide
 

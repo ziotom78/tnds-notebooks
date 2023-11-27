@@ -1,3 +1,3 @@
 # This file was generated, do not modify it. # hide
-scatter(n1_simul, n2_simul, label="");
-savefig(joinpath(@OUTPUT, "scatter_n1_n2.svg")); # hide
+println("δ1_ref = ", uconvert(u"rad", δ1_ref))
+println("δ2_ref = ", uconvert(u"rad", δ2_ref))

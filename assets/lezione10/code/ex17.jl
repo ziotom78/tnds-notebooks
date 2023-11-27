@@ -1,18 +1,10 @@
 # This file was generated, do not modify it. # hide
-"""
-    inthm(glc::GLC, fn, a, b, fmax, N)
-
-Evaluate the integral of `fn(x)` in the interval ``[a, b]``
-using the hit-or-miss method with ``N`` points, assuming that
-`fn(x)` assumes values in the range `[0, fmax]`.
-"""
-function inthm(glc::GLC, fn, a, b, fmax, N)
-    hits = 0
-    for i in 1:N
-        x = rand(glc, a, b)
-        y = rand(glc, 0, fmax)
-        y ≤ fn(x) && (hits += 1)
-    end
-
-    hits / N * (b - a) * fmax
-end
+glc = GLC(1)
+# Array di *due* elementi
+vec = Array{Float64}(undef, 2)
+# Chiediamo che in ogni elemento vengano sommati *cinque*
+# numeri. Quindi ogni elemento di `vec` sarà un numero
+# casuale nell'intervallo 0…5.
+computesums!(glc, 5, vec)
+println("vec[1] = ", vec[1])
+println("vec[2] = ", vec[2])

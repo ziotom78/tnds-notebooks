@@ -162,6 +162,11 @@ function trapezoids(f, a, b, prec::AbstractFloat)
         end
     end
 
+    # L'errore 4/3 × (newint - oldint) è teoricamente
+    # quello associato al valore `oldint` (che si riferisce
+    # al passo h), ma restituiamo `newint` perché comunque
+    # l'abbiamo già calcolato, e comunque sicuramente ha
+    # un errore ≤ prec.
     newint
 end
 
