@@ -178,6 +178,177 @@ savefig(joinpath(@OUTPUT, "randgauss_ar_hist.svg")); # hide
 # \fig{randgauss_ar_hist.svg}
 
 
+# ### Esercizio 10.1
+#
+# L'esercizio è molto semplice da implementare, ma richiede comunque una
+# certa attenzione: bisogna studiare infatti molti casi (ben 12 istogrammi),
+# e questo richiede molto ordine e pulizia! Imparare a scrivere codice
+# ordinato è importante soprattutto per il giorno dell'esame: capita spesso
+# che nei temi d'esame si chieda di ripetere più volte un calcolo o una
+# simulazione, ed è bene non usare copia-e-incolla ma strutturare il
+# codice usando dei cicli `for` e implementando funzioni di supporto
+# anziché rendere il `main` lungo centinaia di righe.
+#
+# Iniziamo con l'implementazione di un codice che riempia un vettore
+# con i campioni casuali sommati $N$ alla volta:
+
+function computesums!(glc::GLC, n, vec)
+    for i in eachindex(vec)
+        accum = 0.0
+        for k in 1:n
+            accum += rand(glc)
+        end
+        vec[i] = accum
+    end
+end
+
+# (in Julia c'è la convenzione di mettere il carattere `!` alla fine delle
+# funzioni che modificano uno dei loro argomenti: questo è proprio il nostro
+# caso, perché `vec` viene modificato da `computesums!`)
+#
+# Facciamo una prova semplice:
+
+glc = GLC(1)
+## Array di *due* elementi
+vec = Array{Float64}(undef, 2)
+## Chiediamo che in ogni elemento vengano sommati *cinque*
+## numeri. Quindi ogni elemento di `vec` sarà un numero
+## casuale nell'intervallo 0…5.
+computesums!(glc, 5, vec)
+println("vec[1] = ", vec[1])
+println("vec[2] = ", vec[2])
+
+# Potete usare questi numeri in un `assert` per verificare la
+# vostra implementazione di `compute_sums` (mettete pure tutto
+# nello stesso file del `main`):
+#
+# ```cpp
+# void test_compute_sums() {
+#   std::vector<double> vec(2);  // Attenzione, parentesi *tonde* qui!
+#
+#   RandomGen rng{1};
+#   compute_sums(rng, 5, vec);
+#   assert(are_close(rng[0], 1.7307902472093701));
+#   assert(are_close(rng[1], 1.7124183257110417));
+# }
+# ```
+#
+# Ora ci occorre invocare questa funzione più volte facendo variare $N$
+# da 1 a 12, e producendo un istogramma ogni volta.
+
+glc = GLC(1)
+vec = Array{Float64}(undef, 100_000)
+
+list_of_N = 1:12
+list_of_histograms = []
+list_of_sigmas = Float64[]
+for n in list_of_N
+    computesums!(glc, n, vec)
+    push!(list_of_histograms, histogram(vec, bins = 20, title = "N = $n"))
+    push!(list_of_sigmas, std(vec))
+end
+plot(list_of_histograms...,
+     layout = (3, 4),
+     size = (900, 600),
+     legend = false)
+savefig(joinpath(@OUTPUT, "es10_1_histogram.svg")); # hide
+
+# \fig{es10_1_histogram.svg}
+
+# Notate che, grazie alla definizione della funzione `computesums!`,
+# il ciclo `for` è stato ridotto ad appena tre righe. Inoltre proprio
+# l'uso del `for` ha evitato quegli orribili copia-e-incolla che
+# spesso i docenti trovano nelle correzioni degli esami scritti.
+# Il seguente è un esempio di come **non** implementare questo esercizio:
+# è una vera e propria “galleria degli orrori”!
+#
+# ```cpp
+# // 👿 NON BASATEVI SU QUESTO CODICE! ESSO È IMPURO E IMMONDO! 👿
+#
+# std::vector<double> vec(100'000);
+#
+# // Aargh! Qui ripeto il numero 100'000 anziché scrivere (int) vec.size():
+# // cosa succede se poi durante l'esame voglio usare un numero minore
+# // per risparmiare tempo? Devo cambiare tutte le occorrenze!
+# for(int k{}; k < 100'000; ++k) {
+#   vec[k] = 0.0;   // Per giunta qui non uso neppure vec.at(k),
+#                   // quindi se riduco il numero 100'000 nella
+#                   // definizione di `vec` ma non nel ciclo `for`,
+#                   // qui potrei avere un “segmentation fault”!
+#   for(int i{}; i < 1; ++i)
+#     vec[k] += rand.Unif(0.0, 1.0);
+# }
+#
+# // Ok, invece che fare una sola figura con 12 grafici scelgo di
+# // creare 12 file PNG distinti… è più faticoso però poi
+# // controllare i risultati e confrontare gli istogrammi!
+# Gnuplot plt1{};
+# plt1.redirect_to_svg("n1.png");
+# plt1.histogram(vec, 20, "N = 1");
+# plt1.show();
+#
+# // Caso con n = 2
+#
+# // NOOOO! Tutto quanto segue è un copia-e-incolla del codice sopra!
+# // Terribile!
+# for(int k{}; k < 100'000; ++k) {
+#   vec[k] = 0.0;
+#   for(int i{}; i < 2; ++i)
+#     vec[k] += rand.Unif(0.0, 1.0);
+# }
+#
+# Gnuplot plt2{};
+# plt3.redirect_to_svg("n3.png");
+# plt3.histogram(vec, 20, "N = 3");
+# plt3.show();
+#
+# // Caso con n = 3
+# for(int k{}; k < 100'000; ++k) {
+#   vec[k] = 0.0;
+#   for(int i{}; i < 3; ++i)
+#     vec[k] += rand.Unif(0.0, 1.0);
+# }
+#
+# Gnuplot plt3{};
+# plt3.redirect_to_svg("n3.png");
+# plt3.histogram(vec, 20, "N = 3");
+# plt3.show();
+#
+# // Il codice continua tutto così… ci siamo capiti!
+# // …
+# ```
+#
+# Il codice Julia evita di ricorrere ai copia-e-incolla implementando
+# una funzione `computesums!` e chiamandola più volte all'interno di
+# un ciclo `for`. Questo approccio è estremamente elegante 😇 e ha molti
+# vantaggi rispetto al disperato copia-e-incolla del malefico esempio 👿:
+#
+# -   Ci mettete meno tempo a scriverlo, e in un esame il tempo è sempre prezioso;
+# -   Se scegliete l'approccio “copia-e-incolla” 👿 e vi rendete conto di un
+#     errore nel codice che avete appena copiato (ad esempio, una parentesi non chiusa),
+#     dovete correggerlo dodici volte… ma nel caso 😇 l'errore va corretto una
+#     volta sola! E anche questo è un bel risparmio di tempo.
+# -   Il codice 😇 è più semplice da leggere, e quindi è più facile individuare
+#     errori (ci sono meno posti in cui il problema potrebbe nascondersi)
+# -   Se vi rendete conto che il programma ci mette troppo per essere eseguito, e
+#     questo vi è di impiccio perché i risultati non vi convincono e prevedete
+#     di doverlo eseguire molte volte, è semplice limitare ad esempio i valori
+#     di `N` da esplorare nel codice 😇, cambiando ad esempio la riga `list_of_N = 1:12`
+#     con `list_of_N = 1:5`. Nel codice 👿 invece, dovete commentare decine di righe
+#     di codice, col rischio di commentare qualche variabile importante che vi serve
+#     alla fine del programma e che quindi causa errori di compilazione…
+#
+# Ora creiamo il grafico con l'andamento della deviazione standard (calcolata
+# nell'esempio sopra con la funzione `Statistics.std`), memorizzata in
+# `list_of_sigmas`:
+
+plot(list_of_N, list_of_sigmas,
+     xaxis = :log10, yaxis = :log10, label = "",
+     xlabel = "N", ylabel = "Standard deviation σ")
+savefig(joinpath(@OUTPUT, "es10_1_std.svg")); # hide
+
+# \fig{es10_1_std.svg}
+
 # ### Esercizio 10.2
 #
 # Questa è una semplice implementazione dell'integrale della media:
@@ -367,10 +538,10 @@ import Unitful: m, cm, mm, nm, s, °, mrad, @u_str
 
 # Definiamo una serie di variabili per le costanti fisiche del problema:
 
-σ_θ = 0.3mrad;       # I could have written σ_θ = 0.3u"mrad"
-θ0_ref = 90°;        # Similarly,           θ0_ref = 90u"°"
+σ_θ = 0.3mrad;       # Avrei potuto scrivere σ_θ = 0.3u"mrad"
+θ0_ref = 90°;        # Ugualmente,           θ0_ref = 90u"°"
 Aref = 2.7;
-Bref = 6e4u"nm^2";
+Bref = 6e4u"nm^2";   # Qui devo usare `u` perché nm² è troppo complicato
 α = 60.0°;
 λ1 = 579.1nm;
 λ2 = 404.7nm;
@@ -386,7 +557,9 @@ n_cauchy(λ) = n_cauchy(λ, Aref, Bref)
 # misurata `δ` dal prisma, dove $\alpha$ è il suo angolo di apertura
 # (definito sopra). Siccome la funzione `asin` (arcoseno) restituisce
 # il valore in radianti, che è scomodo da leggere, definiamo `δ` in modo
-# che esprima sempre il risultato in gradi.
+# che esprima sempre il risultato in gradi: per questo scopo c'è la
+# funzione `uconvert`, che richiede come primo parametro l'unità di
+# misura di *destinazione* (nel nostro caso gradi, quindi `u"°"`).
 
 n(δ) = sin((δ + α) / 2) / sin(α / 2)
 δ(n) = uconvert(u"°", 2asin(n * sin(α / 2)) - α)
@@ -477,7 +650,7 @@ end
 #
 
 histogram([n1_simul, n2_simul],
-          label = ["n₁", "n₂"],
+          label = ["n₁" "n₂"],
           layout = (2, 1));
 savefig(joinpath(@OUTPUT, "hist_n1_n2.svg")); # hide
 
