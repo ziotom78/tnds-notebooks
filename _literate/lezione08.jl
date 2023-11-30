@@ -745,7 +745,11 @@ savefig(joinpath(@OUTPUT, "forced-pendulum.svg")) # hide
 #    \omega_0)$ e $(t + h, \omega_1)$
 #
 # 4. Eseguiamo di nuovo RK partendo dal tempo $t$, ma questa volta non
-#    usiamo come incremento $h$ bensì $t_\text{inv} - t$
+#    usiamo come incremento $h$ bensì $t_\text{inv} - t$.
+#    (Alternativamente, si può partire da dove si è arrivati e fare
+#    uno step con passo negativo $h = t - t_\text{inv} < 0$: infatti
+#    sia il metodo di Eulero che il Runge-Kutta funzionano in
+#    entrambe le direzioni temporali!)
 #
 # 5. Se abbiamo fatto le cose per bene, dopo una *singola* esecuzione
 #    di RK ci troviamo in corrispondenza del massimo. Stampare la
