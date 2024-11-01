@@ -2,7 +2,7 @@
 # equazioni differenziali. Come per la lezione della volta scorsa,
 # mostro qui qual è il risultato atteso per gli esercizi, usando
 # Julia.
-# 
+#
 # Importiamo alcune librerie che ci saranno molto utili per svolgere
 # gli esercizi:
 
@@ -10,12 +10,12 @@ using Plots
 using Printf
 
 # ## Iterare sui tempi
-# 
+#
 # In tutti gli esercizi di oggi si richiede di iterare sul tempo $t$,
 # perché la soluzione numerica delle equazioni differenziali richiede
 # di partire dalla condizione iniziale al tempo $t = t_0$ e procedere
 # a incrementi di $h$ finché non si raggiunge il tempo finale $t_f$:
-# 
+#
 # ```cpp
 # std::array<double, 2> x{...};  // Condizione iniziale
 # while (...) {
@@ -24,13 +24,13 @@ using Printf
 #     t += h;
 # }
 # ```
-# 
+#
 # È importante scrivere bene la condizione nel ciclo `while`, perché è
 # una cosa che gli studenti sbagliano spesso! Il problema sta negli
 # errori di arrotondamento, che sono dovuti al modo in cui il computer
 # memorizza i numeri *floating-point* e sono quindi identici sia in
 # C++ che in Julia.
-# 
+#
 # Vediamo quindi in cosa consiste il problema usando Julia. Creiamo
 # una variabile `t = 0` che poi incrementiamo in passi di `h = 0.1`
 # secondi: in questo modo simuliamo quello che farebbe il ciclo per
@@ -53,7 +53,7 @@ t += h
 # 754](https://en.wikipedia.org/wiki/IEEE_754). L'errore si è
 # accumulato, passaggio dopo passaggio, diventando visibile solo al
 # terzo passaggio.
-# 
+#
 # Considerate ora un codice come questo, che vorrebbe iterare per `t`
 # che va da `0` a `1` in step di `h = 0.1`:
 
@@ -61,7 +61,7 @@ function simulate(t0, tf, increment)
     t = t0
 
     println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
-    
+
     ## Itera finché non abbiamo raggiunto il tempo finale
     while t < tf
         println("  t = $t")
@@ -82,7 +82,7 @@ simulate(0.0, 1.0, 0.1)
 
 function simulate_method1(t0, tf, increment)
     println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
-    
+
     ## Calcola il numero di iterazioni prima di iniziare il ciclo vero
     ## e proprio
     nsteps = round(Int, (tf - t0) / h)
@@ -96,18 +96,18 @@ function simulate_method1(t0, tf, increment)
 end
 
 simulate_method1(0, 1, 0.1)
-    
+
 # In questo caso il ciclo si è arrestato al valore $t \approx 1$, con
 # un errore $\delta t \sim 10^{-16}$ che è assolutamente trascurabile:
 # l'implementazione quindi è corretta.
-# 
+#
 # Un secondo metodo è quello di evitare di «accumulare» l'incremento
 # `h` nella variabile `t` ad ogni iterazione, ma calcolare ogni volta
 # da capo quest'ultima:
 
 function simulate_method2(t0, tf, increment)
     println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
-    
+
     ## Calcola il numero di iterazioni prima di iniziare il ciclo vero
     ## e proprio
     nsteps = round(Int, (tf - t0) / h)
@@ -128,10 +128,10 @@ simulate_method2(0, 1, 0.1)
 # pratica con entrambi).
 
 # ## Esercizio 8.0: Algebra vettoriale
-# 
+#
 # Testo dell'esercizio:
 # [carminati-esercizi-08.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.0).
-# 
+#
 # In Julia non è necessario implementare le operazioni aritmetiche su
 # vettori, perché sono già implementate: basta porre un punto `.`
 # davanti all'operatore perché questo venga automaticamente propagato
@@ -140,10 +140,10 @@ simulate_method2(0, 1, 0.1)
 [1, 2, 4] .+ [3, 7, -5]
 
 # ## Esercizio 8.1: metodo di Eulero
-# 
+#
 # Testo dell'esercizio:
 # [carminati-esercizi-08.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.1).
-# 
+#
 # Qui non implementiamo una classe con metodo `Passo` come suggerito
 # nel testo dell'esercizio, perché in Julia non esiste l'equivalente
 # delle classi del C++. Scriviamo invece una funzione `euler` che
@@ -152,7 +152,7 @@ simulate_method2(0, 1, 0.1)
 # soluzioni delle $N$ variabili. (Per i più curiosi: il modo migliore
 # di procedere in Julia sarebbe quello di implementare un
 # [iteratore](https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration)).
-# 
+#
 # In Julia non c'è bisogno di definire una classe base
 # `FunzioneVettorialeBase` da cui derivare altre classi come
 # `OscillatoreArmonico` eccetera: basta passare la funzione nel
@@ -177,7 +177,7 @@ function euler(fn, x0, startt, endt, h)
         result[i, 2:end] = cur
         cur .+= fn(t, cur) * h
     end
-    
+
     result
 end
 
@@ -206,7 +206,7 @@ result[(end - 10):end, :]
 # Per studiare il funzionamento di `euler`, consideriamo la
 # simulazione nell'intervallo usato sopra, $0 \leq t \leq
 # 70\,\text{s}$.
-# 
+#
 # Per maggiore eleganza rispetto a quanto fatto sopra, dichiariamo la
 # variabile `lastt` (nel vostro codice dovreste definirla come un
 # `const double`, ma in un notebook destinato all'uso interattivo come
@@ -223,7 +223,7 @@ lastt = 70.0;
 # vale solo se $\Delta t = 70\,\text{s}$ è esattamente divisibile per
 # $h$. Non scegliete quindi a caso i valori di $h$, ma definiteli in
 # funzione del numero di passi che volete far compiere.
-# 
+#
 # Nel codice Julia definiamo `nsteps` come un vettore di valori della
 # forma $7\times 10^k$, con $k \in [2, 2.2, 2.4, 2.6, \ldots, 3.8,
 # 4]$: in questo modo gli estremi sono 700 e 70000, pari ad $h =
@@ -288,10 +288,10 @@ savefig(joinpath(@OUTPUT, "euler_error.svg")) # hide
 # \fig{euler_error.svg}
 
 # ## Esercizio 8.2: Soluzione con Runge-Kutta
-# 
+#
 # Testo dell'esercizio:
 # [carminati-esercizi-08.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.2).
-# 
+#
 # La funzione `rungekutta` implementa l'integrazione di Runge-Kutta
 # usando lo stesso approccio della funzione `euler` vista sopra: è
 # quindi un po' diverso dal modo in cui la implementerete voi.
@@ -311,7 +311,7 @@ function rungekutta(fn, x0, startt, endt, h)
 
         cur .+= (k1 .+ 2k2 .+ 2k3 .+ k4) .* h / 6
     end
-    
+
     result
 end
 
@@ -332,7 +332,7 @@ result[(end - 10):end, :]
 
 # Possiamo usare questi valori per scrivere una funzione
 # `test_runge_kutta` che verifichi l'implementazione.
-# 
+#
 # Nel caso di Runge-Kutta, l'animazione è molto meno interessante: la
 # convergenza è eccellente anche per $h = 10^{-1}$.
 
@@ -363,7 +363,7 @@ error_rk = abs.(lastpos .- sin(lastt))
 for i in 1:length(deltat)
     @printf("%.12f\t%.12f\n", deltat[i], lastpos[i])
 end
- 
+
 # Creiamo un plot che mostri visivamente la differenza tra i due metodi:
 
 plot(deltat, error_euler, label = "")
@@ -381,20 +381,20 @@ savefig(joinpath(@OUTPUT, "euler_rk_comparison.svg")) #hide
 # \fig{euler_rk_comparison.svg}
 
 # ## Esercizio 8.3
-# 
+#
 # Testo dell'esercizio:
 # [carminati-esercizi-08.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.3).
-# 
+#
 # Questo esercizio richiede di studiare il comportamento di un pendolo
 # di lunghezza $l$ sottoposto ad un'accelerazione di gravità $g$.
 # Impostiamo un paio di costanti.
- 
+
 rodlength = 1.;
 g = 9.81;
 
 # La funzione `pendulum` definisce i due membri dell'equazione
 # differenziale di secondo grado.
- 
+
 pendulum(t, x) = [x[2], -g / rodlength * sin(x[1])]
 
 # Prima di effettuare lo studio richiesto dall'esercizio, è buona
@@ -422,7 +422,7 @@ oscillations[(end - 10):end, :]
 #
 # Per installare Luxor da Internet, usate come al solito i comandi di
 # Pkg:
-# 
+#
 # ```julia
 # using Pkg
 # Pkg.add("Luxor")
@@ -447,7 +447,7 @@ import Luxor
 function plot_pendulum(angle)
     radius = 200  # Lunghezza del braccio del pendolo
     y, x = radius .* sincos(π / 2 + angle)
-    
+
     Luxor.sethue("black")
     Luxor.line(Luxor.Point(0, 0), Luxor.Point(x, y), :stroke)
     Luxor.circle(Luxor.Point(x, y), 10, :fill)
@@ -510,7 +510,7 @@ oscillations[abs.(oscillations[:, 3]) .< 0.1, :]
 # (ovvia perché causata dalle nostre condizioni iniziali), c'è una
 # inversione al tempo $t \approx 1.07\,\text{s}$ e un'altra al tempo
 # $t \approx 2.15\,\text{s}$.
-# 
+#
 # Dai numeri mostrati qui sopra, è evidente il problema accennato sul
 # sito: non esiste alcun punto in cui la velocità angolare sia
 # esattamente zero, perché stiamo usando un passo discreto per
@@ -535,7 +535,7 @@ savefig(joinpath(@OUTPUT, "oscillations2.svg")) # hide
 # il segno di due elementi consecutivi cambia, restituendo la
 # posizione del primo di questi due elementi. (È buona cosa che anche
 # voi implementiate una funzione del genere nel vostro codice C++).
- 
+
 function search_inversion(vect)
     prevval = vect[1]
     for i in 2:length(vect)
@@ -547,21 +547,21 @@ function search_inversion(vect)
         end
         prevval = vect[i]
     end
-    
+
     println("No inversion found, run the simulation for a longer time")
-    
+
     ## Restituisci un indice negativo (impossibile), perché non
     ## abbiamo trovato alcuna inversione.
     -1
 end
- 
+
 # La funzione restituisce l'indice dell'ultimo elemento del vettore
 # *prima* dell'inversione. Nella vostra versione in C++ quindi la
 # funzione dovrà restituire un tipo `size_t` (intero senza segno).
 # Verifichiamone il funzionamento su un vettore (ricordando che in
 # Julia gli elementi dei vettori si contano da 1 anziché da 0 come in
 # C++!).
- 
+
 search_inversion([4, 3, 1, -2, -5])
 
 # Il risultato è quello che ci aspettiamo: l'elemento alla posizione 3
@@ -591,7 +591,7 @@ search_inversion([4, 3, 1, -2, -5])
 # È facile convincersi della correttezza del risultato, perché
 # $t(\omega_A) = t_A$, $t(\omega_B) = t_B$, e l'espressione è
 # chiaramente una retta.
-# 
+#
 # Nel nostro caso bisogna quindi implementare il calcolo della formula
 # nel caso in cui $\omega = 0$, e **raddoppiare il risultato**: lo
 # facciamo nella funzione `period`, che accetta come parametro la
@@ -602,10 +602,10 @@ search_inversion([4, 3, 1, -2, -5])
 # comportamento di ciascuna. Qui introduciamo due implementazioni di
 # `interp`: la seconda è più specifica e calcola l'ascissa del punto
 # di intersezione della retta con l'asse delle ordinate.
- 
+
 interp(ptA, ptB, y) = ptA[1] + (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (y - ptA[2])
 interp(ptA, ptB) = interp(ptA, ptB, 0)
- 
+
 # Eseguiamo una volta `interp` per trovare il valore dell'ordinata $y$
 # in corrispondenza dell'ordinata $y = 0.3$ di una una retta passante
 # per i punti $(-0.4, -0.7)$ e $(0.5, 0.8)$:
@@ -641,20 +641,20 @@ savefig(joinpath(@OUTPUT, "interp-test.svg")) # hide
 # Introduciamo ora un'altra funzione, `invtime`, che mette insieme
 # `search_inversion` e `interp` per restituire l'istante temporale in
 # cui avviene l'inversione del segno del vettore `vec`:
- 
+
 function invtime(time, vec)
     idx = search_inversion(vec)
     timeA, timeB = time[idx:idx + 1]
     vecA, vecB = vec[idx:idx + 1]
-    
+
     abs(interp((timeA, vecA), (timeB, vecB)))
 end
- 
+
 # Siccome in questo esercizio assumiamo sempre di iniziare dalla
 # posizione $\theta = 0$, il valore del periodo è semplicemente il
 # doppio del tempo necessario per osservare l'inversione
 # (nell'esercizio 8.4 questo **non sarà più vero**, ricordatevelo!).
- 
+
 period(oscillations) = 2 * invtime(oscillations[:, 1], oscillations[:, 3])
 
 # Chiamando `period` su una matrice restituita da `euler` o da
@@ -663,12 +663,12 @@ period(oscillations) = 2 * invtime(oscillations[:, 1], oscillations[:, 3])
 period(oscillations)
 
 # Confrontiamola col periodo ideale di un pendolo sottoposto a piccole oscillazioni.
- 
+
 ideal_period = 2π / √(g / rodlength)
- 
+
 # Creiamo ora il grafico analogo a quello riportato nel testo
 # dell'esercizio.
- 
+
 angles = 0.1:0.1:3.0
 ampl = [period(rungekutta(pendulum, [angle, 0.], 0.0, 3.0, 0.01))
         for angle in angles]
@@ -683,16 +683,16 @@ savefig(joinpath(@OUTPUT, "period-vs-angle.svg")) # hide
 # radianti) e periodo (in secondi). In questo modo potrete
 # confrontarli con l'output del vostro programma, magari mediante
 # alcuni test con `assert` (usate ad esempio il primo e l'ultimo).
- 
+
 [angles ampl]
 
 # ## Esercizio 8.4
-# 
+#
 # Testo dell'esercizio: [carminati-esercizi-08.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-08.html#esercizio-8.4).
-# 
+#
 # Come sopra, definiamo i parametri numerici del problema.
-# 
- 
+#
+
 ω0 = 10;
 α = 1.0 / 30;
 
@@ -701,7 +701,7 @@ savefig(joinpath(@OUTPUT, "period-vs-angle.svg")) # hide
 # `do...end`, che in Julia permette di passare come primo argomento di
 # una funzione (nel nostro caso appunto `rungekutta`) una seconda
 # funzione. Questa sintassi è molto comoda per casi come il nostro.
-# 
+#
 function forcedpendulum(
     ω;
     init = [0., 0.],
@@ -731,7 +731,7 @@ savefig(joinpath(@OUTPUT, "forced-pendulum.svg")) # hide
 # qui non possiamo avere la garanzia che l'integrazione con RK passerà
 # dall'istante in cui il valore della velocità si annulla esattamente.
 # Il modo migliore di procedere è quindi il seguente:
-# 
+#
 # 1. Iteriamo RK per un tempo ragionevole in modo da toglierci dalla
 #    regione iniziale di instabilità; qui integro fino al tempo
 #    $15/\alpha$;
@@ -759,19 +759,19 @@ savefig(joinpath(@OUTPUT, "forced-pendulum.svg")) # hide
 # 6. Se effettivamente la velocità è praticamente nulla (diciamo
 #    $\left|v\right| \leq 10^{-6}\,\text{rad/s}$, il valore della
 #    posizione in questo punto corrisponde all'ampiezza.
- 
+
 function forced_amplitude(ω, oscillations)
     ## Per comodità estraggo la prima colonna della matrice (quella che
     ## contiene i tempi) nel vettore "timevec"
     timevec = oscillations[:, 1]
-    
+
     ## Questa maschera serve per trascurare le oscillazioni nella prima
     ## parte della simulazione, ossia le prime righe della matrice.
     ## Di fatto quindi ci concentriamo solo sulla "coda" della soluzione,
     ## ossia le ultime righe della matrice
     mask = timevec .> 10 / α
     oscill_tail = oscillations[mask, :]
-    
+
     ## Calcolo il tempo in corrispondenza della prima inversione
     ## nella "coda" della soluzione
     idx0 = search_inversion(oscill_tail[:, 3])
@@ -780,11 +780,11 @@ function forced_amplitude(ω, oscillations)
     t0 = interp(ptA, ptB)
     δt = t0 - oscill_tail[idx0, 1]
     newsol = forcedpendulum(ω,
-        init=oscill_tail[idx0, 2:3], 
+        init=oscill_tail[idx0, 2:3],
         startt=oscill_tail[idx0, 1],
         endt=oscill_tail[idx0, 1] + 1.1 * δt,
         deltat=δt)
-    
+
     @printf("""ω = %.4f:
 ·  t₀ = %.5f, angle(t₀) = %.5f, speed(t₀) = %.5f
 ·  δt = %.5f
@@ -801,9 +801,9 @@ end
 # questo è un numero buono per essere usato in un `assert`. Notate che
 # nel secondo punto (corrispondente al tempo $t + \delta t$) la
 # velocità è nulla.
- 
+
 forced_amplitude(9.5, forcedpendulum(9.5))
- 
+
 # Ricreiamo ora il grafico presente sul sito del corso. La funzione
 # `forced_amplitude` stampa a video i due punti su cui esegue di nuovo
 # il RK: potete verificare che il secondo punto è effettivamente
@@ -812,7 +812,7 @@ forced_amplitude(9.5, forcedpendulum(9.5))
 # corretto.
 
 ## Aggiungiamo 0.01 agli estremi (9 e 11) per evitare la condizione di risonanza
-freq = 9.01:0.1:11.01 
+freq = 9.01:0.1:11.01
 println("The frequencies to be sampled are: $(collect(freq))")
 ampl = [forced_amplitude(ω, forcedpendulum(ω)) for ω in freq]
 plot(freq, ampl,
