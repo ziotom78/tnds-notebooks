@@ -1,0 +1,9 @@
+MethodError: no method matching trapezoids(::Main.FD_SANDBOX_7311215887642933885.var"#20#22"{Float64}, ::Float64)
+The function `trapezoids` exists, but no method is defined for this combination of argument types.
+
+Closest candidates are:
+  trapezoids(::Any, ::Any, !Matched::Any, !Matched::AbstractFloat)
+   @ Main.FD_SANDBOX_7311215887642933885 none:1
+  trapezoids(::Any, ::Any, !Matched::Any, !Matched::Integer)
+   @ Main.FD_SANDBOX_7311215887642933885 none:1
+
