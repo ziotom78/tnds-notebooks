@@ -88,22 +88,17 @@ using Statistics
 ## Non è più necessario scrivere `Statistics.mean`
 mean([1, 2, 3])
 
-# Per ora l'unica libreria che ci interessi è `Plots`, per produrre
-# grafici, come ROOT o gplot++ in C++
-
-using Plots
-
 # Nella lezione di oggi dovremo calcolare numericamente degli
-# integrali. Useremo come esempio la funzione $f(x) = \sin(x)$,
+# integrali. Useremo come esempio la funzione $f(x) = x \sin(x)$,
 # sapendo che
 #
-# $$\int_0^\pi\sin x\,\mathrm{d}x = 2.$$
+# $$\int_0^\pi x \sin x\,\mathrm{d}x = \pi$$
 #
 # Useremo molto anche la capacità di Julia di creare liste al volo
 # mediante la sintassi
 #
 # ```julia
-# result = [f(x) for x in array]
+# result = [f(x) for x in input]
 # ```
 #
 # che equivale al codice seguente:
@@ -119,8 +114,9 @@ using Plots
 #
 # ```cpp
 # std::vector<int> list{1, 2, 3};
-# std::vector<int> out(3);       // Round parentheses here!
+# std::vector<int> out(ssize(list));   // Round parentheses here!
 # for (size_t i{}; i < list.size(); ++i) {
+#     // Save the squared value of list[i] into out[i]
 #     out[i] = list[i] * list[i];
 # }
 #
@@ -131,13 +127,13 @@ using Plots
 #
 # ```julia
 # list = [1, 2, 3]
-# # This gets expanded in [1*1, 2*2, 3*3], that is [1, 4, 9]
+# # This gets expanded in [1*1, 2*2, 3*3], which is [1, 4, 9]
 # out = [x * x for x in list]
 # ```
 #
 # ## Esercizio 7.0 – Integrazione con la formula del mid-point
 #
-# 
+#
 # Testo dell'esercizio:
 # [carminati-esercizi-07.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-07.html#esercizio-7.0).
 #
@@ -158,10 +154,10 @@ using Plots
 # mid-point tramite una semplice funzione `midpoint`. Non
 # specifichiamo il tipo di `f`, né di `a` o di `b` (in Julia si può, e
 # anzi di solito si fa così!), ma specifichiamo quello di `n`: il
-# motivo sarà chiaro quando risolveremo l'esercizio 7.2. Il tipo
+# motivo sarà chiaro quando risolveremo l'[esercizio 7.2](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-07.html#esercizio-7.2). Il tipo
 # `Integer` è l'analogo di una classe astratta in C++, ed è il padre
 # di tutti quei tipi che rappresentano numeri interi (`Int`, `Int8`,
-# `UInt32`, etc.). Stiamo in pratica dicendo a Julia che `midpoint`
+# `UInt32`, etc.). La scrittura `n::Integer` dice a Julia che `midpoint`
 # può accettare qualsiasi tipo di valore per `f`, `a` e `b`, ma `n`
 # deve essere per forza un numero intero.
 
@@ -180,55 +176,87 @@ end
 # somma. In Julia non c'è quindi bisogno di implementare un ciclo
 # `for` (cosa che invece dovrete fare nel vostro programma C++).
 #
-# Verifichiamone il funzionamento (in Julia $\pi$ è memorizzato nella
-# costante `pi`):
+# Possiamo invocare `midpoint` senza bisogno di definire una classe
+# che implementi il calcolo di `f(x)`: in Julia si possono definire
+# funzioni “anonime” (ossia, senza un nome come `f`) con la sintassi
+# `x -> espressione`. Ecco come calcolare l'integrale di $x\sin x$
+# sull'intervallo $[0, \pi]$ con 10 passi:
 
-midpoint(sin, 0, pi, 10)
+midpoint(x -> x * sin(x), 0, pi, 10)
 
-# Casi come questo sono utili per implementare un `assert`. Vediamo
-# cosa succede cambiando il numero di passi:
+# Il risultato è confortante: non è molto dissimile da $\pi$, che è il
+# valore calcolabile analiticamente.
 
-midpoint(sin, 0, pi, 100)
+# Vediamo cosa succede cambiando il numero di passi:
+
+midpoint(x -> x * sin(x), 0, pi, 100)
 
 # Verifichiamo anche che il segno cambi se invertiamo gli estremi:
 
-midpoint(sin, pi, 0, 10)
+midpoint(x -> x * sin(x), pi, 0, 10)
 
 # Notate la semplicità con cui è stata chiamata la funzione: a
 # differenza della programmazione OOP in C++, qui non abbiamo dovuto
 # derivare una classe `Seno` dalla classe `FunzioneBase` e ridefinire
-# un metodo `Eval` che chiamasse `sin`. È stato sufficiente invocare
-# `midpoint` passandole `sin` come primo argomento.
+# un metodo `Eval` che chiamasse `x * sin(x)`.
 #
-# Il caso $\int_0^\pi \sin(x)\,\mathrm{d}x$ è troppo particolare per
+# Definiamo per maggiore comodità la funzione $f(x)$:
+
+xsinx(x) = x * sin(x)
+
+# (funzioni brevi per cui basta una riga di codice possono essere
+# implementati con questa sintassi, anziché quella che usa `function`
+# che abbiamo impiegato sopra per `midpoint`).
+#
+# Possiamo ora invocare `midpoint` passando direttamente `xsinx`:
+
+midpoint(xsinx, pi, 0, 10)
+
+# Con i numeri ottenuti potete implementare dei test nel vostro
+# codice C++:
+#
+# ```cpp
+# MidPoint i{};
+# XSinX xsinx{};
+# assert(are_close(i.Integrate(0, numbers::pi, 10, xsinx), 3.154549222433545);
+# assert(are_close(i.Integrate(0, numbers::pi, 100, xsinx), 3.141721850128381);
+# assert(are_close(i.Integrate(numbers::pi, 0, 10, xsinx), -3.154549222433545);
+# fmt::println(stderr, "The midpoint function works correctly! 🥳");
+# ```
+#
+# Il caso $\int_0^\pi x \sin(x)\,\mathrm{d}x$ è troppo particolare per
 # poter essere un buon caso per i test, perché (1) l'estremo inferiore
-# è zero, e (2) la funzione si annulla negli estremi di integrazione.
-# Alcune formule di integrazione che vedremo oggi richiedono un
-# trattamento speciale agli estremi di integrazione, e un caso come
-# questo potrebbe far passare inosservati dei bug importanti (**è
-# successo a molti studenti in passato!**). Calcoliamo il valore
-# dell'integrale con questo algoritmo in due casi più rappresentativi:
+# è zero, e (2) la funzione si annulla in entrambi gli estremi
+# di integrazione.
+#
+# Il problema è che alcune formule di integrazione che vedremo oggi
+# richiedono un trattamento speciale agli estremi di integrazione, e
+# un caso come questo potrebbe far passare inosservati dei bug
+# importanti (**è successo a molti studenti in passato!**). Calcoliamo
+# il valore dell'integrale con questo algoritmo in due casi più
+# rappresentativi:
 #
 # $$
-# \int_0^1\sin(x)\,\mathrm{d}x, \qquad
-# \int_1^2\sin(x)\,\mathrm{d}x.
+# \int_0^1 x \sin(x)\,\mathrm{d}x, \qquad
+# \int_1^2 x \sin(x)\,\mathrm{d}x.
 # $$
 
-println("Primo integrale:   ", midpoint(sin, 0, 1, 10))
-println("Secondo integrale: ", midpoint(sin, 1, 2, 30))
+println("Primo integrale:   ", midpoint(xsinx, 0, 1, 10))
+println("Secondo integrale: ", midpoint(xsinx, 1, 2, 30))
 
 # In C++ possiamo quindi usare i seguenti `assert`:
 #
 # ```cpp
 # int test_midpoint() {
-#     Seno mysin{};
-#     Midpoint mp{};
+#   XSinX xsinx{};
+#   Midpoint mp{};
 #
-#     assert(are_close(mp.integrate(0, M_PI, 10, mysin), 2.0082484079079745));
-#     assert(are_close(mp.integrate(0, M_PI, 100, mysin), 2.000082249070986));
-#     assert(are_close(mp.integrate(M_PI, 0, 10, mysin), -2.0082484079079745));
-#     assert(are_close(mp.integrate(0, 1, 10, mysin), 0.45988929071851814));
-#     assert(are_close(mp.integrate(1, 2, 30, mysin), 0.9564934239032155));
+#   assert(are_close(i.Integrate(0, numbers::pi, 10, xsinx), 3.15454922243);
+#   assert(are_close(i.Integrate(0, numbers::pi, 100, xsinx), 3.14172185013);
+#   assert(are_close(i.Integrate(numbers::pi, 0, 10, xsinx), -3.15454922243);
+#   assert(are_close(mp.integrate(0, 1, 10, xsinx), 0.300592567468));
+#   assert(are_close(mp.integrate(1, 2, 30, xsinx), 1.44048282873));
+#   fmt::println(stderr, "The midpoint function works correctly! 🥳");
 # }
 # ```
 #
@@ -241,9 +269,10 @@ println("Secondo integrale: ", midpoint(sin, 1, 2, 30))
 #
 # Calcoliamo ora l'andamento dell'errore rispetto alla funzione di riferimento $f(x) = \sin(x)$.
 
-steps = [10, 50, 100, 500, 1000]
-errors = [abs(midpoint(sin, 0, pi, n) - 2) for n in steps]
+steps = [10, 20, 50, 100, 200, 500, 1000]
+errors = [abs(midpoint(xsinx, 0, pi, n) - pi) for n in steps]
 
+using Plots
 plot(steps, errors, xlabel = "Numero di passi", ylabel = "Errore")
 
 savefig(joinpath(@OUTPUT, "midpoint-error.svg")); # hide
@@ -270,6 +299,7 @@ savefig(joinpath(@OUTPUT, "midpoint-error.svg")); # hide
 # coefficiente angolare $m$ è proprio l'esponente $\alpha$ che
 # cerchiamo.
 
+using Plots # hide
 plot(steps, errors,
      xscale = :log10, yscale = :log10,
      xlabel = "Numero di passi", ylabel = "Errore")
@@ -310,10 +340,10 @@ end
 # funzione da integrare (`REF_FN`), gli estremi (`REF_A` e `REF_B`), e
 # il valore esatto dell'integrale (`REF_INT`).
 
-const REF_FN = sin;  # La funzione da integrare
-const REF_A = 0;     # Estremo inferiore di integrazione
-const REF_B = pi;    # Estremo superiore di integrazione
-const REF_INT = 2.;  # Valore dell'integrale noto analiticamente
+const REF_FN = xsinx;  # La funzione da integrare
+const REF_A = 0;       # Estremo inferiore di integrazione
+const REF_B = pi;      # Estremo superiore di integrazione
+const REF_INT = pi;    # Valore dell'integrale noto analiticamente
 
 # La funzione `compute_errors` calcola il valore assoluto della
 # differenza tra la stima dell'integrale con la funzione `fn` (che può
@@ -389,14 +419,15 @@ end
 
 # Verifichiamone il funzionamento sul nostro caso di riferimento.
 # Anche questi numeri sono utili per implementare degli assert nel
-# vostro codice C++; in particolare, il metodo di Simpson tratta in
-# modo diverso gli estremi $f(a)$ e $f(b)$, quindi il secondo e il
-# terzo test sono particolarmente importanti!
+# vostro codice C++; in particolare, il metodo di Simpson usa
+# coefficienti per estremi $f(a)$ e $f(b)$ che sono diversi da quelli
+# per i punti intermedi, quindi gli ultimi due test sono
+# particolarmente importanti!
 
-println("Primo caso:   ", simpson(sin, 0, pi, 10))
-println("Secondo caso: ", simpson(sin, 0, pi, 100))
-println("Terzo caso:   ", simpson(sin, 0, 1, 10))
-println("Quarto caso:  ", simpson(sin, 1, 2, 30))
+println("Primo caso:   ", simpson(xsinx, 0, pi, 10))
+println("Secondo caso: ", simpson(xsinx, 0, pi, 100))
+println("Terzo caso:   ", simpson(xsinx, 0, 1, 10))
+println("Quarto caso:  ", simpson(xsinx, 1, 2, 30))
 
 # Come ho scritto sopra, stavolta non fornisco gli `assert` da usare
 # nel vostro codice: dovreste essere in grado di implementarli da soli
@@ -437,10 +468,10 @@ function trapezoids(f, a, b, n::Integer)
     acc * h
 end
 
-println("Primo caso:   ", trapezoids(sin, 0, pi, 10))
-println("Secondo caso: ", trapezoids(sin, 0, pi, 100))
-println("Terzo caso:   ", trapezoids(sin, 0, 1, 10))
-println("Quarto caso:  ", trapezoids(sin, 1, 2, 30))
+println("Primo caso:   ", trapezoids(xsinx, 0, pi, 10))
+println("Secondo caso: ", trapezoids(xsinx, 0, pi, 100))
+println("Terzo caso:   ", trapezoids(xsinx, 0, 1, 10))
+println("Quarto caso:  ", trapezoids(xsinx, 1, 2, 30))
 
 # Come al solito, usate questi quattro risultati per implementare
 # degli `assert` nel vostro programma C++.
@@ -549,7 +580,7 @@ end
 
 # Per verificare il funzionamento della nuova funzione `trapezoids`,
 # possiamo verificare che l'integrale calcolato sulla nostra funzione
-# di riferimento $f(x) = \sin x$ abbia un errore sempre inferiore alla
+# di riferimento $f(x) = x \sin x$ abbia un errore sempre inferiore alla
 # precisione richiesta.
 
 prec = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5];
@@ -579,4 +610,29 @@ plot!(prec, prec, label = "Caso teorico peggiore");
 savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")); # hide
 
 # \fig{trapezoids-vs-theory.svg}
+
+# ## Esercizio 7.3 – Integrazione con trapezoidi a precisione fissata
+#
+# Testo dell'esercizio:
+# [carminati-esercizi-07.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-07.html#esercizio-7.3).
+#
+# Svolgiamo infine l'esercizio facoltativo al termine della lezione.
+# Incominciamo col definire la funzione Gaussiana, e sfruttiamo la
+# comoda possibilità che offre Julia di usare lettere greche per i
+# nomi di variabili:
+
+gauss(x, µ, σ) = exp(-(x - µ)^2 / 2σ^2) / sqrt(2π * σ^2)
+
+# Apparentemente, questa definizione è problematica: la funzione
+# `gauss` accetta ben tre parametri, ma `midpoint` richiede una
+# funzione con un solo parametro! Per risolvere questo problema, il
+# testo di Carminati suggerisce di passare i valori di `µ` e `σ` al
+# costruttore della vostra classe `Gaussian`, in modo che il metodo
+# `Eval` debba accettare solo `x`.
+#
+# In Julia è tutto molto più semplice grazie alla sintassi `x ->
+# espressione`, che crea una funzione anonima usa-e-getta:
+
+midpoint(x -> gauss(x, 1.0, 2.0), -10.0, 10.0, 1000)
+
 
