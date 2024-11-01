@@ -1,9 +1,6 @@
 # This file was generated, do not modify it. # hide
-plot(prec, errors,
-     label = "Misurato",
-     xscale = :log10, yscale = :log10,
-     xlabel = "Precisione impostata",
-     ylabel = "Precisione ottenuta")
-plot!(prec, prec, label = "Caso teorico peggiore");
+println("Prec\tValue of the integral\tAbsolute error")
 
-savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")); # hide
+for (cur_prec, cur_value, cur_error) in zip(prec, values, errors)
+    println("$cur_prec\t$cur_value\t$cur_error")
+end

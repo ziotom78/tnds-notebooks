@@ -1,2 +1,2 @@
 # This file was generated, do not modify it. # hide
-midpoint(sin, 0, pi, 10)
+midpoint(x -> x * sin(x), 0, pi, 100)

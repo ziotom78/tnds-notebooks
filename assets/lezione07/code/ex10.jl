@@ -1,6 +1,8 @@
 # This file was generated, do not modify it. # hide
-plot(steps, errors,
-     xscale = :log10, yscale = :log10,
-     xlabel = "Numero di passi", ylabel = "Errore")
+steps = [10, 20, 50, 100, 200, 500, 1000]
+errors = [abs(midpoint(xsinx, 0, pi, n) - pi) for n in steps]
 
-savefig(joinpath(@OUTPUT, "midpoint-error-log.svg")); # hide
+using Plots
+plot(steps, errors, xlabel = "Numero di passi", ylabel = "Errore")
+
+savefig(joinpath(@OUTPUT, "midpoint-error.svg")); # hide

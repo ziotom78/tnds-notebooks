@@ -1,1 +1,1 @@
-midpoint (generic function with 1 method)
+3.154549222433545

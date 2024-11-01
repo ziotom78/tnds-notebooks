@@ -1,6 +1,4 @@
 # This file was generated, do not modify it. # hide
-println("Prec\tValue of the integral\tAbsolute error")
-
-for (cur_prec, cur_value, cur_error) in zip(prec, values, errors)
-    println("$cur_prec\t$cur_value\t$cur_error")
-end
+prec = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5];
+values = [trapezoids(REF_FN, REF_A, REF_B, eps) for eps in prec];
+errors = [abs(x - REF_INT) for x in values];

@@ -11,29 +11,33 @@ using Statistics
 # Non è più necessario scrivere `Statistics.mean`
 mean([1, 2, 3])
 
-using Plots
-
 function midpoint(f, a, b, n::Integer)
     h = (b - a) / n
     h * sum([f(a + (k + 0.5) * h) for k in 0:(n - 1)])
 end
 
-midpoint(sin, 0, pi, 10)
+midpoint(x -> x * sin(x), 0, pi, 10)
 
-midpoint(sin, 0, pi, 100)
+midpoint(x -> x * sin(x), 0, pi, 100)
 
-midpoint(sin, pi, 0, 10)
+midpoint(x -> x * sin(x), pi, 0, 10)
 
-println("Primo integrale:   ", midpoint(sin, 0, 1, 10))
-println("Secondo integrale: ", midpoint(sin, 1, 2, 30))
+xsinx(x) = x * sin(x)
 
-steps = [10, 50, 100, 500, 1000]
-errors = [abs(midpoint(sin, 0, pi, n) - 2) for n in steps]
+midpoint(xsinx, pi, 0, 10)
 
+println("Primo integrale:   ", midpoint(xsinx, 0, 1, 10))
+println("Secondo integrale: ", midpoint(xsinx, 1, 2, 30))
+
+steps = [10, 20, 50, 100, 200, 500, 1000]
+errors = [abs(midpoint(xsinx, 0, pi, n) - pi) for n in steps]
+
+using Plots
 plot(steps, errors, xlabel = "Numero di passi", ylabel = "Errore")
 
 savefig(joinpath(@OUTPUT, "midpoint-error.svg")); # hide
 
+using Plots # hide
 plot(steps, errors,
      xscale = :log10, yscale = :log10,
      xlabel = "Numero di passi", ylabel = "Errore")
@@ -47,10 +51,10 @@ for i in eachindex(steps)  # `i` will go from 1 to the length of `step`
     println("$(steps[i])\t$(errors[i])")
 end
 
-const REF_FN = sin;  # La funzione da integrare
-const REF_A = 0;     # Estremo inferiore di integrazione
-const REF_B = pi;    # Estremo superiore di integrazione
-const REF_INT = 2.;  # Valore dell'integrale noto analiticamente
+const REF_FN = xsinx;  # La funzione da integrare
+const REF_A = 0;       # Estremo inferiore di integrazione
+const REF_B = pi;      # Estremo superiore di integrazione
+const REF_INT = pi;    # Valore dell'integrale noto analiticamente
 
 compute_errors(fn, steps) = [abs(fn(REF_FN, REF_A, REF_B, n) - REF_INT)
                              for n in steps]
@@ -81,10 +85,10 @@ function simpson(f, a, b, n::Integer)
     acc * h
 end
 
-println("Primo caso:   ", simpson(sin, 0, pi, 10))
-println("Secondo caso: ", simpson(sin, 0, pi, 100))
-println("Terzo caso:   ", simpson(sin, 0, 1, 10))
-println("Quarto caso:  ", simpson(sin, 1, 2, 30))
+println("Primo caso:   ", simpson(xsinx, 0, pi, 10))
+println("Secondo caso: ", simpson(xsinx, 0, pi, 100))
+println("Terzo caso:   ", simpson(xsinx, 0, 1, 10))
+println("Quarto caso:  ", simpson(xsinx, 1, 2, 30))
 
 errors = compute_errors(simpson, steps)
 
@@ -106,10 +110,10 @@ function trapezoids(f, a, b, n::Integer)
     acc * h
 end
 
-println("Primo caso:   ", trapezoids(sin, 0, pi, 10))
-println("Secondo caso: ", trapezoids(sin, 0, pi, 100))
-println("Terzo caso:   ", trapezoids(sin, 0, 1, 10))
-println("Quarto caso:  ", trapezoids(sin, 1, 2, 30))
+println("Primo caso:   ", trapezoids(xsinx, 0, pi, 10))
+println("Secondo caso: ", trapezoids(xsinx, 0, pi, 100))
+println("Terzo caso:   ", trapezoids(xsinx, 0, 1, 10))
+println("Quarto caso:  ", trapezoids(xsinx, 1, 2, 30))
 
 errors = compute_errors(trapezoids, steps)
 plot(steps, errors,
@@ -188,3 +192,7 @@ plot(prec, errors,
 plot!(prec, prec, label = "Caso teorico peggiore");
 
 savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")); # hide
+
+gauss(x, µ, σ) = exp(-(x - µ)^2 / 2σ^2) / sqrt(2π * σ^2)
+
+midpoint(x -> gauss(x, 1.0, 2.0), -10.0, 10.0, 1000)

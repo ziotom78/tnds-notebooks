@@ -193,9 +193,9 @@ plot(list_of_histograms...,
 <span class=hljs-comment >// creare 12 file PNG distinti… è più faticoso però poi</span>
 <span class=hljs-comment >// controllare i risultati e confrontare gli istogrammi!</span>
 Gnuplot plt1{};
-plt1.<span class=hljs-built_in >redirect_to_svg</span>(<span class=hljs-string >&quot;n1.png&quot;</span>);
-plt1.<span class=hljs-built_in >histogram</span>(vec, <span class=hljs-number >20</span>, <span class=hljs-string >&quot;N = 1&quot;</span>);
-plt1.<span class=hljs-built_in >show</span>();
+plt<span class=hljs-number >1.</span><span class=hljs-built_in >redirect_to_svg</span>(<span class=hljs-string >&quot;n1.png&quot;</span>);
+plt<span class=hljs-number >1.</span><span class=hljs-built_in >histogram</span>(vec, <span class=hljs-number >20</span>, <span class=hljs-string >&quot;N = 1&quot;</span>);
+plt<span class=hljs-number >1.</span><span class=hljs-built_in >show</span>();
 
 <span class=hljs-comment >// Caso con n = 2</span>
 
@@ -208,9 +208,9 @@ plt1.<span class=hljs-built_in >show</span>();
 }
 
 Gnuplot plt2{};
-plt3.<span class=hljs-built_in >redirect_to_svg</span>(<span class=hljs-string >&quot;n3.png&quot;</span>);
-plt3.<span class=hljs-built_in >histogram</span>(vec, <span class=hljs-number >20</span>, <span class=hljs-string >&quot;N = 3&quot;</span>);
-plt3.<span class=hljs-built_in >show</span>();
+plt<span class=hljs-number >3.</span><span class=hljs-built_in >redirect_to_svg</span>(<span class=hljs-string >&quot;n3.png&quot;</span>);
+plt<span class=hljs-number >3.</span><span class=hljs-built_in >histogram</span>(vec, <span class=hljs-number >20</span>, <span class=hljs-string >&quot;N = 3&quot;</span>);
+plt<span class=hljs-number >3.</span><span class=hljs-built_in >show</span>();
 
 <span class=hljs-comment >// Caso con n = 3</span>
 <span class=hljs-keyword >for</span>(<span class=hljs-type >int</span> k{}; k &lt; <span class=hljs-number >100&#x27;000</span>; ++k) {
@@ -220,9 +220,9 @@ plt3.<span class=hljs-built_in >show</span>();
 }
 
 Gnuplot plt3{};
-plt3.<span class=hljs-built_in >redirect_to_svg</span>(<span class=hljs-string >&quot;n3.png&quot;</span>);
-plt3.<span class=hljs-built_in >histogram</span>(vec, <span class=hljs-number >20</span>, <span class=hljs-string >&quot;N = 3&quot;</span>);
-plt3.<span class=hljs-built_in >show</span>();
+plt<span class=hljs-number >3.</span><span class=hljs-built_in >redirect_to_svg</span>(<span class=hljs-string >&quot;n3.png&quot;</span>);
+plt<span class=hljs-number >3.</span><span class=hljs-built_in >histogram</span>(vec, <span class=hljs-number >20</span>, <span class=hljs-string >&quot;N = 3&quot;</span>);
+plt<span class=hljs-number >3.</span><span class=hljs-built_in >show</span>();
 
 <span class=hljs-comment >// Il codice continua tutto così… ci siamo capiti!</span>
 <span class=hljs-comment >// …</span></code></pre>
@@ -580,7 +580,7 @@ Solo δx:          δη(R1) = 0.0028 kg m^-1 s^-1
 
 <div class=page-foot >
   <div class=copyright >
-    &copy; Maurizio Tomasi. Last modified: November 30, 2023. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+    &copy; Maurizio Tomasi. Last modified: November 01, 2024. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
   </div>
 </div>
 </div>
