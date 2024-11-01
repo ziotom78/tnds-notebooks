@@ -326,23 +326,19 @@ plot!(prec, prec, label = <span class=hljs-string >&quot;Caso teorico peggiore&q
 espressione</code>, che crea una funzione anonima usa-e-getta. Ad esempio, per calcolare l&#39;integrale della Gaussiana usando Simpson e passando un intervallo ampio, possiamo verificare se la normalizzazione è corretta:</p>
 <pre><code class="julia hljs">simpson(x -&gt; gauss(x, <span class=hljs-number >1.0</span>, <span class=hljs-number >2.0</span>), -<span class=hljs-number >10.0</span>, <span class=hljs-number >10.0</span>, <span class=hljs-number >1000</span>)</code></pre><pre><code class="plaintext hljs">0.999996583337243</code></pre>
 <p>Il risultato è approssimativamente 1, il che vuol dire che abbiamo implementato correttamente la Gaussiana.</p>
-<p>Il grafico dell&#39;integrale col metodo dei trapezoidi è banale da produrre; assumiamo che <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\mu = 0</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal">μ</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >0</span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>σ</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\sigma = 1</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">σ</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >1</span></span></span></span>:</p>
-<pre><code class="julia hljs">list_of_t = <span class=hljs-number >0.0</span>:<span class=hljs-number >0.1</span>:<span class=hljs-number >5.0</span>
-list_of_y = [trapezoids(x -&gt; gauss(x, <span class=hljs-number >0.0</span>, t), <span class=hljs-number >1e-5</span>) <span class=hljs-keyword >for</span> t <span class=hljs-keyword >in</span> list_of_t]
+<p>Il grafico dell&#39;integrale col metodo dei trapezoidi è banale da produrre; assumiamo che <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\mu = 0</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal">μ</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >0</span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>σ</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\sigma = 1</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">σ</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >1</span></span></span></span>, e usiamo l&#39;istruzione <code>let</code> per definire variabili che verranno “distrutte” quando si arriva all&#39;<code>end</code> finale:</p>
+<pre><code class="julia hljs"><span class=hljs-keyword >let</span> µ = <span class=hljs-number >0.0</span>, σ = <span class=hljs-number >1.0</span>
+  <span class=hljs-comment ># Do *not* start from t = 0, as the Gaussian is undefined</span>
+  <span class=hljs-comment ># when σ = 0!</span>
+  list_of_t = <span class=hljs-number >0.1</span>:<span class=hljs-number >0.1</span>:<span class=hljs-number >5.0</span>
+  list_of_y = [trapezoids(x -&gt; gauss(x, µ, σ), -t * σ, t * σ, <span class=hljs-number >1e-5</span>)
+               <span class=hljs-keyword >for</span> t <span class=hljs-keyword >in</span> list_of_t]
 
-plot(list_of_t, list_of_y,
-     label = <span class=hljs-string >&quot;&quot;</span>,
-     xlabel = <span class=hljs-string >&quot;Numero di σ&quot;</span>,
-     ylabel = <span class=hljs-string >&quot;Probabilità&quot;</span>)</code></pre><pre><code class="plaintext hljs">MethodError: no method matching trapezoids(::Main.FD_SANDBOX_7311215887642933885.var&quot;#20#22&quot;{Float64}, ::Float64)
-The function `trapezoids` exists, but no method is defined for this combination of argument types.
-
-Closest candidates are:
-  trapezoids(::Any, ::Any, !Matched::Any, !Matched::AbstractFloat)
-   @ Main.FD_SANDBOX_7311215887642933885 none:1
-  trapezoids(::Any, ::Any, !Matched::Any, !Matched::Integer)
-   @ Main.FD_SANDBOX_7311215887642933885 none:1
-
-</code></pre>
+  plot(list_of_t, list_of_y,
+       label = <span class=hljs-string >&quot;&quot;</span>,
+       xlabel = <span class=hljs-string >&quot;Numero di σ&quot;</span>,
+       ylabel = <span class=hljs-string >&quot;Probabilità&quot;</span>)
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">Plot{Plots.GRBackend() n=1}</code></pre>
 
 <div class=page-foot >
   <div class=copyright >
