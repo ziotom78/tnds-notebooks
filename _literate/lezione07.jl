@@ -336,7 +336,7 @@ end
 # del mid-point, ma anche i metodi di Simpson e dei trapezi.
 #
 # Inizializziamo per prima cosa le costanti che caratterizzano il caso
-# che useremo come esempio, $\int_0^\pi\sin x\,\mathrm{d}x = 2$: la
+# che useremo come esempio, $\int_0^\pi\sin x\,\mathrm{d}x = \pi$: la
 # funzione da integrare (`REF_FN`), gli estremi (`REF_A` e `REF_B`), e
 # il valore esatto dell'integrale (`REF_INT`).
 
@@ -631,8 +631,23 @@ gauss(x, µ, σ) = exp(-(x - µ)^2 / 2σ^2) / sqrt(2π * σ^2)
 # `Eval` debba accettare solo `x`.
 #
 # In Julia è tutto molto più semplice grazie alla sintassi `x ->
-# espressione`, che crea una funzione anonima usa-e-getta:
+# espressione`, che crea una funzione anonima usa-e-getta. Ad esempio,
+# per calcolare l'integrale della Gaussiana usando Simpson e passando
+# un intervallo ampio, possiamo verificare se la normalizzazione
+# è corretta:
 
-midpoint(x -> gauss(x, 1.0, 2.0), -10.0, 10.0, 1000)
+simpson(x -> gauss(x, 1.0, 2.0), -10.0, 10.0, 1000)
 
+# Il risultato è approssimativamente 1, il che vuol dire che abbiamo
+# implementato correttamente la Gaussiana.
+#
+# Il grafico dell'integrale col metodo dei trapezoidi è banale da
+# produrre; assumiamo che $\mu = 0$ e $\sigma = 1$:
 
+list_of_t = 0.0:0.1:5.0
+list_of_y = [trapezoids(x -> gauss(x, 0.0, t), 1e-5) for t in list_of_t]
+
+plot(list_of_t, list_of_y,
+     label = "",
+     xlabel = "Numero di σ",
+     ylabel = "Probabilità")
