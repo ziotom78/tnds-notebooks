@@ -12,3 +12,4 @@ let µ = 0.0, σ = 1.0
        ylabel = "Probabilità")
   savefig(joinpath(@OUTPUT, "exercise-7.3.svg")); # hide
 end
+; # hide

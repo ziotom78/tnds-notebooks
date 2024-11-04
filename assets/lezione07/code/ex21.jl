@@ -9,7 +9,7 @@ function trapezoids(f, a, b, n::Integer)
     acc * h
 end
 
-println("Primo caso:   ", trapezoids(xsinx, 0, pi, 10))
-println("Secondo caso: ", trapezoids(xsinx, 0, pi, 100))
+println("Primo caso:   ", trapezoids(xsinx, 0, pi / 2, 10))
+println("Secondo caso: ", trapezoids(xsinx, 0, pi / 2, 100))
 println("Terzo caso:   ", trapezoids(xsinx, 0, 1, 10))
 println("Quarto caso:  ", trapezoids(xsinx, 1, 2, 30))

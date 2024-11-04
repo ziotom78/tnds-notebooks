@@ -16,21 +16,21 @@ function midpoint(f, a, b, n::Integer)
     h * sum([f(a + (k + 0.5) * h) for k in 0:(n - 1)])
 end
 
-midpoint(x -> x * sin(x), 0, pi, 10)
+midpoint(x -> x * sin(x), 0, pi / 2, 10)
 
-midpoint(x -> x * sin(x), 0, pi, 100)
+midpoint(x -> x * sin(x), 0, pi / 2, 100)
 
-midpoint(x -> x * sin(x), pi, 0, 10)
+midpoint(x -> x * sin(x), pi / 2, 0, 10)
 
 xsinx(x) = x * sin(x)
 
-midpoint(xsinx, pi, 0, 10)
+midpoint(xsinx, pi / 2, 0, 10)
 
 println("Primo integrale:   ", midpoint(xsinx, 0, 1, 10))
 println("Secondo integrale: ", midpoint(xsinx, 1, 2, 30))
 
 steps = [10, 20, 50, 100, 200, 500, 1000]
-errors = [abs(midpoint(xsinx, 0, pi, n) - pi) for n in steps]
+errors = [abs(midpoint(xsinx, 0, pi / 2, n) - 1) for n in steps]
 
 using Plots
 plot(steps, errors, xlabel = "Numero di passi", ylabel = "Errore")
@@ -53,8 +53,8 @@ end
 
 const REF_FN = xsinx;  # La funzione da integrare
 const REF_A = 0;       # Estremo inferiore di integrazione
-const REF_B = pi;      # Estremo superiore di integrazione
-const REF_INT = pi;    # Valore dell'integrale noto analiticamente
+const REF_B = pi / 2;  # Estremo superiore di integrazione
+const REF_INT = 1;     # Valore dell'integrale noto analiticamente
 
 compute_errors(fn, steps) = [abs(fn(REF_FN, REF_A, REF_B, n) - REF_INT)
                              for n in steps]
@@ -85,8 +85,8 @@ function simpson(f, a, b, n::Integer)
     acc * h
 end
 
-println("Primo caso:   ", simpson(xsinx, 0, pi, 10))
-println("Secondo caso: ", simpson(xsinx, 0, pi, 100))
+println("Primo caso:   ", simpson(xsinx, 0, pi / 2, 10))
+println("Secondo caso: ", simpson(xsinx, 0, pi / 2, 100))
 println("Terzo caso:   ", simpson(xsinx, 0, 1, 10))
 println("Quarto caso:  ", simpson(xsinx, 1, 2, 30))
 
@@ -110,8 +110,8 @@ function trapezoids(f, a, b, n::Integer)
     acc * h
 end
 
-println("Primo caso:   ", trapezoids(xsinx, 0, pi, 10))
-println("Secondo caso: ", trapezoids(xsinx, 0, pi, 100))
+println("Primo caso:   ", trapezoids(xsinx, 0, pi / 2, 10))
+println("Secondo caso: ", trapezoids(xsinx, 0, pi / 2, 100))
 println("Terzo caso:   ", trapezoids(xsinx, 0, 1, 10))
 println("Quarto caso:  ", trapezoids(xsinx, 1, 2, 30))
 
@@ -210,3 +210,4 @@ let µ = 0.0, σ = 1.0
        ylabel = "Probabilità")
   savefig(joinpath(@OUTPUT, "exercise-7.3.svg")); # hide
 end
+; # hide

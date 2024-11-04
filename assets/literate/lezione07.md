@@ -97,10 +97,10 @@ Nella lezione di oggi dovremo calcolare numericamente degli
 integrali. Useremo come esempio la funzione $f(x) = x \sin(x)$,
 sapendo che
 
-$$\int_0^\pi x \sin x\,\mathrm{d}x = \pi$$
+$$\int_0^{\pi/2} x \sin x\,\mathrm{d}x = \left[\sin x - x \cos x\right]_0^{\pi/2} = 1$$
 
-Useremo molto anche la capacità di Julia di creare liste al volo
-mediante la sintassi
+Useremo molto anche la capacità di Julia di creare liste mediante
+la sintassi
 
 ```julia
 result = [f(x) for x in input]
@@ -181,31 +181,32 @@ $$\left\{f\bigl(a + (k + 0.5) h\bigr), k \in 0\ldots n - 1 \right\}$$
 e il risultato dell'espressione è un array di valori che viene
 passato alla funzione `sum`, la quale ovviamente ne calcola la
 somma. In Julia non c'è quindi bisogno di implementare un ciclo
-`for` (cosa che invece dovrete fare nel vostro programma C++).
+`for` (cosa che invece dovrete fare nella vostra implementazione
+C++ del midpoint).
 
 Possiamo invocare `midpoint` senza bisogno di definire una classe
 che implementi il calcolo di `f(x)`: in Julia si possono definire
 funzioni “anonime” (ossia, senza un nome come `f`) con la sintassi
 `x -> espressione`. Ecco come calcolare l'integrale di $x\sin x$
-sull'intervallo $[0, \pi]$ con 10 passi:
+sull'intervallo $[0, \pi / 2]$ con 10 passi:
 
 ````julia:ex4
-midpoint(x -> x * sin(x), 0, pi, 10)
+midpoint(x -> x * sin(x), 0, pi / 2, 10)
 ````
 
-Il risultato è confortante: non è molto dissimile da $\pi$, che è il
+Il risultato è confortante: non è molto dissimile da 1, che è il
 valore calcolabile analiticamente.
 
 Vediamo cosa succede cambiando il numero di passi:
 
 ````julia:ex5
-midpoint(x -> x * sin(x), 0, pi, 100)
+midpoint(x -> x * sin(x), 0, pi / 2, 100)
 ````
 
 Verifichiamo anche che il segno cambi se invertiamo gli estremi:
 
 ````julia:ex6
-midpoint(x -> x * sin(x), pi, 0, 10)
+midpoint(x -> x * sin(x), pi / 2, 0, 10)
 ````
 
 Notate la semplicità con cui è stata chiamata la funzione: a
@@ -226,32 +227,20 @@ che abbiamo impiegato sopra per `midpoint`).
 Possiamo ora invocare `midpoint` passando direttamente `xsinx`:
 
 ````julia:ex8
-midpoint(xsinx, pi, 0, 10)
+midpoint(xsinx, pi / 2, 0, 10)
 ````
 
-Con i numeri ottenuti potete implementare dei test nel vostro
-codice C++:
-
-```cpp
-MidPoint i{};
-XSinX xsinx{};
-assert(are_close(i.Integrate(0, numbers::pi, 10, xsinx), 3.154549222433545);
-assert(are_close(i.Integrate(0, numbers::pi, 100, xsinx), 3.141721850128381);
-assert(are_close(i.Integrate(numbers::pi, 0, 10, xsinx), -3.154549222433545);
-fmt::println(stderr, "The midpoint function works correctly! 🥳");
-```
-
-Il caso $\int_0^\pi x \sin(x)\,\mathrm{d}x$ è troppo particolare per
-poter essere un buon caso per i test, perché (1) l'estremo inferiore
-è zero, e (2) la funzione si annulla in entrambi gli estremi
-di integrazione.
+Con i numeri ottenuti potreste già implementare dei test nel vostro
+codice C++. Però il caso $\int_0^{\pi/2} x \sin(x)\,\mathrm{d}x$ è
+un po' troppo particolare per poter essere un buon caso per i test,
+perché (1) l'estremo inferiore è zero, e (2) la funzione si annulla
+nell'estremo sinistro.
 
 Il problema è che alcune formule di integrazione che vedremo oggi
 richiedono un trattamento speciale agli estremi di integrazione, e
 un caso come questo potrebbe far passare inosservati dei bug
 importanti (**è successo a molti studenti in passato!**). Calcoliamo
-il valore dell'integrale con questo algoritmo in due casi più
-rappresentativi:
+il valore dell'integrale con questo algoritmo in due casi meno banali:
 
 $$
 \int_0^1 x \sin(x)\,\mathrm{d}x, \qquad
@@ -270,11 +259,16 @@ int test_midpoint() {
   XSinX xsinx{};
   Midpoint mp{};
 
-  assert(are_close(i.Integrate(0, numbers::pi, 10, xsinx), 3.15454922243);
-  assert(are_close(i.Integrate(0, numbers::pi, 100, xsinx), 3.14172185013);
-  assert(are_close(i.Integrate(numbers::pi, 0, 10, xsinx), -3.15454922243);
-  assert(are_close(mp.integrate(0, 1, 10, xsinx), 0.300592567468));
-  assert(are_close(mp.integrate(1, 2, 30, xsinx), 1.44048282873));
+  assert(are_close(i.Integrate(0, numbers::pi / 2, 10, xsinx),
+                   0.9989696941917652);
+  assert(are_close(i.Integrate(0, numbers::pi / 2, 100, xsinx),
+                   0999989718940119);
+  assert(are_close(i.Integrate(numbers::pi / 2, 0, 10, xsinx),
+                   -0.998969694191765);
+  assert(are_close(mp.integrate(0, 1, 10, xsinx),
+                   0.3005925674684609));
+  assert(are_close(mp.integrate(1, 2, 30, xsinx),
+                   1.440482828731412));
   fmt::println(stderr, "The midpoint function works correctly! 🥳");
 }
 ```
@@ -290,7 +284,7 @@ Calcoliamo ora l'andamento dell'errore rispetto alla funzione di riferimento $f(
 
 ````julia:ex10
 steps = [10, 20, 50, 100, 200, 500, 1000]
-errors = [abs(midpoint(xsinx, 0, pi, n) - pi) for n in steps]
+errors = [abs(midpoint(xsinx, 0, pi / 2, n) - 1) for n in steps]
 
 using Plots
 plot(steps, errors, xlabel = "Numero di passi", ylabel = "Errore")
@@ -368,8 +362,8 @@ il valore esatto dell'integrale (`REF_INT`).
 ````julia:ex13
 const REF_FN = xsinx;  # La funzione da integrare
 const REF_A = 0;       # Estremo inferiore di integrazione
-const REF_B = pi;      # Estremo superiore di integrazione
-const REF_INT = pi;    # Valore dell'integrale noto analiticamente
+const REF_B = pi / 2;  # Estremo superiore di integrazione
+const REF_INT = 1;     # Valore dell'integrale noto analiticamente
 ````
 
 La funzione `compute_errors` calcola il valore assoluto della
@@ -460,8 +454,8 @@ per i punti intermedi, quindi gli ultimi due test sono
 particolarmente importanti!
 
 ````julia:ex18
-println("Primo caso:   ", simpson(xsinx, 0, pi, 10))
-println("Secondo caso: ", simpson(xsinx, 0, pi, 100))
+println("Primo caso:   ", simpson(xsinx, 0, pi / 2, 10))
+println("Secondo caso: ", simpson(xsinx, 0, pi / 2, 100))
 println("Terzo caso:   ", simpson(xsinx, 0, 1, 10))
 println("Quarto caso:  ", simpson(xsinx, 1, 2, 30))
 ````
@@ -471,7 +465,7 @@ nel vostro codice: dovreste essere in grado di implementarli da soli
 usando i quattro risultati. È molto importante che implementiate
 tutti e quattro i test, perché in questo modo verificate che la
 vostra implementazione consideri correttamente il valore
-dell'integranda sui due estremi di integrazione.
+dell'integranda su più estremi di integrazione.
 
 Passiamo ora a calcolare gli errori del metodo di Simpson, usando
 ancora una volta un grafico bilogaritmico.
@@ -510,8 +504,8 @@ function trapezoids(f, a, b, n::Integer)
     acc * h
 end
 
-println("Primo caso:   ", trapezoids(xsinx, 0, pi, 10))
-println("Secondo caso: ", trapezoids(xsinx, 0, pi, 100))
+println("Primo caso:   ", trapezoids(xsinx, 0, pi / 2, 10))
+println("Secondo caso: ", trapezoids(xsinx, 0, pi / 2, 100))
 println("Terzo caso:   ", trapezoids(xsinx, 0, 1, 10))
 println("Quarto caso:  ", trapezoids(xsinx, 1, 2, 30))
 ````
@@ -670,7 +664,7 @@ savefig(joinpath(@OUTPUT, "trapezoids-vs-theory.svg")); # hide
 
 \fig{trapezoids-vs-theory.svg}
 
-## Esercizio 7.3 – Integrazione con trapezoidi a precisione fissata
+## Esercizio 7.3 – Integrazione di una funzione Gaussiana (facoltativo)
 
 Testo dell'esercizio:
 [carminati-esercizi-07.html](https://ziotom78.github.io/tnds-tomasi-notebooks/carminati-esercizi-07.html#esercizio-7.3).
@@ -685,11 +679,11 @@ gauss(x, µ, σ) = exp(-(x - µ)^2 / 2σ^2) / sqrt(2π * σ^2)
 ````
 
 Apparentemente, questa definizione è problematica: la funzione
-`gauss` accetta ben tre parametri, ma `midpoint` richiede una
-funzione con un solo parametro! Per risolvere questo problema, il
-testo di Carminati suggerisce di passare i valori di `µ` e `σ` al
-costruttore della vostra classe `Gaussian`, in modo che il metodo
-`Eval` debba accettare solo `x`.
+`gauss` accetta ben tre parametri, ma `midpoint` può integrare solo
+le funzioni che accettano **un** parametro! Per risolvere questo
+problema, il testo di Carminati suggerisce di passare i valori di
+`µ` e `σ` al costruttore della vostra classe `Gaussian`, in modo che
+il metodo `Eval` debba accettare solo `x`.
 
 In Julia è tutto molto più semplice grazie alla sintassi `x ->
 espressione`, che crea una funzione anonima usa-e-getta. Ad esempio,
@@ -723,6 +717,7 @@ let µ = 0.0, σ = 1.0
        ylabel = "Probabilità")
   savefig(joinpath(@OUTPUT, "exercise-7.3.svg")); # hide
 end
+; # hide
 ````
 
 \fig{exercise-7.3.svg}
