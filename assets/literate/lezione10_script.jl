@@ -5,10 +5,10 @@ using Plots
 using Statistics
 
 mutable struct GLC
-    a::UInt64
-    c::UInt64
-    m::UInt64
-    seed::UInt64
+    a::UInt32
+    c::UInt32
+    m::UInt32
+    seed::UInt32
 
     GLC(myseed) = new(1664525, 1013904223, 1 << 31, myseed)
 end
@@ -67,7 +67,7 @@ Box-Müller algorithm.
 function randgauss(glc::GLC, μ, σ)
     s = rand(glc)
     t = rand(glc)
-    x = sqrt(-2log(1 - s)) * cos(2π * t)
+    x = sqrt(-2log(s)) * cos(2π * t)
     μ + σ * x
 end
 
@@ -135,10 +135,12 @@ for n in list_of_N
     push!(list_of_histograms, histogram(vec, bins = 20, title = "N = $n"))
     push!(list_of_sigmas, std(vec))
 end
-plot(list_of_histograms...,
-     layout = (3, 4),
-     size = (900, 600),
-     legend = false)
+plot(
+    list_of_histograms...,
+    layout = (3, 4),
+    size = (900, 600),
+    legend = false,
+)
 savefig(joinpath(@OUTPUT, "es10_1_histogram.svg")); # hide
 
 plot(list_of_N, list_of_sigmas,
@@ -174,8 +176,9 @@ function inthm(glc::GLC, fn, a, b, fmax, N)
     hits / N * (b - a) * fmax
 end
 
-println("Integrale (metodo media):", intmean(GLC(1), sin, 0, π, 100))
-println("Integrale (metodo hit-or-miss):", inthm(GLC(1), sin, 0, π, 1, 100))
+xsinx(x) = x * sin(x)
+println("Integrale (metodo media):", intmean(GLC(1), xsinx, 0, π/2, 100))
+println("Integrale (metodo hit-or-miss):", inthm(GLC(1), xsinx, 0, π/2, 1, 100))
 
 glc = GLC(1)
 mean_samples = [intmean(glc, sin, 0, π, 100) for i in 1:10_000]

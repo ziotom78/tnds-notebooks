@@ -10,8 +10,10 @@ for n in list_of_N
     push!(list_of_histograms, histogram(vec, bins = 20, title = "N = $n"))
     push!(list_of_sigmas, std(vec))
 end
-plot(list_of_histograms...,
-     layout = (3, 4),
-     size = (900, 600),
-     legend = false)
+plot(
+    list_of_histograms...,
+    layout = (3, 4),
+    size = (900, 600),
+    legend = false,
+)
 savefig(joinpath(@OUTPUT, "es10_1_histogram.svg")); # hide

@@ -1,7 +1,5 @@
 <!--This file was generated, do not modify it.-->
-# Metodi Monte Carlo (Lezioni 10 e 11)
-
-## Lezione 10
+# Lezione 10
 
 Iniziamo importando i pacchetti che ci serviranno.
 
@@ -11,28 +9,30 @@ using Plots
 using Statistics
 ````
 
-### Esercizio 10.0
+## Esercizio 10.0
+
+Definiamo una classe `GLC` che sia equivalente alla classe `Random`
+che vi viene richiesto di implementare in C++.
 
 In Julia non esiste il concetto di «classe», ma esistono le `struct`
 che funzionano in modo concettualmente simile. Non permettono di
 associare metodi, tranne eventualmente un semplice costruttore, e
 tutti i campi sono pubblici di default.
 
-Definiamo una classe `GLC` che sia equivalente alla classe `Random`
-che vi viene richiesto di implementare in C++.
-
-#### Generatore Lineare Congruenziale
+### Generatore Lineare Congruenziale
 
 ````julia:ex2
 mutable struct GLC
-    a::UInt64
-    c::UInt64
-    m::UInt64
-    seed::UInt64
+    a::UInt32
+    c::UInt32
+    m::UInt32
+    seed::UInt32
 
     GLC(myseed) = new(1664525, 1013904223, 1 << 31, myseed)
 end
 ````
+
+Il tipo `UInt32` corrisponde a `unsigned int` in C++.
 
 Definiamo ora una funzione `rand` che restituisca un numero casuale
 floating-point compreso in un intervallo:
@@ -99,7 +99,7 @@ savefig(joinpath(@OUTPUT, "rand_hist.svg")); # hide
 
 \fig{rand_hist.svg}
 
-#### Distribuzione esponenziale
+### Distribuzione esponenziale
 
 Trattandosi di una formula semplice, in Julia si può definire
 `randexp` con una sola riga di codice:
@@ -132,7 +132,7 @@ savefig(joinpath(@OUTPUT, "randexp_hist.svg")); # hide
 
 \fig{randexp_hist.svg}
 
-#### Distribuzione Gaussiana
+### Distribuzione Gaussiana
 
 ````julia:ex10
 @doc raw"""
@@ -146,12 +146,21 @@ Box-Müller algorithm.
 function randgauss(glc::GLC, μ, σ)
     s = rand(glc)
     t = rand(glc)
-    x = sqrt(-2log(1 - s)) * cos(2π * t)
+    x = sqrt(-2log(s)) * cos(2π * t)
     μ + σ * x
 end
 ````
 
-Questi sono i numeri per i vostri `assert`:
+All'interno della funzione, nella riga in cui si assegna il valore a
+`x`, vi sareste potuti aspettare la riga
+
+```julia
+x = sqrt(-2log(1 - s)) * cos(2π * t)
+```
+
+con il termine `2log(1 - s)` anziché `2log(s)`. I due termini *non* sono uguali, ovviamente, ma la loro distribuzione statistica invece sì: in entrambi i casi infatti l'argomento del logaritmo è distribuito uniformemente tra 0 ed 1. Però la scrittura `2log(s)` risparmia una sottrazione ed è quindi lievemente più veloce.
+
+Questi sono i numeri per i vostri `assert`, assumendo ovviamente che anche voi usiate `log(s)` anziché `log(1 - s)`:
 
 ````julia:ex11
 glc = GLC(1)
@@ -169,7 +178,7 @@ savefig(joinpath(@OUTPUT, "randgauss_hist.svg")); # hide
 
 \fig{randgauss_hist.svg}
 
-#### Distribuzione Gaussiana con metodo Accept-Reject
+### Distribuzione Gaussiana con metodo Accept-Reject
 
 ````julia:ex13
 @doc raw"""
@@ -208,7 +217,7 @@ savefig(joinpath(@OUTPUT, "randgauss_ar_hist.svg")); # hide
 
 \fig{randgauss_ar_hist.svg}
 
-### Esercizio 10.1
+## Esercizio 10.1
 
 L'esercizio è molto semplice da implementare, ma richiede comunque una
 certa attenzione: bisogna studiare infatti molti casi (ben 12 istogrammi),
@@ -264,6 +273,7 @@ void test_compute_sums() {
   compute_sums(rng, 5, vec);
   assert(are_close(rng[0], 1.7307902472093701));
   assert(are_close(rng[1], 1.7124183257110417));
+  cerr << "compute_sums() is correct, hurrah! 🥳\n";
 }
 ```
 
@@ -282,10 +292,12 @@ for n in list_of_N
     push!(list_of_histograms, histogram(vec, bins = 20, title = "N = $n"))
     push!(list_of_sigmas, std(vec))
 end
-plot(list_of_histograms...,
-     layout = (3, 4),
-     size = (900, 600),
-     legend = false)
+plot(
+    list_of_histograms...,
+    layout = (3, 4),
+    size = (900, 600),
+    legend = false,
+)
 savefig(joinpath(@OUTPUT, "es10_1_histogram.svg")); # hide
 ````
 
@@ -295,27 +307,29 @@ Notate che, grazie alla definizione della funzione `computesums!`,
 il ciclo `for` è stato ridotto ad appena tre righe. Inoltre proprio
 l'uso del `for` ha evitato quegli orribili copia-e-incolla che
 spesso i docenti trovano nelle correzioni degli esami scritti.
-Il seguente è un esempio di come **non** implementare questo esercizio:
-è una vera e propria “galleria degli orrori”!
+
+Il seguente è un esempio di come **non** implementare questo
+esercizio; è un vero esercizio, consegnato da uno studente pochi
+anni fa. È una vera e propria “galleria degli orrori”!
 
 ```cpp
-// 👿 NON BASATEVI SU QUESTO CODICE! ESSO È IMPURO E IMMONDO! 👿
+// 👿 NON BASATEVI SU QUESTO CODICE! 👿
 
 std::vector<double> vec(100'000);
 
-// Aargh! Qui ripeto il numero 100'000 anziché scrivere (int) vec.size():
-// cosa succede se poi durante l'esame voglio usare un numero minore
-// per risparmiare tempo? Devo cambiare tutte le occorrenze!
+// Aargh! Qui scrive di nuovo il numero 100'000 anziché usare `ssize(vec)`:
+// cosa succede se poi durante l'esame voleva usare un numero minore
+// per risparmiare tempo? Deve cambiare tutte le occorrenze!
 for(int k{}; k < 100'000; ++k) {
-  vec[k] = 0.0;   // Per giunta qui non uso neppure vec.at(k),
-                  // quindi se riduco il numero 100'000 nella
+  vec[k] = 0.0;   // Per giunta qui non usa neppure vec.at(k),
+                  // quindi se riduce il numero 100'000 nella
                   // definizione di `vec` ma non nel ciclo `for`,
-                  // qui potrei avere un “segmentation fault”!
+                  // qui poteva avere un “segmentation fault”!
   for(int i{}; i < 1; ++i)
     vec[k] += rand.Unif(0.0, 1.0);
 }
 
-// Ok, invece che fare una sola figura con 12 grafici scelgo di
+// Ok, invece che fare una sola figura con 12 grafici sceglie di
 // creare 12 file PNG distinti… è più faticoso però poi
 // controllare i risultati e confrontare gli istogrammi!
 Gnuplot plt1{};
@@ -366,13 +380,15 @@ vantaggi rispetto al disperato copia-e-incolla del malefico esempio 👿:
     volta sola! E anche questo è un bel risparmio di tempo.
 -   Il codice 😇 è più semplice da leggere, e quindi è più facile individuare
     errori (ci sono meno posti in cui il problema potrebbe nascondersi)
--   Se vi rendete conto che il programma ci mette troppo per essere eseguito, e
-    questo vi è di impiccio perché i risultati non vi convincono e prevedete
-    di doverlo eseguire molte volte, è semplice limitare ad esempio i valori
-    di `N` da esplorare nel codice 😇, cambiando ad esempio la riga `list_of_N = 1:12`
-    con `list_of_N = 1:5`. Nel codice 👿 invece, dovete commentare decine di righe
-    di codice, col rischio di commentare qualche variabile importante che vi serve
-    alla fine del programma e che quindi causa errori di compilazione…
+-   Se vi rendete conto che il programma ci mette troppo per essere
+    eseguito, e questo vi è di impiccio perché i risultati non vi
+    convincono e prevedete di doverlo eseguire molte volte, è
+    semplice limitare ad esempio i valori di `N` da esplorare nel
+    codice 😇, limitandovi ad esempio ai primi 5 casi anziché a
+    tutti e 12. Nel codice 👿 invece, dovete commentare decine di
+    righe di codice, col rischio di commentare qualche variabile
+    importante che vi serve alla fine del programma e che quindi
+    causa errori di compilazione…
 
 Ora creiamo il grafico con l'andamento della deviazione standard (calcolata
 nell'esempio sopra con la funzione `Statistics.std`), memorizzata in
@@ -387,7 +403,7 @@ savefig(joinpath(@OUTPUT, "es10_1_std.svg")); # hide
 
 \fig{es10_1_std.svg}
 
-### Esercizio 10.2
+## Esercizio 10.2
 
 Questa è una semplice implementazione dell'integrale della media:
 
@@ -426,19 +442,25 @@ end
 ````
 
 Verifichiamo che il codice compili, e che produca un risultato sensato.
-Teniamo presente che $\int_0^\pi \sin x\,\mathrm{d}x = 2$; inoltre, siccome
-$\sin(x)$ è una funzione limitata in $[0, 1]$, possiamo porre `fmax=1` nella
+Teniamo presente che $\int_0^{\pi/2} x \sin x\,\mathrm{d}x = 1$; inoltre, siccome
+$x \sin(x)$ è una funzione limitata in $[0, 1]$, possiamo porre `fmax=1` nella
 chiamata a `inthm`:
 
 ````julia:ex22
-println("Integrale (metodo media):", intmean(GLC(1), sin, 0, π, 100))
-println("Integrale (metodo hit-or-miss):", inthm(GLC(1), sin, 0, π, 1, 100))
+xsinx(x) = x * sin(x)
+println("Integrale (metodo media):", intmean(GLC(1), xsinx, 0, π/2, 100))
+println("Integrale (metodo hit-or-miss):", inthm(GLC(1), xsinx, 0, π/2, 1, 100))
 ````
 
 Implementate degli `assert` che verifichino che ottenete gli stessi
 risultati nella vostra implementazione C++. Come già ricordato
 sopra, fate molta attenzione ad inizializzare il generatore di
 numeri pseudo-casuali con lo stesso seme (`1` in questo caso).
+Notate anche che il codice sopra usa **due** generatori di numeri
+casuali: uno per `intmean` e l'altro per `inthm`. Se voi invece
+ne usate uno solo e chiamate `intmean` e poi `inthm` passando sempre
+quello, anche se avete implementato correttamente entrambi i metodi,
+per `intmean` lo stesso numero ma per `inthm` un numero diverso!
 
 Eseguiamo ora il calcolo per 10.000 volte e facciamone l'istogramma:
 osserviamo che la distribuzione è approssimativamente una Gaussiana,
@@ -502,7 +524,7 @@ Il risultato è effettivamente corretto:
 std(values)
 ````
 
-## Lezione 12: Simulazione di un esperimento
+# Lezione 12: Simulazione di un esperimento
 
 L'esercizio di questa lezione è **estremamente** importante, perché
 le tecniche Monte Carlo sono molto diffuse in fisica. (E inoltre
@@ -514,11 +536,12 @@ dimensionale. In C++ questo sarebbe fattibile usando la
 programmazione template, che non è stata però quasi mai usata per lo
 svolgimento degli esercizi; tenete presente nei vostri futuri
 progetti che librerie come
+[mp-units](https://mpusz.github.io/mp-units/latest/),
 [Boost.units](https://www.boost.org/doc/libs/1_65_0/doc/html/boost_units.html),
-[SI](https://github.com/bernedom/SI) o
-[units](https://github.com/nholthaus/units) possono essere usate per
-specificare le unità di misura di variabili e costanti, e per
-verificarne la consistenza nel proprio codice.
+[SI](https://github.com/bernedom/SI),
+[units](https://github.com/nholthaus/units), etc. possono essere
+usate per specificare le unità di misura di variabili e costanti, e
+per verificarne la consistenza nel proprio codice.
 
 Sfortunatamente, il modo in cui avete scritto programmi in questo
 semestre fa uso della programmazione *object-oriented*, che non è
@@ -561,15 +584,14 @@ auto result2 = sol.CercaZeri(10.0_s, 15.0_s, another_function, 1e-2_s);
 
 Ovviamente, né `my_function` né `another_function` sarebbero più
 state derivate da `FunzioneBase`, dovendo invece essere funzioni che
-accettano quantità delle dimensioni giuste. Ecco per quale motivo la
-programmazione *object-oriented* non è indicata per codici numerici:
-non permette la versatilità nei tipi dei dati garantita invece dalla
-programmazione con i template.
+accettano quantità delle dimensioni giuste.
 
-(In un certo senso, Julia è invece un linguaggio dove *tutto* è un
-template, e ciò lo rende ideale per il calcolo scientifico).
+(In Julia questo tipo di programmazione è naturale perché in un
+certo senso *tutto* è un template, e ciò lo rende ideale per il
+calcolo scientifico. Vedremo meglio questo aspetto nel seminario
+“jolly” che terrò dopo la sessione di esami per chi è interessato).
 
-### Esercizio 12.0
+## Esercizio 12.0
 
 Iniziamo con l'importare la libreria
 [Unitful.jl](https://github.com/PainterQubits/Unitful.jl), che
@@ -788,7 +810,7 @@ println("Correlazione tra n1 e n2: ", corr(n1_simul, n2_simul))
 println("Correlazione tra A e B: ", corr(A_simul, B_simul))
 ````
 
-### Esercizio 12.1 — Attrito viscoso (facoltativo)
+## Esercizio 12.1 — Attrito viscoso (facoltativo)
 
 L'esercizio 12.1 è preso da un vecchio tema d'esame, e va svolto in modo molto
 simile al precedente. Si tratta di misurare il coefficiente di viscosità
