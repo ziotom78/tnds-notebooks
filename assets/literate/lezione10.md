@@ -34,6 +34,37 @@ end
 
 Il tipo `UInt32` corrisponde a `unsigned int` in C++.
 
+La strana scrittura `1 << 31` è un'operazione di [bit
+shift](https://en.wikipedia.org/wiki/Bitwise_operation#Bit_shifts):
+dice di considerare il numero `1` in binario, e di spostarlo a
+sinistra, aggiungendo quindi alla sua destra tanti zeri quanti il
+secondo operando (31). Ecco alcuni esempi, dove i numeri che
+iniziano con `0b` sono scritti in binario (è una convenzione del C++
+e di Julia):
+
+```text
+0b10010 << 1 == 0b100100    (uno zero aggiunto alla fine)
+0b10010 << 3 == 0b10010000  (tre zeri aggiunti alla fine)
+0b10010 >> 2 == 0b100       (due cifre tolte alla fine)
+```
+
+Potete comprendere il significato dell'operazione se pensate al caso
+decimale: se sposto un numero come `1` a sinistra, aggiungendo 31
+zeri, lo sto moltiplicando per $10^{31}$, ottenendo quindi il numero
+`1e+31`. Analogamente, se tolgo $N$ cifre a destra di un numero, lo
+sto *dividendo* per $10^N$.
+
+Nel caso binario, `1 << 31` vuol dire moltiplicare `1` per
+$2^{31}$, ma quest'operazione è molto più rapida che usando `pow()`
+in C++ o l'operatore `^` in Julia, perché il bit-shift viene fatto a
+livello di singoli capacitori e induttanze nella CPU, che
+“travasano” la carica di un bit nel bit accanto, ed è un'operazione
+velocissima.
+
+> **Piccola nota storica**
+>
+> Negli anni '90 il compilatore [Borland C++](https://en.wikipedia.org/wiki/Borland_C%2B%2B) aveva introdotto l'ottimizzazione di tradurre istruzioni come `x *= 2` in `x <<= 1`, e analogamente per la divisione intera per 2 o sue potenze. Questo aveva causato un sensibile aumento di velocità di certi codici, che la Borland aveva pubblicizzato nelle sue brochures! Oggi quest'ottimizzazione è diventata standard su tutti i compilatori, non solo C++, ma all'epoca era un trucco da “addetti ai lavori”, ed aveva suscitato molto interesse il fatto che un compilatore fosse diventato così furbo da saperla applicare in certi casi.
+
 Definiamo ora una funzione `rand` che restituisca un numero casuale
 floating-point compreso in un intervallo:
 
@@ -62,14 +93,6 @@ interval [0, 1).
 """
 rand(glc::GLC) = rand(glc, 0.0, 1.0)
 ````
-
-Le funzioni definite sopra forniscono una guida, definita dalla
-macro `@doc` e invocabile dalla REPL col carattere `?` seguito dal
-nome della funzione:
-
-```
-julia> ?randgauss
-```
 
 Questi sono i numeri che dovreste aspettarvi se avete implementato bene il
 vostro codice (notate che i numeri cambiano se usate un seed diverso!).
