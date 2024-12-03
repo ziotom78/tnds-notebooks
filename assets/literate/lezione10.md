@@ -294,8 +294,8 @@ void test_compute_sums() {
 
   RandomGen rng{1};
   compute_sums(rng, 5, vec);
-  assert(are_close(rng[0], 1.7307902472093701));
-  assert(are_close(rng[1], 1.7124183257110417));
+  assert(are_close(vec[0], 1.7307902472093701));
+  assert(are_close(vec[1], 1.7124183257110417));
   cerr << "compute_sums() is correct, hurrah! 🥳\n";
 }
 ```

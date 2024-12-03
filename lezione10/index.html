@@ -155,8 +155,8 @@ vec[2] = 1.7124183257110417
 
   RandomGen rng{<span class=hljs-number >1</span>};
   <span class=hljs-built_in >compute_sums</span>(rng, <span class=hljs-number >5</span>, vec);
-  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(rng[<span class=hljs-number >0</span>], <span class=hljs-number >1.7307902472093701</span>));
-  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(rng[<span class=hljs-number >1</span>], <span class=hljs-number >1.7124183257110417</span>));
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(vec[<span class=hljs-number >0</span>], <span class=hljs-number >1.7307902472093701</span>));
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(vec[<span class=hljs-number >1</span>], <span class=hljs-number >1.7124183257110417</span>));
   cerr &lt;&lt; <span class=hljs-string >&quot;compute_sums() is correct, hurrah! 🥳\n&quot;</span>;
 }</code></pre>
 <p>Ora ci occorre invocare questa funzione più volte facendo variare <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> da 1 a 12, e producendo un istogramma ogni volta.</p>
@@ -588,7 +588,7 @@ Solo δx:          δη(R1) = 0.003 kg m^-1 s^-1
 
 <div class=page-foot >
   <div class=copyright >
-    &copy; Maurizio Tomasi. Last modified: November 27, 2024. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+    &copy; Maurizio Tomasi. Last modified: December 03, 2024. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
   </div>
 </div>
 </div>
