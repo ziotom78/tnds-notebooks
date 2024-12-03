@@ -423,12 +423,12 @@ end
 
 # Verifichiamo che il codice compili, e che produca un risultato sensato.
 # Teniamo presente che $\int_0^{\pi/2} x \sin x\,\mathrm{d}x = 1$; inoltre, siccome
-# $x \sin(x)$ è una funzione limitata in $[0, 1]$, possiamo porre `fmax=1` nella
+# $x \sin(x)$ è una funzione limitata in $[0, 1]$, possiamo porre `fmax = π/2` nella
 # chiamata a `inthm`:
 
 xsinx(x) = x * sin(x)
 println("Integrale (metodo media):", intmean(GLC(1), xsinx, 0, π/2, 100))
-println("Integrale (metodo hit-or-miss):", inthm(GLC(1), xsinx, 0, π/2, 1, 100))
+println("Integrale (metodo hit-or-miss):", inthm(GLC(1), xsinx, 0, π/2, π/2, 100))
 
 # Implementate degli `assert` che verifichino che ottenete gli stessi
 # risultati nella vostra implementazione C++. Come già ricordato
