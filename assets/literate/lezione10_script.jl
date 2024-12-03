@@ -178,7 +178,7 @@ end
 
 xsinx(x) = x * sin(x)
 println("Integrale (metodo media):", intmean(GLC(1), xsinx, 0, π/2, 100))
-println("Integrale (metodo hit-or-miss):", inthm(GLC(1), xsinx, 0, π/2, 1, 100))
+println("Integrale (metodo hit-or-miss):", inthm(GLC(1), xsinx, 0, π/2, π/2, 100))
 
 glc = GLC(1)
 mean_samples = [intmean(glc, sin, 0, π, 100) for i in 1:10_000]
