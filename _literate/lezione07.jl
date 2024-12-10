@@ -115,7 +115,7 @@ mean([1, 2, 3])
 # ```cpp
 # std::vector<int> list{1, 2, 3};
 # std::vector<int> out(ssize(list));   // Round parentheses here!
-# for (size_t i{}; i < list.size(); ++i) {
+# for (int i{}; i < ssize(list); ++i) {
 #     // Save the squared value of list[i] into out[i]
 #     out[i] = list[i] * list[i];
 # }
