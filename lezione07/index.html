@@ -21,7 +21,7 @@ mean([<span class=hljs-number >1</span>, <span class=hljs-number >2</span>, <spa
 <p>Vediamo un esempio: creiamo un array <code>list</code> che contenga i valori <code>1, 2, 3</code>, e poi creiamo un nuovo array <code>out</code> che contenga il quadrato dei numeri in <code>list</code>, ossia <code>1, 4, 9</code>. In C&#43;&#43; avremmo dovuto scrivere</p>
 <pre><code class="cpp hljs">std::vector&lt;<span class=hljs-type >int</span>&gt; list{<span class=hljs-number >1</span>, <span class=hljs-number >2</span>, <span class=hljs-number >3</span>};
 <span class=hljs-function >std::vector&lt;<span class=hljs-type >int</span>&gt; <span class=hljs-title >out</span><span class=hljs-params >(ssize(list))</span></span>;   <span class=hljs-comment >// Round parentheses here!</span>
-<span class=hljs-keyword >for</span> (<span class=hljs-type >size_t</span> i{}; i &lt; list.<span class=hljs-built_in >size</span>(); ++i) {
+<span class=hljs-keyword >for</span> (<span class=hljs-type >int</span> i{}; i &lt; <span class=hljs-built_in >ssize</span>(list); ++i) {
     <span class=hljs-comment >// Save the squared value of list[i] into out[i]</span>
     out[i] = list[i] * list[i];
 }
@@ -341,7 +341,7 @@ espressione</code>, che crea una funzione anonima usa-e-getta. Ad esempio, per c
 
 <div class=page-foot >
   <div class=copyright >
-    &copy; Maurizio Tomasi. Last modified: December 03, 2024. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+    &copy; Maurizio Tomasi. Last modified: December 10, 2024. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
   </div>
 </div>
 </div>
