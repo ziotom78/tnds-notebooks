@@ -445,11 +445,11 @@ println("Integrale (metodo hit-or-miss):", inthm(GLC(1), xsinx, 0, π/2, π/2, 1
 # come previsto.
 
 glc = GLC(1)
-mean_samples = [intmean(glc, sin, 0, π, 100) for i in 1:10_000]
+mean_samples = [intmean(glc, xsinx, 0, π / 2, 100) for i in 1:10_000]
 histogram(mean_samples, label="Media")
 
 glc = GLC(1)  # Reset the random generator
-mean_hm = [inthm(glc, sin, 0, π, 1, 100) for i in 1:10_000]
+mean_hm = [inthm(glc, xsinx, 0, π / 2, π / 2, 100) for i in 1:10_000]
 histogram!(mean_hm, label="Hit-or-miss");
 savefig(joinpath(@OUTPUT, "mc_integrals.svg")); # hide
 
@@ -470,8 +470,9 @@ println("K (hit-or-miss) = ", k_hm)
 # risolvere l'equazione $0.001 = k/\sqrt{N}$ per $N$, ossia $$N =
 # \left(\frac{k}{0.001}\right)^2$$.
 
-noptim_mean = round(Int, (k_mean/0.001)^2)
-noptim_hm = round(Int, (k_hm/0.001)^2)
+target_ε = 0.001
+noptim_mean = round(Int, (k_mean / target_ε)^2)
+noptim_hm = round(Int, (k_hm / target_ε)^2)
 
 println("N (media) = ", noptim_mean)
 println("N (hit-or-miss) = ", noptim_hm)
@@ -482,7 +483,7 @@ println("N (hit-or-miss) = ", noptim_hm)
 # (1000 anziché 10.000):
 
 glc = GLC(1)
-values = [intmean(glc, sin, 0, π, noptim_mean) for i in 1:1000]
+values = [intmean(glc, xsinx, 0, π / 2, noptim_mean) for i in 1:1000]
 histogram(values, label="");
 savefig(joinpath(@OUTPUT, "mc_intmean.svg")); # hide
 
