@@ -1,1 +1,1 @@
-2.152874570427233
+"/home/runner/work/tnds-notebooks/tnds-notebooks/__site/assets/lezione08/code/output/interp-test.svg"

@@ -1,10 +1,10 @@
 # This file was generated, do not modify it. # hide
-function simulate_method1(t0, tf, increment)
-    println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
+function simulate_method1(t0, tf, h)
+    println("Inizia la simulazione, da t=$t0 a $tf con h=$h")
 
-    # Calcola il numero di iterazioni prima di iniziare il ciclo vero
-    # e proprio
-    nsteps = round(Int, (tf - t0) / h)
+    # Calcola il numero di iterazioni prima di iniziare il ciclo
+    # vero e proprio
+    nsteps = num_of_steps(t0, tf, h)
     t = t0
     for i = 1:nsteps
         println("  t = $t")

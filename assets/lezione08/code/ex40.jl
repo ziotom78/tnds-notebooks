@@ -1,3 +1,10 @@
 # This file was generated, do not modify it. # hide
-interp(ptA, ptB, y) = ptA[1] + (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (y - ptA[2])
-interp(ptA, ptB) = interp(ptA, ptB, 0)
+anim = Luxor.Movie(500, 500, "Pendulum")
+
+function animframe(scene, framenumber)
+    Luxor.background("white")
+    plot_pendulum(pos[framenumber])
+end
+
+Luxor.animate(anim, [Luxor.Scene(anim, animframe, 1:size(times, 1))],
+    creategif=true, pathname=joinpath(@OUTPUT, "pendulum.gif"));

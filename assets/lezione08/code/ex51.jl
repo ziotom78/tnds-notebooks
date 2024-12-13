@@ -1,37 +1,42 @@
 # This file was generated, do not modify it. # hide
-function forced_amplitude(ω, oscillations)
-    # Per comodità estraggo la prima colonna della matrice (quella che
-    # contiene i tempi) nel vettore "timevec"
-    timevec = oscillations[:, 1]
+function forced_pendulum_amplitude(ω)
+    # In Julia posso assegnare a una variabile la definizione di una
+    # funzione!
+    fn = (time, x) -> forcedpendulum(time, x, ω)
 
-    # Questa maschera serve per trascurare le oscillazioni nella prima
-    # parte della simulazione, ossia le prime righe della matrice.
-    # Di fatto quindi ci concentriamo solo sulla "coda" della soluzione,
-    # ossia le ultime righe della matrice
-    mask = timevec .> 10 / α
-    oscill_tail = oscillations[mask, :]
+    # Step 1: lascio che la simulazione proceda finché l'oscillatore
+    # non si stabilizza
 
-    # Calcolo il tempo in corrispondenza della prima inversione
-    # nella "coda" della soluzione
-    idx0 = search_inversion(oscill_tail[:, 3])
-    ptA = oscill_tail[idx0, [1, 3]]
-    ptB = oscill_tail[idx0 + 1, [1, 3]]
-    t0 = interp(ptA, ptB)
-    δt = t0 - oscill_tail[idx0, 1]
-    newsol = forcedpendulum(ω,
-        init=oscill_tail[idx0, 2:3],
-        startt=oscill_tail[idx0, 1],
-        endt=oscill_tail[idx0, 1] + 1.1 * δt,
-        deltat=δt)
+    x = [0., 0.]
+    t = 0.0
 
-    @printf("""ω = %.4f:
-·  t₀ = %.5f, angle(t₀) = %.5f, speed(t₀) = %.5f
-·  δt = %.5f
-·  t₀ + δt = %.5f, angle(t₀ + δt) = %.5f, speed(t₀ + δt) = %.5f
-""",
-        ω,
-        newsol[1, 1], newsol[1, 2], newsol[1,3],
-        δt,
-        newsol[2, 1], newsol[2, 2], newsol[2, 3])
-    abs(newsol[2, 2])
+    while t < 15 / α
+        x = rungekutta(fn, x, t, h)
+        t += h
+    end
+
+    # Step 2: continuo a simulare finché il segno della velocità non
+    # si inverte
+
+    oldx = [0., 0.]
+    while true
+        oldx = x
+        x = rungekutta(fn, x, t, h)
+        t += h
+
+        if x[2] * oldx[2] < 0
+            break
+        end
+    end
+
+    # Step 3: eseguo una interpolazione per sapere di quanto
+    # “arretrare” col tempo. Dovrà essere per forza h_new < 0
+    h_new = interp((-h, oldx[2]), (0, x[2]))
+    @assert h_new < 0
+
+    x = rungekutta(fn, x, t, h_new)
+
+    # Devo usare `abs`: non so a priori se il corpo sarà a destra o a
+    # sinistra dello zero
+    return abs(x[1])
 end

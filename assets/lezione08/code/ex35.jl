@@ -1,7 +1,15 @@
 # This file was generated, do not modify it. # hide
-plot(oscillations[:, 1], oscillations[:, 3],
-     label = "",
-     xlabel = "Tempo [s]",
-     ylabel = "Velocità angolare [rad/s]")
+times, pos, vel = eqdiff_simulation(
+    rungekutta,
+    pendulum,
+    [π / 3, 0.],
+    0.0,
+    3.0,
+    0.01,
+)
 
-savefig(joinpath(@OUTPUT, "oscillations1.svg")) # hide
+using Printf
+
+for i in 1:5
+    @printf("%.2f\t%f\t%f\n", times[i], pos[i], vel[i])
+end

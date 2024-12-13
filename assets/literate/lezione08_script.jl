@@ -1,8 +1,5 @@
 # This file was generated, do not modify it.
 
-using Plots
-using Printf
-
 t = 0
 h = 0.1
 t += h
@@ -10,15 +7,15 @@ t += h
 t += h
 t += h
 
-function simulate(t0, tf, increment)
+function simulate(t0, tf, h)
     t = t0
 
-    println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
+    println("Inizia la simulazione, da t=$t0 a $tf con h=$h")
 
     # Itera finché non abbiamo raggiunto il tempo finale
     while t < tf
         println("  t = $t")
-        t += increment
+        t += h
     end
 
     println("Simulazione terminata a t = $t")
@@ -26,12 +23,14 @@ end
 
 simulate(0.0, 1.0, 0.1)
 
-function simulate_method1(t0, tf, increment)
-    println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
+num_of_steps(t0, tf, h) = round(Int, (tf - t0) / h)
 
-    # Calcola il numero di iterazioni prima di iniziare il ciclo vero
-    # e proprio
-    nsteps = round(Int, (tf - t0) / h)
+function simulate_method1(t0, tf, h)
+    println("Inizia la simulazione, da t=$t0 a $tf con h=$h")
+
+    # Calcola il numero di iterazioni prima di iniziare il ciclo
+    # vero e proprio
+    nsteps = num_of_steps(t0, tf, h)
     t = t0
     for i = 1:nsteps
         println("  t = $t")
@@ -43,12 +42,12 @@ end
 
 simulate_method1(0, 1, 0.1)
 
-function simulate_method2(t0, tf, increment)
-    println("Inizia la simulazione, da t=$t0 a $tf con h=$increment")
+function simulate_method2(t0, tf, h)
+    println("Inizia la simulazione, da t=$t0 a $tf con h=$h")
 
     # Calcola il numero di iterazioni prima di iniziare il ciclo vero
     # e proprio
-    nsteps = round(Int, (tf - t0) / h)
+    nsteps = num_of_steps(t0, tf, h)
     t = t0
     for i = 1:nsteps
         println("  t = $t")
@@ -62,58 +61,90 @@ simulate_method2(0, 1, 0.1)
 
 [1, 2, 4] .+ [3, 7, -5]
 
-function euler(fn, x0, startt, endt, h)
-    # La scrittura startt:h:endt indica il vettore
-    #
-    #     [startt, startt + h, startt + 2h, startt + 3h, …, startt + N * h]
-    #
-    # dove N è il più grande intero tale che
-    #
-    #     startt + N * h ≤ endt
-    timerange = startt:h:endt
-    result = Array{Float64}(undef, length(timerange), 1 + length(x0))
-    cur = x0
-    for (i, t) in enumerate(timerange)
-        result[i, 1] = t
-        result[i, 2:end] = cur
-        cur .+= fn(t, cur) * h
-    end
+# Applica la funzione `log10` a tutti gli elementi dell'array
+log10.([1, 2, 4])
 
-    result
-end
+euler(fn, x, t, h) = x .+ fn(t, x) .* h
 
 oscillatore(time, x) = [x[2], -x[1]]  # ω0 = 1
 
 h = 0.1
-result = euler(oscillatore, [0., 1.], 0.0, 70.0, h);
+result = euler(oscillatore, [0., 1.], 0., h)
 
-result[1:10, :]
-
-result[(end - 10):end, :]
+# Al posto della condizione iniziale, passiamo `result` (la
+# soluzione al tempo t=h), e al posto del tempo 0.0 passiamo
+# il tempo 0.0+h
+result = euler(oscillatore, result, 0. + h, h)
 
 lastt = 70.0;
+
+function euler_simulation(x0, t0, tf, h)
+    # Calcola il numero di iterazioni prima di iniziare il ciclo vero
+    # e proprio
+    nsteps = num_of_steps(t0, tf, h)
+
+    # I tre vettori hanno `N + 1` elementi e non `N`, perché vogliamo
+    # memorizzare anche la condizione iniziale.
+    times = zeros(Float64, nsteps + 1)
+    pos = zeros(Float64, nsteps + 1)
+    vel = zeros(Float64, nsteps + 1)
+
+    # Salviamo la condizione iniziale
+    times[1] = t0
+    pos[1] = x0[1]
+    vel[1] = x0[2]
+
+    t = t0
+    x = x0
+    for i = 1:nsteps
+        x = euler(oscillatore, x, t, h)
+        t += h
+
+        times[i + 1] = t
+        pos[i + 1] = x[1]
+        vel[i + 1] = x[2]
+    end
+
+    # Contrariamente al C++, una funzione Julia può restituire
+    # più di un valore
+    return (times, pos, vel)
+end
+
+times, pos, vel = euler_simulation([0.0, 1.0], 0.0, lastt, 0.1);
+
+using Printf
+
+for i in 1:5
+    @printf("%.2f\t%f\t%f\n", times[i], pos[i], vel[i])
+end
+
+for i in (length(times) - 5):length(times)
+    @printf("%.2f\t%f\t%f\n", times[i], pos[i], vel[i])
+end
 
 nsteps = 7 * round.(Int, exp10.(2:0.2:4))
 
 deltat = lastt ./ nsteps
 
+using Plots
+
 anim = @animate for h in deltat
-    result = euler(oscillatore, [0., 1.], 0.0, 70.0, h)
-    plot(result[:, 1], result[:, 2],
+    (time, pos, vel) = euler_simulation([0.0, 1.0], 0.0, lastt, h)
+    plot(time, pos,
          title = @sprintf("h = %.5f", h),
          label="Eulero", ylim=(-2, 2),
          xlabel="Tempo [s]", ylabel="Posizione [m]")
-    plot!(result[:, 1], sin.(result[:, 1]), label = "Risultato atteso")
+    plot!(time, sin.(time), label = "Risultato atteso")
 end
 
 gif(anim, joinpath(@OUTPUT, "euler.gif"), fps = 1);
 
-lastpos = [euler(oscillatore, [0., 1.], 0.0, lastt, h)[end, 2] for h in deltat]
+lastpos = [euler_simulation([0.0, 1.0], 0, lastt, h)[2][end] for h in deltat]
 error_euler = abs.(lastpos .- sin(lastt))
 
-@printf("%-14s\t%-14s\n", "δt [s]", "x(70) [m]")
+@printf("%-14s\t%-14s%-14s\n", "δt [s]", "x(t = 70 s) [m]", "x vero [m]")
 for i in 1:length(deltat)
-    @printf("%.12f\t%.12f\n", deltat[i], lastpos[i])
+    @printf("%.12f\t%.12f\t%.12f\n", deltat[i], lastpos[i], sin(lastt))
 end
 
 plot(deltat, error_euler,
@@ -121,52 +152,113 @@ plot(deltat, error_euler,
      xlabel = "Passo d'integrazione",
      ylabel = @sprintf("Errore a t = %.1f", lastt),
      label = "")
-scatter!(deltat, error_euler, label = "")
+scatter!(deltat, error_euler, label = "");
 
 savefig(joinpath(@OUTPUT, "euler_error.svg")) # hide
 
-function rungekutta(fn, x0, startt, endt, h)
-    timerange = startt:h:endt
-    result = Array{Float64}(undef, length(timerange), 1 + length(x0))
-    cur = copy(x0)
-    for (i, t) in enumerate(timerange)
-        result[i, 1] = t
-        result[i, 2:end] = cur
+function rungekutta(fn, x, t, h)
+    k1 = fn(t, x)
+    k2 = fn(t + h / 2.0, x .+ k1 .* h / 2.0)
+    k3 = fn(t + h / 2.0, x .+ k2 .* h / 2.0)
+    k4 = fn(t + h, x .+ k3 .* h)
 
-        k1 = fn(t,          cur)
-        k2 = fn(t + h / 2., cur .+ k1 .* h / 2.0)
-        k3 = fn(t + h / 2., cur .+ k2 .* h / 2.0)
-        k4 = fn(t + h,      cur .+ k3 .* h)
-
-        cur .+= (k1 .+ 2k2 .+ 2k3 .+ k4) .* h / 6
-    end
-
-    result
+    x .+ (k1 .+ 2k2 .+ 2k3 .+ k4) .* h / 6
 end
 
-result = rungekutta(oscillatore, [0., 1.], 0.0, 70.0, 0.1);
+function eqdiff_simulation(method_fn, problem_fn, x0, t0, tf, h)
+    nsteps = num_of_steps(t0, tf, h)
 
-result[1:10, :]
+    times = zeros(Float64, nsteps + 1)
+    pos = zeros(Float64, nsteps + 1)
+    vel = zeros(Float64, nsteps + 1)
 
-result[(end - 10):end, :]
+    times[1] = t0
+    pos[1] = x0[1]
+    vel[1] = x0[2]
+
+    t = t0
+    x = x0
+    for i = 1:nsteps
+        x = method_fn(problem_fn, x, t, h)
+        t += h
+
+        times[i + 1] = t
+        pos[i + 1] = x[1]
+        vel[i + 1] = x[2]
+    end
+
+    return (times, pos, vel)
+end
+
+(time_euler, pos_euler, vel_euler) = euler_simulation(
+    [0.0, 1.0],
+    0.0,
+    lastt,
+    h,
+);
+(time_eqdiff, pos_eqdiff, vel_eqdiff) = eqdiff_simulation(
+    euler,
+    oscillatore,
+    [0.0, 1.0],
+    0.0,
+    lastt,
+    h,
+);
+
+maximum(abs.(pos_euler .- pos_eqdiff))
+
+(time, pos, vel) = eqdiff_simulation(
+    rungekutta,
+    oscillatore,
+    [0., 1.],
+    0.0,
+    70.0,
+    0.1,
+);
+
+using Printf
+
+for i in 1:5
+    @printf("%.2f\t%f\t%f\n", times[i], pos[i], vel[i])
+end
+
+for i in (length(times) - 5):length(times)
+    @printf("%.2f\t%f\t%f\n", times[i], pos[i], vel[i])
+end
 
 anim = @animate for h in deltat
-    cur_result = rungekutta(oscillatore, [0., 1.], 0.0, 70.0, h)
-    plot(cur_result[:, 1], cur_result[:, 2],
+    cur_result = eqdiff_simulation(
+        rungekutta,
+        oscillatore,
+        [0., 1.],
+        0.0,
+        70.0,
+        h,
+    )
+    plot(times, pos,
          title = @sprintf("h = %.5f", h),
          label="Eulero", ylim=(-2, 2),
          xlabel="Tempo [s]", ylabel="Posizione [m]")
-    plot!(cur_result[:, 1], sin.(cur_result[:, 1]), label = "Risultato atteso")
+    plot!(times, sin.(times), label = "Risultato atteso")
 end
 
 gif(anim, joinpath(@OUTPUT, "rk.gif"), fps = 1);
 
-lastpos = [rungekutta(oscillatore, [0., 1.], 0.0, lastt, h)[end, 2] for h in deltat]
+lastpos = [
+    eqdiff_simulation(
+        rungekutta,
+        oscillatore,
+        [0., 1.],
+        0.0,
+        lastt,
+        h,
+    )[2][end] for h in deltat
+]
 error_rk = abs.(lastpos .- sin(lastt))
 
-@printf("%-14s\t%-14s\n", "δt [s]", "x(70) [m]")
+@printf("%-14s\t%-14s\t%-14s\n", "δt [s]", "x(t = 70 s) [m]", "x vero [m]")
 for i in 1:length(deltat)
-    @printf("%.12f\t%.12f\n", deltat[i], lastpos[i])
+    @printf("%.12f\t%.12f\t%.12f\n", deltat[i], lastpos[i], sin(lastt))
 end
 
 plot(deltat, error_euler, label = "")
@@ -186,10 +278,24 @@ g = 9.81;
 
 pendulum(t, x) = [x[2], -g / rodlength * sin(x[1])]
 
-oscillations = rungekutta(pendulum, [π / 3, 0.], 0.0, 3.0, 0.01)
-oscillations[1:10, :]
+times, pos, vel = eqdiff_simulation(
+    rungekutta,
+    pendulum,
+    [π / 3, 0.],
+    0.0,
+    3.0,
+    0.01,
+)
 
-oscillations[(end - 10):end, :]
+using Printf
+
+for i in 1:5
+    @printf("%.2f\t%f\t%f\n", times[i], pos[i], vel[i])
+end
+
+for i in (length(times) - 5):length(times)
+    @printf("%.2f\t%f\t%f\n", times[i], pos[i], vel[i])
+end
 
 import Luxor
 
@@ -202,57 +308,27 @@ function plot_pendulum(angle)
     Luxor.circle(Luxor.Point(x, y), 10, :fill)
 end
 
-size(oscillations, 1)
+size(times, 1)
 
 anim = Luxor.Movie(500, 500, "Pendulum")
 
 function animframe(scene, framenumber)
     Luxor.background("white")
-    plot_pendulum(oscillations[framenumber, 2])
+    plot_pendulum(pos[framenumber])
 end
 
-Luxor.animate(anim, [Luxor.Scene(anim, animframe, 1:size(oscillations, 1))],
+Luxor.animate(anim, [Luxor.Scene(anim, animframe, 1:size(times, 1))],
     creategif=true, pathname=joinpath(@OUTPUT, "pendulum.gif"));
 
-plot(oscillations[:, 1], oscillations[:, 3],
+plot(times, pos,
      label = "",
      xlabel = "Tempo [s]",
-     ylabel = "Velocità angolare [rad/s]")
+     ylabel = "Velocità angolare [rad/s]");
 
 savefig(joinpath(@OUTPUT, "oscillations1.svg")) # hide
 
-oscillations[abs.(oscillations[:, 3]) .< 0.1, :]
+interp(ptA, ptB, ω) = ptA[1] - (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (ptA[2] - ω)
 
-scatter(oscillations[:, 1], oscillations[:, 3],
-        label = "",
-        xlim = (1.0, 1.2),
-        xlabel = "Tempo [s]",
-        ylabel = "Velocità angolare [rad/s]")
-
-savefig(joinpath(@OUTPUT, "oscillations2.svg")) # hide
-
-function search_inversion(vect)
-    prevval = vect[1]
-    for i in 2:length(vect)
-        # Qui usiamo lo stesso trucco per trovare un cambio di segno
-        # che avevamo già impiegato negli esercizi per la ricerca
-        # degli zeri
-        if sign(prevval) * sign(vect[i]) < 0
-            return i - 1
-        end
-        prevval = vect[i]
-    end
-
-    println("No inversion found, run the simulation for a longer time")
-
-    # Restituisci un indice negativo (impossibile), perché non
-    # abbiamo trovato alcuna inversione.
-    -1
-end
-
-search_inversion([4, 3, 1, -2, -5])
-
-interp(ptA, ptB, y) = ptA[1] + (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (y - ptA[2])
 interp(ptA, ptB) = interp(ptA, ptB, 0)
 
 let p1x = -0.4, p1y = -0.7, p2x = 0.5, p2y = 0.8, y = 0.3
@@ -269,95 +345,121 @@ end
 
 savefig(joinpath(@OUTPUT, "interp-test.svg")) # hide
 
-function invtime(time, vec)
-    idx = search_inversion(vec)
-    timeA, timeB = time[idx:idx + 1]
-    vecA, vecB = vec[idx:idx + 1]
+function period(θ₀; h = 0.01)
+    # Simuliamo finché ω non diventa negativa
 
-    abs(interp((timeA, vecA), (timeB, vecB)))
+    x = [θ₀, 0.]
+    oldx = [0., 0.]
+    t = 0.0
+    while x[2] ≤ 0
+        oldx = x  # Ci serve poi per fare l'interpolazione
+        x = rungekutta(pendulum, x, t, h)
+        t += h
+    end
+
+    # A questo punto, t è un po' più di un semiperiodo.
+
+    # Calcoliamo mediante interpolazione l'istante in cui
+    # si è avuto ω=0
+    t_semip = interp((t - h, oldx[2]), (t, x[2]))
+
+    # Il periodo è due volte il semiperiodo
+    return 2t_semip
 end
-
-period(oscillations) = 2 * invtime(oscillations[:, 1], oscillations[:, 3])
-
-period(oscillations)
 
 ideal_period = 2π / √(g / rodlength)
 
 angles = 0.1:0.1:3.0
-ampl = [period(rungekutta(pendulum, [angle, 0.], 0.0, 3.0, 0.01))
-        for angle in angles]
-plot(angles, ampl, label="", xlabel="Angolo [rad]", ylabel="Periodo [s]")
-scatter!(angles, ampl, label="")
+ampl = [period(angle) for angle in angles]
 
+@printf("%14s\t%-14s\n", "Angolo [rad]", "Periodo [s]")
+for i in eachindex(angles)
+    @printf("%14.1f\t%.7f\n", angles[i], ampl[i])
+end
+
+plot(angles, ampl, label="", xlabel="Angolo [rad]", ylabel="Periodo [s]");
+scatter!(angles, ampl, label="");
 savefig(joinpath(@OUTPUT, "period-vs-angle.svg")) # hide
-
-[angles ampl]
 
 ω0 = 10;
 α = 1.0 / 30;
+endt = 600.0;
 
-function forcedpendulum(
-    ω;
-    init = [0., 0.],
-    startt = 0.,
-    endt = 600.0,  # Deve essere ≫ 1/α
-    deltat = 0.01,
+forcedpendulum(time, x, ω) = [
+    x[2],
+    -ω0^2 * x[1] - α * x[2] + sin(ω * time),
+]
+
+# Usiamo `_` per indicare che non ci interessa salvare la velocità
+# in una variabile, e usiamo una funzione “lambda”
+(time, pos, _) = eqdiff_simulation(
+    rungekutta,
+    (time, x) -> forcedpendulum(time, x, 8.0),
+    [0., 0.],
+    0.,
+    endt,
+    0.1,
 )
-    rungekutta(init, startt, endt, deltat) do t, x
-        [x[2], -ω0^2 * x[1] - α * x[2] + sin(ω * t)]
-    end
-end
 
-oscillations = forcedpendulum(8.)
-plot(oscillations[:, 1], oscillations[:, 2], label="")
+plot(time, pos, label="", xlabel="Tempo [s]", ylabel="Posizione [m]");
 
 savefig(joinpath(@OUTPUT, "forced-pendulum.svg")) # hide
 
-function forced_amplitude(ω, oscillations)
-    # Per comodità estraggo la prima colonna della matrice (quella che
-    # contiene i tempi) nel vettore "timevec"
-    timevec = oscillations[:, 1]
+function forced_pendulum_amplitude(ω)
+    # In Julia posso assegnare a una variabile la definizione di una
+    # funzione!
+    fn = (time, x) -> forcedpendulum(time, x, ω)
 
-    # Questa maschera serve per trascurare le oscillazioni nella prima
-    # parte della simulazione, ossia le prime righe della matrice.
-    # Di fatto quindi ci concentriamo solo sulla "coda" della soluzione,
-    # ossia le ultime righe della matrice
-    mask = timevec .> 10 / α
-    oscill_tail = oscillations[mask, :]
+    # Step 1: lascio che la simulazione proceda finché l'oscillatore
+    # non si stabilizza
 
-    # Calcolo il tempo in corrispondenza della prima inversione
-    # nella "coda" della soluzione
-    idx0 = search_inversion(oscill_tail[:, 3])
-    ptA = oscill_tail[idx0, [1, 3]]
-    ptB = oscill_tail[idx0 + 1, [1, 3]]
-    t0 = interp(ptA, ptB)
-    δt = t0 - oscill_tail[idx0, 1]
-    newsol = forcedpendulum(ω,
-        init=oscill_tail[idx0, 2:3],
-        startt=oscill_tail[idx0, 1],
-        endt=oscill_tail[idx0, 1] + 1.1 * δt,
-        deltat=δt)
+    x = [0., 0.]
+    t = 0.0
 
-    @printf("""ω = %.4f:
-·  t₀ = %.5f, angle(t₀) = %.5f, speed(t₀) = %.5f
-·  δt = %.5f
-·  t₀ + δt = %.5f, angle(t₀ + δt) = %.5f, speed(t₀ + δt) = %.5f
-""",
-        ω,
-        newsol[1, 1], newsol[1, 2], newsol[1,3],
-        δt,
-        newsol[2, 1], newsol[2, 2], newsol[2, 3])
-    abs(newsol[2, 2])
+    while t < 15 / α
+        x = rungekutta(fn, x, t, h)
+        t += h
+    end
+
+    # Step 2: continuo a simulare finché il segno della velocità non
+    # si inverte
+
+    oldx = [0., 0.]
+    while true
+        oldx = x
+        x = rungekutta(fn, x, t, h)
+        t += h
+
+        if x[2] * oldx[2] < 0
+            break
+        end
+    end
+
+    # Step 3: eseguo una interpolazione per sapere di quanto
+    # “arretrare” col tempo. Dovrà essere per forza h_new < 0
+    h_new = interp((-h, oldx[2]), (0, x[2]))
+    @assert h_new < 0
+
+    x = rungekutta(fn, x, t, h_new)
+
+    # Devo usare `abs`: non so a priori se il corpo sarà a destra o a
+    # sinistra dello zero
+    return abs(x[1])
 end
 
-forced_amplitude(9.5, forcedpendulum(9.5))
+forced_pendulum_amplitude(9.5)
 
 # Aggiungiamo 0.01 agli estremi (9 e 11) per evitare la condizione di risonanza
-freq = 9.01:0.1:11.01
-println("The frequencies to be sampled are: $(collect(freq))")
-ampl = [forced_amplitude(ω, forcedpendulum(ω)) for ω in freq]
+freq = 9.01:0.05:11.01
+ampl = [forced_pendulum_amplitude(ω) for ω in freq]
+
+@printf("%14s\t%-14s\n", "ω [Hz]", "Ampiezza [m]")
+for i in eachindex(freq)
+    @printf("%14.2f\t%.9f\n", freq[i], ampl[i])
+end
+
 plot(freq, ampl,
-     label="", xlabel="Frequenza [rad/s]", ylabel="Ampiezza")
-scatter!(freq, ampl, label="")
+     label="", xlabel="Frequenza [rad/s]", ylabel="Ampiezza");
+scatter!(freq, ampl, label="");
 
 savefig(joinpath(@OUTPUT, "forced-pendulum-resonance.svg")) # hide

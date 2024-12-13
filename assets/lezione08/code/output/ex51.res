@@ -1,1 +1,1 @@
-forced_amplitude (generic function with 1 method)
+forced_pendulum_amplitude (generic function with 1 method)

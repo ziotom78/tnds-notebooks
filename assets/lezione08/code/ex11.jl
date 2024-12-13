@@ -1,2 +1,3 @@
 # This file was generated, do not modify it. # hide
-result[1:10, :]
+h = 0.1
+result = euler(oscillatore, [0., 1.], 0., h)

@@ -1,2 +1,3 @@
 # This file was generated, do not modify it. # hide
-size(oscillations, 1)
+rodlength = 1.;
+g = 9.81;

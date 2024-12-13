@@ -1,1 +1,1 @@
-oscillatore (generic function with 1 method)
+euler (generic function with 1 method)

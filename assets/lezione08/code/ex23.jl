@@ -1,11 +1,25 @@
 # This file was generated, do not modify it. # hide
-anim = @animate for h in deltat
-    cur_result = rungekutta(oscillatore, [0., 1.], 0.0, 70.0, h)
-    plot(cur_result[:, 1], cur_result[:, 2],
-         title = @sprintf("h = %.5f", h),
-         label="Eulero", ylim=(-2, 2),
-         xlabel="Tempo [s]", ylabel="Posizione [m]")
-    plot!(cur_result[:, 1], sin.(cur_result[:, 1]), label = "Risultato atteso")
-end
+function eqdiff_simulation(method_fn, problem_fn, x0, t0, tf, h)
+    nsteps = num_of_steps(t0, tf, h)
 
-gif(anim, joinpath(@OUTPUT, "rk.gif"), fps = 1);
+    times = zeros(Float64, nsteps + 1)
+    pos = zeros(Float64, nsteps + 1)
+    vel = zeros(Float64, nsteps + 1)
+
+    times[1] = t0
+    pos[1] = x0[1]
+    vel[1] = x0[2]
+
+    t = t0
+    x = x0
+    for i = 1:nsteps
+        x = method_fn(problem_fn, x, t, h)
+        t += h
+
+        times[i + 1] = t
+        pos[i + 1] = x[1]
+        vel[i + 1] = x[2]
+    end
+
+    return (times, pos, vel)
+end

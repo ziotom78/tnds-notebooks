@@ -1,3 +1,15 @@
 # This file was generated, do not modify it. # hide
-lastpos = [rungekutta(oscillatore, [0., 1.], 0.0, lastt, h)[end, 2] for h in deltat]
-error_rk = abs.(lastpos .- sin(lastt))
+(time_euler, pos_euler, vel_euler) = euler_simulation(
+    [0.0, 1.0],
+    0.0,
+    lastt,
+    h,
+);
+(time_eqdiff, pos_eqdiff, vel_eqdiff) = eqdiff_simulation(
+    euler,
+    oscillatore,
+    [0.0, 1.0],
+    0.0,
+    lastt,
+    h,
+);

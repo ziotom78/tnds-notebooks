@@ -1,9 +1,12 @@
 # This file was generated, do not modify it. # hide
-function plot_pendulum(angle)
-    radius = 200  # Lunghezza del braccio del pendolo
-    y, x = radius .* sincos(π / 2 + angle)
+plot(deltat, error_euler, label = "")
+scatter!(deltat, error_euler, label = "Eulero")
 
-    Luxor.sethue("black")
-    Luxor.line(Luxor.Point(0, 0), Luxor.Point(x, y), :stroke)
-    Luxor.circle(Luxor.Point(x, y), 10, :fill)
-end
+plot!(deltat, error_rk,
+     xscale = :log10, yscale = :log10,
+     xlabel = "Passo d'integrazione",
+     ylabel = @sprintf("Errore a t = %.1f", lastt),
+     label = "")
+scatter!(deltat, error_rk, label = "Runge-Kutta")
+
+savefig(joinpath(@OUTPUT, "euler_rk_comparison.svg")) # hide

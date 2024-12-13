@@ -1,1 +1,1 @@
-nothing
+eqdiff_simulation (generic function with 1 method)

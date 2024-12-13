@@ -1,1 +1,4 @@
-euler (generic function with 1 method)
+3-element Vector{Float64}:
+ 0.0
+ 0.3010299956639812
+ 0.6020599913279624
