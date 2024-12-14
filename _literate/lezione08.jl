@@ -44,9 +44,22 @@ t += h
 # è che il numero `0.1` con cui incrementavamo ogni volta la variabile
 # `t` non è rappresentabile nel formato *floating-point* usato dai
 # calcolatori moderni, che usano lo [standard IEE
-# 754](https://en.wikipedia.org/wiki/IEEE_754). L'errore si è
-# accumulato, passaggio dopo passaggio, diventando visibile solo al
-# terzo passaggio.
+# 754](https://en.wikipedia.org/wiki/IEEE_754); di conseguenza, il
+# computer è stato costretto a scrivere nella variabile `h` una
+# **approssimazione** del valore `0.1`:
+#
+# $$
+# h = 0.1 + \varepsilon.
+# $$
+#
+# Quando si sommano $N$ valori di $h$, si ottiene quindi il risultato
+#
+# $$
+# \sum_{i=1}^N h = N\times 0.1 + N \times \varepsilon.
+# $$
+#
+# L'errore si accumula, passaggio dopo passaggio, diventando visibile
+# nel nostro esempio solo al terzo passaggio ($N = 3$).
 #
 # Considerate ora un codice come questo, che vorrebbe iterare per `t`
 # che va da `0` a `1` in step di `h = 0.1`:
@@ -72,7 +85,12 @@ simulate(0.0, 1.0, 0.1)
 # compiti scritti dei vostri colleghi degli anni scorsi, ma è
 # ovviamente **sbagliata**. Il modo giusto per implementare questo
 # genere di ciclo è di calcolare il numero di iterazioni (come un
-# intero) e poi fare un ciclo for usando solo variabili intere.
+# intero) e poi fare un ciclo for usando solo variabili intere;
+# ovviamente il numero di iterazioni $N$ è dato da
+#
+# $$
+# N = \frac{t_f - t_0}h.
+# $$
 #
 # Definiamo quindi una funzione che, dati i tempi iniziale e finale
 # e il passo $h$, determina il numero di passi:
@@ -104,9 +122,8 @@ simulate_method1(0, 1, 0.1)
 # stesso ordine di grandezza dell'errore di arrotondamento atteso per
 # una variabile `double`: l'implementazione quindi è corretta.
 #
-# Un secondo metodo è quello di evitare di «accumulare» l'incremento
-# `h` nella variabile `t` ad ogni iterazione, ma calcolare ogni volta
-# da capo quest'ultima usando la formula $t_i = t_0 + i \cdot h$:
+# Un'alternativa è quella di aggiornare `t` usando la formula $t_i =
+# t_0 + i \cdot h$:
 
 function simulate_method2(t0, tf, h)
     println("Inizia la simulazione, da t=$t0 a $tf con h=$h")
@@ -125,13 +142,10 @@ end
 
 simulate_method2(0, 1, 0.1)
 
-# Non c'è una grande differenza tra i due metodi: entrambi producono
-# piccoli errori di arrotondamento qua e là, ma la precisione
-# complessiva è confrontabile, e soprattutto in nessuno dei due casi
-# l'errore si accumula. Sentitevi quindi liberi di implementare il
-# metodo che volete nei vostri codici (potete implementarne uno in un
-# esercizio, e l'altro nell'esercizio successivo, così fate pratica
-# con entrambi).
+# Come vedete, non c'è grande differenza tra i due metodi: entrambi
+# producono piccoli errori di arrotondamento qua e là, ma la
+# precisione complessiva è confrontabile, e soprattutto in nessuno dei
+# due casi l'errore si accumula.
 
 # ## Esercizio 8.0: Algebra vettoriale
 #
@@ -285,12 +299,18 @@ end
 #
 # Non scegliete quindi a caso i valori di $h$, ma definiteli sempre in
 # funzione del numero di passi che volete far compiere. Il modo più
-# sicuro è di definire **prima** il numero $N$ di passi, e poi
-# stabilire il valore di $h$ dalla formula
+# sicuro, ancora una volta, è di definire **prima** il numero $N$ di
+# passi, e poi stabilire il valore di $h$ dalla formula
 #
 # $$
 # h = \frac{t_f - t_0}N.
 # $$
+#
+# (Ho scritto: “ancora una volta”, perché questo suggerimento segue la
+# medesima filosofia che ci aveva fatto definire la funzione
+# `num_of_steps` sopra, quando avevamo detto che è meglio stabilire il
+# numero di passi in anticipo per evitare di simulare uno step in più
+# o in meno).
 #
 # Nel codice Julia faremo esattamente così: definiamo un vettore di
 # valori di $N$, chiamato `nsteps`, usando la formula $7\times 10^k$,
@@ -351,10 +371,10 @@ plot(deltat, error_euler,
      xscale = :log10, yscale = :log10,
      xlabel = "Passo d'integrazione",
      ylabel = @sprintf("Errore a t = %.1f", lastt),
-     label = "")
+     label = "");
 scatter!(deltat, error_euler, label = "");
 
-savefig(joinpath(@OUTPUT, "euler_error.svg")) # hide
+savefig(joinpath(@OUTPUT, "euler_error.svg")); # hide
 
 # \fig{euler_error.svg}
 
@@ -517,20 +537,23 @@ end
 
 # Creiamo un plot che mostri visivamente la differenza tra i due metodi:
 
-plot(deltat, error_euler, label = "")
-scatter!(deltat, error_euler, label = "Eulero")
+plot(deltat, error_euler, label = "");
+scatter!(deltat, error_euler, label = "Eulero");
 
 plot!(deltat, error_rk,
      xscale = :log10, yscale = :log10,
      xlabel = "Passo d'integrazione",
      ylabel = @sprintf("Errore a t = %.1f", lastt),
-     label = "")
-scatter!(deltat, error_rk, label = "Runge-Kutta")
-
-savefig(joinpath(@OUTPUT, "euler_rk_comparison.svg")) #hide
+     label = "");
+scatter!(deltat, error_rk, label = "Runge-Kutta");
+savefig(joinpath(@OUTPUT, "euler_rk_comparison.svg")); #hide
 
 # \fig{euler_rk_comparison.svg}
-
+#
+# Dovrebbe esservi ovvio che è sempre meglio preferire il metodo di
+# Runge-Kutta a quello di Eulero (a meno che, ovviamente, un esercizio
+# non vi chieda espressamente di usare il metodo di Eulero!).
+#
 # ## Esercizio 8.3
 #
 # Testo dell'esercizio:
@@ -659,7 +682,7 @@ plot(times, pos,
      xlabel = "Tempo [s]",
      ylabel = "Velocità angolare [rad/s]");
 
-savefig(joinpath(@OUTPUT, "oscillations1.svg")) # hide
+savefig(joinpath(@OUTPUT, "oscillations1.svg")); # hide
 
 # \fig{oscillations1.svg}
 
@@ -707,15 +730,15 @@ savefig(joinpath(@OUTPUT, "oscillations1.svg")) # hide
 # della inversione. Implementiamo una serie di sotto-funzioni, in modo
 # che sia più facile verificare il comportamento di ciascuna.
 # Implementiamo una funzione `interp` che interpoli tra due coppie di
-# punti `ptA` $(t_A, \omega_A)$ e `ptB` $(t_B, \omega_B)$, dato un
+# punti `a` $(t_A, \omega_A)$ e `b` $(t_B, \omega_B)$, dato un
 # certo valore di `ω`:
 
-interp(ptA, ptB, ω) = ptA[1] - (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (ptA[2] - ω)
+interp(a, b, ω) = a[1] - (a[1] - b[1]) / (a[2] - b[2]) * (a[2] - ω)
 
 # Usiamo l'*overloading* per definire una versione più specifica, che
 # calcola il valore dell'interpolazione nel caso $\omega = 0$.
 
-interp(ptA, ptB) = interp(ptA, ptB, 0)
+interp(a, b) = interp(a, b, 0)
 
 # Eseguiamo una volta `interp` per trovare il valore dell'ordinata $y$
 # in corrispondenza dell'ordinata $y = 0.3$ di una una retta passante
@@ -724,16 +747,16 @@ interp(ptA, ptB) = interp(ptA, ptB, 0)
 let p1x = -0.4, p1y = -0.7, p2x = 0.5, p2y = 0.8, y = 0.3
     ## Il comando `plot` richiede di passare un array con le ascisse
     ## e uno con le coordinate…
-    plot([p1x, p2x], [p1y, p2y], label = "")
+    plot([p1x, p2x], [p1y, p2y], label = "");
     ## …mentre la nostra `interp` richiede due coppie (x, y)
     let x = interp([p1x, p1y], [p2x, p2y], y)
         @printf("La retta interpolante passa per (%.1f, %.1f)\n", x, y)
         ## Il comando `scatter` funziona come `plot`
-        scatter!([p1x, x, p2x], [p1y, y, p2y], label = "")
+        scatter!([p1x, x, p2x], [p1y, y, p2y], label = "");
     end
-end
+end;
 
-savefig(joinpath(@OUTPUT, "interp-test.svg")) # hide
+savefig(joinpath(@OUTPUT, "interp-test.svg")); # hide
 
 # \fig{interp-test.svg}
 
@@ -790,7 +813,7 @@ end
 
 plot(angles, ampl, label="", xlabel="Angolo [rad]", ylabel="Periodo [s]");
 scatter!(angles, ampl, label="");
-savefig(joinpath(@OUTPUT, "period-vs-angle.svg")) # hide
+savefig(joinpath(@OUTPUT, "period-vs-angle.svg")); # hide
 
 # \fig{period-vs-angle.svg}
 
@@ -833,7 +856,7 @@ forcedpendulum(time, x, ω) = [
 
 plot(time, pos, label="", xlabel="Tempo [s]", ylabel="Posizione [m]");
 
-savefig(joinpath(@OUTPUT, "forced-pendulum.svg")) # hide
+savefig(joinpath(@OUTPUT, "forced-pendulum.svg")); # hide
 
 # \fig{forced-pendulum.svg}
 
@@ -846,8 +869,8 @@ savefig(joinpath(@OUTPUT, "forced-pendulum.svg")) # hide
 # migliore di procedere è quindi il seguente:
 #
 # 1. Iteriamo RK per un tempo ragionevole in modo da toglierci dalla
-#    regione iniziale di instabilità; qui integro fino al tempo
-#    $15/\alpha$;
+#    regione iniziale di instabilità; nell'esempio sotto, il codice
+#    Julia integra fino al tempo $15/\alpha$;
 #
 # 2. A questo punto il codice cerca nuovamente una inversione nel
 #    segno della velocità;
@@ -865,9 +888,10 @@ savefig(joinpath(@OUTPUT, "forced-pendulum.svg")) # hide
 #    entrambe le direzioni temporali!)
 #
 # 5. Se abbiamo fatto le cose per bene, dopo una *singola* esecuzione
-#    di RK ci troviamo in corrispondenza del massimo. Stampare la
-#    velocità in questo punto dovrebbe quindi mostrare un numero
-#    pressoché nullo
+#    di RK ci troviamo in corrispondenza del massimo. (Suggerimento
+#    per il debug: se stampate con `cerr` il secondo elemento
+#    dell'array `x`, la velocità, dovreste ottenere un numero
+#    pressoché nullo).
 #
 # 6. Se effettivamente la velocità è praticamente nulla (diciamo
 #    $\left|v\right| \leq 10^{-6}\,\text{rad/s}$, il valore della
@@ -905,28 +929,26 @@ function forced_pendulum_amplitude(ω)
 
     ## Step 3: eseguo una interpolazione per sapere di quanto
     ## “arretrare” col tempo. Dovrà essere per forza h_new < 0
+
     h_new = interp((-h, oldx[2]), (0, x[2]))
     @assert h_new < 0
 
     x = rungekutta(fn, x, t, h_new)
 
-    ## Devo usare `abs`: non so a priori se il corpo sarà a destra o a
-    ## sinistra dello zero
+    ## Devo usare `abs`: non so a priori se l'oscillatore è a destra o
+    ## a sinistra dello zero
     return abs(x[1])
 end
 
-# Chiamiamo la funzione `forced_amplitude` su un caso specifico:
-# questo è un numero buono per essere usato in un `assert`. Notate che
-# nel secondo punto (corrispondente al tempo $t + \delta t$) la
-# velocità è nulla.
+# Chiamiamo la funzione `forced_pendulum_amplitude` su un caso
+# specifico: questo è un numero buono per essere usato in un `assert`.
+# Notate che nel secondo punto (corrispondente al tempo $t + \delta
+# t$) la velocità è nulla.
 
 forced_pendulum_amplitude(9.5)
 
-# Ricreiamo ora il grafico presente sul sito del corso. La funzione
-# `forced_amplitude` stampa a video i due punti su cui esegue di nuovo
-# il RK: potete verificare che il secondo punto è effettivamente
-# quello di massimo, perché la velocità è pressoché nulla. Usate i
-# numeri scritti qui sotto per verificare che il vostro codice sia
+# Ricreiamo ora il grafico presente sul sito del corso. Usate alcuni
+# dei numeri scritti qui sotto per verificare che il vostro codice sia
 # corretto.
 
 ## Aggiungiamo 0.01 agli estremi (9 e 11) per evitare la condizione di risonanza
@@ -942,6 +964,6 @@ plot(freq, ampl,
      label="", xlabel="Frequenza [rad/s]", ylabel="Ampiezza");
 scatter!(freq, ampl, label="");
 
-savefig(joinpath(@OUTPUT, "forced-pendulum-resonance.svg")) # hide
+savefig(joinpath(@OUTPUT, "forced-pendulum-resonance.svg")); # hide
 
 # \fig{forced-pendulum-resonance.svg}
