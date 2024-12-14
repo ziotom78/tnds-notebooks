@@ -4,4 +4,4 @@ plot(times, pos,
      xlabel = "Tempo [s]",
      ylabel = "Velocità angolare [rad/s]");
 
-savefig(joinpath(@OUTPUT, "oscillations1.svg")) # hide
+savefig(joinpath(@OUTPUT, "oscillations1.svg")); # hide

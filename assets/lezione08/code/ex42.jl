@@ -1,2 +1,2 @@
 # This file was generated, do not modify it. # hide
-interp(ptA, ptB, ω) = ptA[1] - (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (ptA[2] - ω)
+interp(a, b, ω) = a[1] - (a[1] - b[1]) / (a[2] - b[2]) * (a[2] - ω)

@@ -12,4 +12,4 @@ plot(freq, ampl,
      label="", xlabel="Frequenza [rad/s]", ylabel="Ampiezza");
 scatter!(freq, ampl, label="");
 
-savefig(joinpath(@OUTPUT, "forced-pendulum-resonance.svg")) # hide
+savefig(joinpath(@OUTPUT, "forced-pendulum-resonance.svg")); # hide

@@ -9,4 +9,4 @@ end
 
 plot(angles, ampl, label="", xlabel="Angolo [rad]", ylabel="Periodo [s]");
 scatter!(angles, ampl, label="");
-savefig(joinpath(@OUTPUT, "period-vs-angle.svg")) # hide
+savefig(joinpath(@OUTPUT, "period-vs-angle.svg")); # hide

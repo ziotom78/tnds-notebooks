@@ -31,12 +31,13 @@ function forced_pendulum_amplitude(ω)
 
     # Step 3: eseguo una interpolazione per sapere di quanto
     # “arretrare” col tempo. Dovrà essere per forza h_new < 0
+
     h_new = interp((-h, oldx[2]), (0, x[2]))
     @assert h_new < 0
 
     x = rungekutta(fn, x, t, h_new)
 
-    # Devo usare `abs`: non so a priori se il corpo sarà a destra o a
-    # sinistra dello zero
+    # Devo usare `abs`: non so a priori se l'oscillatore è a destra o
+    # a sinistra dello zero
     return abs(x[1])
 end

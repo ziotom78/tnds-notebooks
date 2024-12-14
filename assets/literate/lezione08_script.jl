@@ -151,10 +151,10 @@ plot(deltat, error_euler,
      xscale = :log10, yscale = :log10,
      xlabel = "Passo d'integrazione",
      ylabel = @sprintf("Errore a t = %.1f", lastt),
-     label = "")
+     label = "");
 scatter!(deltat, error_euler, label = "");
 
-savefig(joinpath(@OUTPUT, "euler_error.svg")) # hide
+savefig(joinpath(@OUTPUT, "euler_error.svg")); # hide
 
 function rungekutta(fn, x, t, h)
     k1 = fn(t, x)
@@ -261,17 +261,16 @@ for i in 1:length(deltat)
     @printf("%.12f\t%.12f\t%.12f\n", deltat[i], lastpos[i], sin(lastt))
 end
 
-plot(deltat, error_euler, label = "")
-scatter!(deltat, error_euler, label = "Eulero")
+plot(deltat, error_euler, label = "");
+scatter!(deltat, error_euler, label = "Eulero");
 
 plot!(deltat, error_rk,
      xscale = :log10, yscale = :log10,
      xlabel = "Passo d'integrazione",
      ylabel = @sprintf("Errore a t = %.1f", lastt),
-     label = "")
-scatter!(deltat, error_rk, label = "Runge-Kutta")
-
-savefig(joinpath(@OUTPUT, "euler_rk_comparison.svg")) #hide
+     label = "");
+scatter!(deltat, error_rk, label = "Runge-Kutta");
+savefig(joinpath(@OUTPUT, "euler_rk_comparison.svg")); #hide
 
 rodlength = 1.;
 g = 9.81;
@@ -325,25 +324,25 @@ plot(times, pos,
      xlabel = "Tempo [s]",
      ylabel = "Velocità angolare [rad/s]");
 
-savefig(joinpath(@OUTPUT, "oscillations1.svg")) # hide
+savefig(joinpath(@OUTPUT, "oscillations1.svg")); # hide
 
-interp(ptA, ptB, ω) = ptA[1] - (ptA[1] - ptB[1]) / (ptA[2] - ptB[2]) * (ptA[2] - ω)
+interp(a, b, ω) = a[1] - (a[1] - b[1]) / (a[2] - b[2]) * (a[2] - ω)
 
-interp(ptA, ptB) = interp(ptA, ptB, 0)
+interp(a, b) = interp(a, b, 0)
 
 let p1x = -0.4, p1y = -0.7, p2x = 0.5, p2y = 0.8, y = 0.3
     # Il comando `plot` richiede di passare un array con le ascisse
     # e uno con le coordinate…
-    plot([p1x, p2x], [p1y, p2y], label = "")
+    plot([p1x, p2x], [p1y, p2y], label = "");
     # …mentre la nostra `interp` richiede due coppie (x, y)
     let x = interp([p1x, p1y], [p2x, p2y], y)
         @printf("La retta interpolante passa per (%.1f, %.1f)\n", x, y)
         # Il comando `scatter` funziona come `plot`
-        scatter!([p1x, x, p2x], [p1y, y, p2y], label = "")
+        scatter!([p1x, x, p2x], [p1y, y, p2y], label = "");
     end
-end
+end;
 
-savefig(joinpath(@OUTPUT, "interp-test.svg")) # hide
+savefig(joinpath(@OUTPUT, "interp-test.svg")); # hide
 
 function period(θ₀; h = 0.01)
     # Simuliamo finché ω non diventa negativa
@@ -379,7 +378,7 @@ end
 
 plot(angles, ampl, label="", xlabel="Angolo [rad]", ylabel="Periodo [s]");
 scatter!(angles, ampl, label="");
-savefig(joinpath(@OUTPUT, "period-vs-angle.svg")) # hide
+savefig(joinpath(@OUTPUT, "period-vs-angle.svg")); # hide
 
 ω0 = 10;
 α = 1.0 / 30;
@@ -403,7 +402,7 @@ forcedpendulum(time, x, ω) = [
 
 plot(time, pos, label="", xlabel="Tempo [s]", ylabel="Posizione [m]");
 
-savefig(joinpath(@OUTPUT, "forced-pendulum.svg")) # hide
+savefig(joinpath(@OUTPUT, "forced-pendulum.svg")); # hide
 
 function forced_pendulum_amplitude(ω)
     # In Julia posso assegnare a una variabile la definizione di una
@@ -437,13 +436,14 @@ function forced_pendulum_amplitude(ω)
 
     # Step 3: eseguo una interpolazione per sapere di quanto
     # “arretrare” col tempo. Dovrà essere per forza h_new < 0
+
     h_new = interp((-h, oldx[2]), (0, x[2]))
     @assert h_new < 0
 
     x = rungekutta(fn, x, t, h_new)
 
-    # Devo usare `abs`: non so a priori se il corpo sarà a destra o a
-    # sinistra dello zero
+    # Devo usare `abs`: non so a priori se l'oscillatore è a destra o
+    # a sinistra dello zero
     return abs(x[1])
 end
 
@@ -462,4 +462,4 @@ plot(freq, ampl,
      label="", xlabel="Frequenza [rad/s]", ylabel="Ampiezza");
 scatter!(freq, ampl, label="");
 
-savefig(joinpath(@OUTPUT, "forced-pendulum-resonance.svg")) # hide
+savefig(joinpath(@OUTPUT, "forced-pendulum-resonance.svg")); # hide

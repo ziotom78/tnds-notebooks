@@ -1,2 +1,2 @@
 # This file was generated, do not modify it. # hide
-interp(ptA, ptB) = interp(ptA, ptB, 0)
+interp(a, b) = interp(a, b, 0)

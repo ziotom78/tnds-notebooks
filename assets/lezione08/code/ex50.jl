@@ -12,4 +12,4 @@
 
 plot(time, pos, label="", xlabel="Tempo [s]", ylabel="Posizione [m]");
 
-savefig(joinpath(@OUTPUT, "forced-pendulum.svg")) # hide
+savefig(joinpath(@OUTPUT, "forced-pendulum.svg")); # hide
