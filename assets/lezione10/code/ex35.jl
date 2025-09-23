@@ -1,3 +1,4 @@
 # This file was generated, do not modify it. # hide
-println("δ1_ref = ", uconvert(u"rad", δ1_ref))
-println("δ2_ref = ", uconvert(u"rad", δ2_ref))
+A(λ1, δ1, λ2, δ2) = (λ2^2 * n(δ2)^2 - λ1^2 * n(δ1)^2) / (λ2^2 - λ1^2)
+B(λ1, δ1, λ2, δ2) = (n(δ2)^2 - n(δ1)^2) / (1/λ2^2 - 1/λ1^2)
+A_and_B(λ1, δ1, λ2, δ2) = (A(λ1, δ1, λ2, δ2), B(λ1, δ1, λ2, δ2))

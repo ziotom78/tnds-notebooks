@@ -1,7 +1,10 @@
 # This file was generated, do not modify it. # hide
-target_ε = 0.001
-noptim_mean = round(Int, (k_mean / target_ε)^2)
-noptim_hm = round(Int, (k_hm / target_ε)^2)
-
-println("N (media) = ", noptim_mean)
-println("N (hit-or-miss) = ", noptim_hm)
+scatter(
+    list_of_N,
+    list_of_errors,
+    xlabel = "N",
+    ylabel = "Errore",
+    xaxis = :log10,
+    yaxis = :log10,
+)
+savefig(joinpath(@OUTPUT, "mc_integrals_err_plot.svg")); # hide

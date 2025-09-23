@@ -502,12 +502,56 @@ savefig(joinpath(@OUTPUT, "mc_integrals.svg")); # hide
 
 \fig{mc_integrals.svg}
 
+Passiamo ora al punto 2: calcoliamo 10.000 volte il valore dell’integrale
+variando il valore di $N$ e disegnamo gli istogrammi:
+
+````julia:ex24
+list_of_N = [500, 1_000, 5_000, 10_000, 50_000, 100_000]
+list_of_plots = []
+list_of_errors = []
+for N in list_of_N
+    let samples = [intmean(glc, xsinx, 0, π / 2, N) for i in 1:10_000]
+        push!(list_of_plots, histogram(samples, label="N = $N"))
+        push!(list_of_errors, std(samples))
+    end
+end
+plot(list_of_plots..., layout=(3, 2), legend=false);
+savefig(joinpath(@OUTPUT, "mc_integrals_varying_N.svg")); # hide
+````
+
+\fig{mc_integrals_varying_N.svg}
+
+Questo è il grafico con l’andamento dell’errore:
+
+````julia:ex25
+scatter(
+    list_of_N,
+    list_of_errors,
+    xlabel = "N",
+    ylabel = "Errore",
+    xaxis = :log10,
+    yaxis = :log10,
+)
+savefig(joinpath(@OUTPUT, "mc_integrals_err_plot.svg")); # hide
+````
+
+\fig{mc_integrals_err_plot.svg}
+
+E questi sono i punti calcolati:
+
+````julia:ex26
+println("N       Errore")
+for (cur_n, cur_err) in zip(list_of_N, list_of_errors)
+    @printf("%d\t%.5f\n", cur_n, cur_err)
+end
+````
+
 Se l'andamento dell'errore è della forma $\epsilon(N) = k/\sqrt{N}$, con $N$
 numero di punti, allora nel nostro caso possiamo stimare $k$ immediatamente
 dalla deviazione standard dei valori in `values` mediante la formula $k =
 \sqrt{N} \times \epsilon(N)$:
 
-````julia:ex24
+````julia:ex27
 k_mean = √100 * std(mean_samples)
 k_hm = √100 * std(mean_hm)
 
@@ -519,7 +563,7 @@ A questo punto, per rispondere alla domanda del problema, è sufficiente
 risolvere l'equazione $0.001 = k/\sqrt{N}$ per $N$, ossia $$N =
 \left(\frac{k}{0.001}\right)^2$$.
 
-````julia:ex25
+````julia:ex28
 target_ε = 0.001
 noptim_mean = round(Int, (k_mean / target_ε)^2)
 noptim_hm = round(Int, (k_hm / target_ε)^2)
@@ -533,7 +577,7 @@ ci vuole molto tempo per ottenere il risultato, verifichiamo il risultato solo
 nel caso del metodo della media, e per un numero ridotto di realizzazioni
 (1000 anziché 10.000):
 
-````julia:ex26
+````julia:ex29
 glc = GLC(1)
 values = [intmean(glc, xsinx, 0, π / 2, noptim_mean) for i in 1:1000]
 histogram(values, label="");
@@ -544,7 +588,7 @@ savefig(joinpath(@OUTPUT, "mc_intmean.svg")); # hide
 
 Il risultato è effettivamente corretto:
 
-````julia:ex27
+````julia:ex30
 std(values)
 ````
 
@@ -625,7 +669,7 @@ libreria di default non ne importa nessuno (simboli come `m`, `s`,
 `mm`, etc., sono molto usati come nomi di variabili, e sarebbe un
 disastro se venissero tutti importati senza criterio!).
 
-````julia:ex28
+````julia:ex31
 using Unitful
 import Unitful: m, cm, mm, nm, s, °, mrad, @u_str
 ````
@@ -640,7 +684,7 @@ esempio i campi elettrici: `E = 10u"N/C"`.
 
 Definiamo una serie di variabili per le costanti fisiche del problema:
 
-````julia:ex29
+````julia:ex32
 σ_θ = 0.3mrad;       # Avrei potuto scrivere σ_θ = 0.3u"mrad"
 θ0_ref = 90°;        # Ugualmente,           θ0_ref = 90u"°"
 Aref = 2.7;
@@ -654,7 +698,7 @@ La funzione `n_cauchy` restituisce $n$ supponendo vera la formula di Cauchy.
 La sintassi con un parametro usa i valori di riferimento di $A$ e $B$ scritti
 sopra.
 
-````julia:ex30
+````julia:ex33
 n_cauchy(λ, A, B) = sqrt(A + B / λ^2)
 n_cauchy(λ) = n_cauchy(λ, Aref, Bref)
 ````
@@ -667,7 +711,7 @@ che esprima sempre il risultato in gradi: per questo scopo c'è la
 funzione `uconvert`, che richiede come primo parametro l'unità di
 misura di *destinazione* (nel nostro caso gradi, quindi `u"°"`).
 
-````julia:ex31
+````julia:ex34
 n(δ) = sin((δ + α) / 2) / sin(α / 2)
 δ(n) = uconvert(u"°", 2asin(n * sin(α / 2)) - α)
 ````
@@ -676,7 +720,7 @@ Queste formule si ricavano banalmente dall'inversione della formula di Cauchy;
 la funzione `A_and_B` calcola contemporaneamente $A$ e $B$, ed è stata
 definita per comodità:
 
-````julia:ex32
+````julia:ex35
 A(λ1, δ1, λ2, δ2) = (λ2^2 * n(δ2)^2 - λ1^2 * n(δ1)^2) / (λ2^2 - λ1^2)
 B(λ1, δ1, λ2, δ2) = (n(δ2)^2 - n(δ1)^2) / (1/λ2^2 - 1/λ1^2)
 A_and_B(λ1, δ1, λ2, δ2) = (A(λ1, δ1, λ2, δ2), B(λ1, δ1, λ2, δ2))
@@ -686,14 +730,14 @@ Calcoliamo allora i valori di riferimento di $n(\lambda_1) = n_1$ e
 $n(\lambda_2) = n_2$, supponendo veri i valori di $A$ e $B$ scritti sopra
 r(`A_ref` e `B_ref`):
 
-````julia:ex33
+````julia:ex36
 n1_ref, n2_ref = n_cauchy(λ1), n_cauchy(λ2)
 ````
 
 Da $n_1$ e $n_2$ calcoliamo quanto aspettarci per $\delta_1$ e
 $\delta_2$:
 
-````julia:ex34
+````julia:ex37
 δ1_ref, δ2_ref = δ(n1_ref), δ(n2_ref)
 ````
 
@@ -701,7 +745,7 @@ Il vostro codice probabilmente stamperà angoli in radianti (è la
 convenzione di `asin` in C++), quindi convertiamo i valori sopra in
 modo che possiate confrontarli col risultato del vostro programma:
 
-````julia:ex35
+````julia:ex38
 println("δ1_ref = ", uconvert(u"rad", δ1_ref))
 println("δ2_ref = ", uconvert(u"rad", δ2_ref))
 ````
@@ -711,7 +755,7 @@ misura di $\delta_1$ e $\delta_2$ va fatta usando l'approssimazione
 Gaussiana con i valori medi `δ1_ref` e `δ2_ref`, e la deviazione
 standard `σ_θ` data dal testo dell'esercizio:
 
-````julia:ex36
+````julia:ex39
 function simulate_experiment(glc, nsim)
     n1_simul = Array{Float64}(undef, nsim)
     n2_simul = Array{Float64}(undef, nsim)
@@ -752,7 +796,7 @@ Nel fare i plot qui sotto mi limito a ripetere l'esperimento 1000
 volte (il testo richiede 10.000 volte). I risultati non cambiano
 molto.
 
-````julia:ex37
+````julia:ex40
 glc = GLC(1)
 n1_simul, n2_simul, A_simul, B_simul = simulate_experiment(glc, 1000)
 
@@ -767,7 +811,7 @@ for i = 1:5
 end
 ````
 
-````julia:ex38
+````julia:ex41
 histogram([n1_simul, n2_simul],
           label = ["n₁" "n₂"],
           layout = (2, 1));
@@ -776,7 +820,7 @@ savefig(joinpath(@OUTPUT, "hist_n1_n2.svg")); # hide
 
 \fig{hist_n1_n2.svg}
 
-````julia:ex39
+````julia:ex42
 scatter(n1_simul, n2_simul, label="");
 savefig(joinpath(@OUTPUT, "scatter_n1_n2.svg")); # hide
 ````
@@ -789,14 +833,14 @@ una normalizzazione. Definiamo quindi la funzione `corr`, che
 calcola il coefficiente di correlazione, analogamente a questa; nel
 vostro codice C++ dovrete invece implementarla usando la formula.
 
-````julia:ex40
+````julia:ex43
 corr(x, y) = cov(x, y) / (std(x) * std(y))
 ````
 
 I valori di $n_1$ ed $n_2$ sono correlati, perché sono entrambi
 stati ricavati dalla medesima stima di $\theta_0$.
 
-````julia:ex41
+````julia:ex44
 corr(n1_simul, n2_simul)
 ````
 
@@ -805,7 +849,7 @@ quest'ultimo, perché altrimenti Julia segnalerebbe che `A_simul` e
 `B_simul` sono incompatibili (essendo combinati nella stessa
 chiamata ad `histogram`):
 
-````julia:ex42
+````julia:ex45
 histogram([A_simul, ustrip.(u"nm^2", B_simul)],
           label = ["A" "B"],
           layout = (2, 1))
@@ -816,7 +860,7 @@ savefig(joinpath(@OUTPUT, "hist_A_B.svg")); # hide
 
 Facciamo anche un grafico X-Y
 
-````julia:ex43
+````julia:ex46
 scatter(A_simul, B_simul, label="");
 savefig(joinpath(@OUTPUT, "scatter_A_B.svg")); # hide
 ````
@@ -827,7 +871,7 @@ Ricalcoliamo qui i coefficienti di correlazione nel caso in cui
 l'esperimento sia rifatto 10.000 volte. Notate che creo di nuovo un
 generatore di numeri casuali.
 
-````julia:ex44
+````julia:ex47
 glc = GLC(1)
 (n1_simul, n2_simul, A_simul, B_simul) = simulate_experiment(glc, 10_000)
 println("Correlazione tra n1 e n2: ", corr(n1_simul, n2_simul))
@@ -849,7 +893,7 @@ quantità misurate in ognuno degli esperimenti Monte Carlo sono $R$, $\Delta x
 
 Definiamo le costanti numeriche del problema, usando ancora Unitful.jl:
 
-````julia:ex45
+````julia:ex48
 δt, δx, δR = 0.01s, 0.001m, 0.0001m;
 ρ, ρ0 = 2700.0u"kg/m^3", 1250.0u"kg/m^3";
 g = 9.81u"m/s^2";
@@ -862,7 +906,7 @@ x1 = 60cm;
 
 Definiamo anche alcune relazioni matematiche.
 
-````julia:ex46
+````julia:ex49
 v_L(R, η) = 2R^2 / (9η) * (ρ - ρ0) * g;
 Δt(R, Δx, η) = Δx / v_L(R, η);
 Δt_true = [Δt(R, Δx_true, η_true) for R in R_true];
@@ -872,7 +916,7 @@ v_L(R, η) = 2R^2 / (9η) * (ρ - ρ0) * g;
 Definiamo ora la funzione `simulate`, che effettua _due_ esperimenti: uno con
 $R = 0.01\,\text{m}$ e l'altro con $R = 0.005\,\text{m}$.
 
-````julia:ex47
+````julia:ex50
 function simulate(glc::GLC, δx, δt, δR)
     # Misura dell'altezza iniziale
     cur_x0 = randgauss(glc, x0, δx)
@@ -901,7 +945,7 @@ end
 Eseguiamo ora 1000 simulazioni e facciamo l'istogramma della stima di $\eta$
 per i due raggi della sferetta.
 
-````julia:ex48
+````julia:ex51
 N = 1_000
 glc = GLC(1)
 
@@ -924,7 +968,7 @@ associate ad unità di misura è necessario specificare l'unità di
 misura usata per arrotondare: con 4 cifre, il valore `1 m` potrebbe
 essere scritto come `1.0000 m` oppure `100.0000 cm`!
 
-````julia:ex49
+````julia:ex52
 # In η1 ed η2 abbiamo già le stime di η considerando tutti
 # e tre gli errori
 println("Tutti gli errori: δη(R1) = ", round(u"kg/m/s", std(η1), digits = 4))

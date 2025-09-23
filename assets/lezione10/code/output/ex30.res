@@ -1,1 +1,1 @@
-n_cauchy (generic function with 2 methods)
+0.0010507793908427429

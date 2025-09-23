@@ -1,1 +1,1 @@
-simulate_experiment (generic function with 1 method)
+(1.6967362539886182, 1.751096919705952)

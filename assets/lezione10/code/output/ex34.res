@@ -1,1 +1,1 @@
-(56.06923804490447°, 62.21990453258211°)
+δ (generic function with 1 method)

@@ -1,4 +1,8 @@
 # This file was generated, do not modify it. # hide
-A(λ1, δ1, λ2, δ2) = (λ2^2 * n(δ2)^2 - λ1^2 * n(δ1)^2) / (λ2^2 - λ1^2)
-B(λ1, δ1, λ2, δ2) = (n(δ2)^2 - n(δ1)^2) / (1/λ2^2 - 1/λ1^2)
-A_and_B(λ1, δ1, λ2, δ2) = (A(λ1, δ1, λ2, δ2), B(λ1, δ1, λ2, δ2))
+σ_θ = 0.3mrad;       # Avrei potuto scrivere σ_θ = 0.3u"mrad"
+θ0_ref = 90°;        # Ugualmente,           θ0_ref = 90u"°"
+Aref = 2.7;
+Bref = 6e4u"nm^2";   # Qui devo usare `u` perché nm² è troppo complicato
+α = 60.0°;
+λ1 = 579.1nm;
+λ2 = 404.7nm;
