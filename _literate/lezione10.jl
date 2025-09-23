@@ -455,6 +455,44 @@ savefig(joinpath(@OUTPUT, "mc_integrals.svg")); # hide
 
 # \fig{mc_integrals.svg}
 
+# Passiamo ora al punto 2: calcoliamo 10.000 volte il valore dell’integrale
+# variando il valore di $N$ e disegnamo gli istogrammi:
+
+list_of_N = [500, 1_000, 5_000, 10_000, 50_000, 100_000]
+list_of_plots = []
+list_of_errors = []
+for N in list_of_N
+    let samples = [intmean(glc, xsinx, 0, π / 2, N) for i in 1:10_000]
+        push!(list_of_plots, histogram(samples, label="N = $N"))
+        push!(list_of_errors, std(samples))
+    end
+end
+plot(list_of_plots..., layout=(3, 2), legend=false);
+savefig(joinpath(@OUTPUT, "mc_integrals_varying_N.svg")); # hide
+
+# \fig{mc_integrals_varying_N.svg}
+
+# Questo è il grafico con l’andamento dell’errore:
+
+scatter(
+    list_of_N,
+    list_of_errors,
+    xlabel = "N",
+    ylabel = "Errore",
+    xaxis = :log10,
+    yaxis = :log10,
+)
+savefig(joinpath(@OUTPUT, "mc_integrals_err_plot.svg")); # hide
+
+# \fig{mc_integrals_err_plot.svg}
+
+# E questi sono i punti calcolati:
+
+println("N       Errore")
+for (cur_n, cur_err) in zip(list_of_N, list_of_errors)
+    @printf("%d\t%.5f\n", cur_n, cur_err)
+end
+
 # Se l'andamento dell'errore è della forma $\epsilon(N) = k/\sqrt{N}$, con $N$
 # numero di punti, allora nel nostro caso possiamo stimare $k$ immediatamente
 # dalla deviazione standard dei valori in `values` mediante la formula $k =
