@@ -816,6 +816,17 @@ scatter!(angles, ampl, label="");
 savefig(joinpath(@OUTPUT, "period-vs-angle.svg")); # hide
 
 # \fig{period-vs-angle.svg}
+#
+# Come potete vedere, per piccole oscillazioni vale l’approssimazione
+# per cui il periodo non dipende dall’ampiezza dell’oscillazione, come
+# spiegato nei testi di fisica (vedi Fanti - Meccanica, sezione 10.4,
+# pag. 181): qui infatti il grafico è pressoché piatto. Ma quando
+# l’angolo diventa superiore a 0.5, la pendenza diventa significativa
+# e l’isocronia non vale più.
+#
+# Con metodi numerici come Runge-Kutta, è quindi possibile andare
+# oltre i casi analitici risolubili con carta e penna e studiare casi
+# più interessanti.
 
 # ## Esercizio 8.4
 #
