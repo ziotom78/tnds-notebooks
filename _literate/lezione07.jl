@@ -250,7 +250,7 @@ println("Secondo integrale: ", midpoint(xsinx, 1, 2, 30))
 #                    0.3005925674684609));
 #   assert(are_close(mp.integrate(1, 2, 30, xsinx),
 #                    1.440482828731412));
-#   fmt::println(stderr, "The midpoint function works correctly! 🥳");
+#   println(cerr, "The midpoint function works correctly! 🥳");
 # }
 # ```
 #
@@ -313,9 +313,9 @@ savefig(joinpath(@OUTPUT, "midpoint-error-log.svg")); # hide
 # Nel vostro codice vorrete probabilmente creare un grafico come
 # questo. Siccome la realizzazione di grafici può essere complessa, il
 # mio consiglio è quello di stampare dapprima i numeri a video usando
-# `cout` o `fmt::print`, e solo una volta che sembrano ragionevoli
-# procedere a creare il plot. Dovreste quindi scrivere l'equivalente
-# in C++ del seguente codice Julia:
+# `std::println`, e solo una volta che sembrano ragionevoli procedere
+# a creare il plot. Dovreste quindi scrivere l'equivalente in C++ del
+# seguente codice Julia:
 
 for i in eachindex(steps)  # `i` will go from 1 to the length of `step`
     ## In Julia, writing $() in a string means that the expression
@@ -403,6 +403,8 @@ function simpson(f, a, b, n::Integer)
     truen = (n % 2 == 0) ? n : (n + 1)
 
     h = (b - a) / truen
+    # In Julia, 1/3 viene interpretato come 1.0 / 3.0
+    # (a differenza del C++)
     acc = 1/3 * (f(a) + f(b))
     for k = 1:(truen - 1)
         acc += 2/3 * (1 + k % 2) * f(a + k * h)
