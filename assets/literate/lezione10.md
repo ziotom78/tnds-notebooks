@@ -61,10 +61,6 @@ livello di singoli capacitori e induttanze nella CPU, che
 “travasano” la carica di un bit nel bit accanto, ed è un'operazione
 velocissima.
 
-> **Piccola nota storica**
->
-> Negli anni '90 il compilatore [Borland C++](https://en.wikipedia.org/wiki/Borland_C%2B%2B) aveva introdotto l'ottimizzazione di tradurre istruzioni come `x *= 2` in `x <<= 1`, e analogamente per la divisione intera per 2 o sue potenze. Questo aveva causato un sensibile aumento di velocità di certi codici, che la Borland aveva pubblicizzato nelle sue brochures! Oggi quest'ottimizzazione è diventata standard su tutti i compilatori, non solo C++, ma all'epoca era un trucco da “addetti ai lavori”, ed aveva suscitato molto interesse il fatto che un compilatore fosse diventato così furbo da saperla applicare in certi casi.
-
 Definiamo ora una funzione `rand` che restituisca un numero casuale
 floating-point compreso in un intervallo:
 
@@ -296,7 +292,7 @@ void test_compute_sums() {
   compute_sums(rng, 5, vec);
   assert(are_close(vec[0], 1.7307902472093701));
   assert(are_close(vec[1], 1.7124183257110417));
-  cerr << "compute_sums() is correct, hurrah! 🥳\n";
+  println(cerr, "compute_sums() is correct, hurrah! 🥳");
 }
 ```
 
