@@ -240,12 +240,12 @@ println("Secondo integrale: ", midpoint(xsinx, 1, 2, 30))
 #   XSinX xsinx{};
 #   Midpoint mp{};
 #
-#   assert(are_close(i.Integrate(0, numbers::pi / 2, 10, xsinx),
-#                    0.9989696941917652);
-#   assert(are_close(i.Integrate(0, numbers::pi / 2, 100, xsinx),
-#                    0999989718940119);
-#   assert(are_close(i.Integrate(numbers::pi / 2, 0, 10, xsinx),
-#                    -0.998969694191765);
+#   assert(are_close(mp.Integrate(0, numbers::pi / 2, 10, xsinx),
+#                    0.9989696941917652));
+#   assert(are_close(mp.Integrate(0, numbers::pi / 2, 100, xsinx),
+#                    0999989718940119));
+#   assert(are_close(mp.Integrate(numbers::pi / 2, 0, 10, xsinx),
+#                    -0.998969694191765));
 #   assert(are_close(mp.integrate(0, 1, 10, xsinx),
 #                    0.3005925674684609));
 #   assert(are_close(mp.integrate(1, 2, 30, xsinx),
