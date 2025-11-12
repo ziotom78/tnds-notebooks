@@ -27,7 +27,7 @@ mutable struct GLC
     GLC(myseed) = new(1664525, 1013904223, 1 << 31, myseed)
 end
 
-# Il tipo `UInt32` corrisponde a `unsigned int` in C++.
+# Il tipo `UInt32` corrisponde a `std::uint32_t` in C++.
 #
 # La strana scrittura `1 << 31` è un'operazione di [bit
 # shift](https://en.wikipedia.org/wiki/Bitwise_operation#Bit_shifts):
