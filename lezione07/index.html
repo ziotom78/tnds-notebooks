@@ -75,12 +75,12 @@ Secondo integrale: 1.440482828731412
   XSinX xsinx{};
   Midpoint mp{};
 
-  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(i.<span class=hljs-built_in >Integrate</span>(<span class=hljs-number >0</span>, numbers::pi / <span class=hljs-number >2</span>, <span class=hljs-number >10</span>, xsinx),
-                   <span class=hljs-number >0.9989696941917652</span>);
-  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(i.<span class=hljs-built_in >Integrate</span>(<span class=hljs-number >0</span>, numbers::pi / <span class=hljs-number >2</span>, <span class=hljs-number >100</span>, xsinx),
-                   <span class=hljs-number >0</span>999989718940119);
-  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(i.<span class=hljs-built_in >Integrate</span>(numbers::pi / <span class=hljs-number >2</span>, <span class=hljs-number >0</span>, <span class=hljs-number >10</span>, xsinx),
-                   <span class=hljs-number >-0.998969694191765</span>);
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(mp.<span class=hljs-built_in >Integrate</span>(<span class=hljs-number >0</span>, numbers::pi / <span class=hljs-number >2</span>, <span class=hljs-number >10</span>, xsinx),
+                   <span class=hljs-number >0.9989696941917652</span>));
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(mp.<span class=hljs-built_in >Integrate</span>(<span class=hljs-number >0</span>, numbers::pi / <span class=hljs-number >2</span>, <span class=hljs-number >100</span>, xsinx),
+                   <span class=hljs-number >0</span>999989718940119));
+  <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(mp.<span class=hljs-built_in >Integrate</span>(numbers::pi / <span class=hljs-number >2</span>, <span class=hljs-number >0</span>, <span class=hljs-number >10</span>, xsinx),
+                   <span class=hljs-number >-0.998969694191765</span>));
   <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(mp.<span class=hljs-built_in >integrate</span>(<span class=hljs-number >0</span>, <span class=hljs-number >1</span>, <span class=hljs-number >10</span>, xsinx),
                    <span class=hljs-number >0.3005925674684609</span>));
   <span class=hljs-built_in >assert</span>(<span class=hljs-built_in >are_close</span>(mp.<span class=hljs-built_in >integrate</span>(<span class=hljs-number >1</span>, <span class=hljs-number >2</span>, <span class=hljs-number >30</span>, xsinx),
@@ -343,7 +343,7 @@ espressione</code>, che crea una funzione anonima usa-e-getta. Ad esempio, per c
 
 <div class=page-foot >
   <div class=copyright >
-    &copy; Maurizio Tomasi. Last modified: November 03, 2025. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+    &copy; Maurizio Tomasi. Last modified: November 12, 2025. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
   </div>
 </div>
 </div>

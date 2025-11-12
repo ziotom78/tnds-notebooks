@@ -32,7 +32,7 @@ mutable struct GLC
 end
 ````
 
-Il tipo `UInt32` corrisponde a `unsigned int` in C++.
+Il tipo `UInt32` corrisponde a `std::uint32_t` in C++.
 
 La strana scrittura `1 << 31` è un'operazione di [bit
 shift](https://en.wikipedia.org/wiki/Bitwise_operation#Bit_shifts):
