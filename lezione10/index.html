@@ -3,21 +3,18 @@
 <span class=hljs-keyword >using</span> Statistics</code></pre> <h2 id=esercizio_100 ><a href="#esercizio_100" class=header-anchor >Esercizio 10.0</a></h2> <p>Definiamo una classe <code>GLC</code> che sia equivalente alla classe <code>Random</code> che vi viene richiesto di implementare in C&#43;&#43;.</p> <p>In Julia non esiste il concetto di «classe», ma esistono le <code>struct</code> che funzionano in modo concettualmente simile. Non permettono di associare metodi, tranne eventualmente un semplice costruttore, e tutti i campi sono pubblici di default.</p> <h3 id=generatore_lineare_congruenziale ><a href="#generatore_lineare_congruenziale" class=header-anchor >Generatore Lineare Congruenziale</a></h3> <pre><code class="julia hljs"><span class=hljs-keyword >mutable struct</span> GLC
     a::<span class=hljs-built_in >UInt32</span>
     c::<span class=hljs-built_in >UInt32</span>
-    m::<span class=hljs-built_in >UInt32</span>
     seed::<span class=hljs-built_in >UInt32</span>
 
-    GLC(myseed) = new(<span class=hljs-number >1664525</span>, <span class=hljs-number >1013904223</span>, <span class=hljs-number >1</span> &lt;&lt; <span class=hljs-number >31</span>, myseed)
-<span class=hljs-keyword >end</span></code></pre> <p>Il tipo <code>UInt32</code> corrisponde a <code>std::uint32_t</code> in C&#43;&#43;.</p> <p>La strana scrittura <code>1 &lt;&lt; 31</code> è un&#39;operazione di <a href="https://en.wikipedia.org/wiki/Bitwise_operation#Bit_shifts">bit shift</a>: dice di considerare il numero <code>1</code> in binario, e di spostarlo a sinistra, aggiungendo quindi alla sua destra tanti zeri quanti il secondo operando &#40;31&#41;. Ecco alcuni esempi, dove i numeri che iniziano con <code>0b</code> sono scritti in binario &#40;è una convenzione del C&#43;&#43; e di Julia&#41;:</p> <pre><code class="text hljs">0b10010 &lt;&lt; 1 == 0b100100    (uno zero aggiunto alla fine)
-0b10010 &lt;&lt; 3 == 0b10010000  (tre zeri aggiunti alla fine)
-0b10010 &gt;&gt; 2 == 0b100       (due cifre tolte alla fine)</code></pre> <p>Potete comprendere il significato dell&#39;operazione se pensate al caso decimale: se sposto un numero come <code>1</code> a sinistra, aggiungendo 31 zeri, lo sto moltiplicando per <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><msup><mn>0</mn><mn>31</mn></msup></mrow><annotation encoding="application/x-tex">10^{31}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.8141079999999999em;vertical-align:0em;"></span><span class=mord >1</span><span class=mord ><span class=mord >0</span><span class=msupsub ><span class=vlist-t ><span class=vlist-r ><span class=vlist  style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">31</span></span></span></span></span></span></span></span></span></span></span></span>, ottenendo quindi il numero <code>1e&#43;31</code>. Analogamente, se tolgo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> cifre a destra di un numero, lo sto <em>dividendo</em> per <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><msup><mn>0</mn><mi>N</mi></msup></mrow><annotation encoding="application/x-tex">10^N</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.8413309999999999em;vertical-align:0em;"></span><span class=mord >1</span><span class=mord ><span class=mord >0</span><span class=msupsub ><span class=vlist-t ><span class=vlist-r ><span class=vlist  style="height:0.8413309999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.10903em;">N</span></span></span></span></span></span></span></span></span></span></span>.</p> <p>Nel caso binario, <code>1 &lt;&lt; 31</code> vuol dire moltiplicare <code>1</code> per <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>31</mn></msup></mrow><annotation encoding="application/x-tex">2^{31}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.8141079999999999em;vertical-align:0em;"></span><span class=mord ><span class=mord >2</span><span class=msupsub ><span class=vlist-t ><span class=vlist-r ><span class=vlist  style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">31</span></span></span></span></span></span></span></span></span></span></span></span>, ma quest&#39;operazione è molto più rapida che usando <code>pow&#40;&#41;</code> in C&#43;&#43; o l&#39;operatore <code>^</code> in Julia, perché il bit-shift viene fatto a livello di singoli capacitori e induttanze nella CPU, che “travasano” la carica di un bit nel bit accanto, ed è un&#39;operazione velocissima.</p> <p>Definiamo ora una funzione <code>rand</code> che restituisca un numero casuale floating-point compreso in un intervallo:</p> <pre><code class="julia hljs"><span class=hljs-meta >@doc</span> <span class=hljs-string >&quot;&quot;&quot;
+    GLC(myseed) = new(<span class=hljs-number >1664525</span>, <span class=hljs-number >1013904223</span>, myseed)
+<span class=hljs-keyword >end</span></code></pre> <p>Il tipo <code>UInt32</code> corrisponde a <code>std::uint32_t</code> in C&#43;&#43;.</p> <p>Definiamo ora una funzione <code>rand</code> che restituisca un numero casuale floating-point compreso in un intervallo:</p> <pre><code class="julia hljs"><span class=hljs-meta >@doc</span> <span class=hljs-string >&quot;&quot;&quot;
     rand(glc::GLC, xmin, xmax)
 
 Return a pseudo-random number uniformly distributed in the
 interval [xmin, xmax).
 &quot;&quot;&quot;</span>
 <span class=hljs-keyword >function</span> rand(glc::GLC, xmin, xmax)
-    glc.seed = (glc.a * glc.seed + glc.c) % glc.m
-    xmin + (xmax - xmin) * glc.seed / glc.m
+    glc.seed = <span class=hljs-built_in >UInt32</span>(glc.a * glc.seed + glc.c)
+    xmin + (xmax - xmin) * glc.seed / (<span class=hljs-number >2.0</span>^<span class=hljs-number >32</span>)
 <span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">rand</code></pre>
 <p>È molto comodo avere anche una funzione <code>rand</code> che usi l&#39;intervallo <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy=false >[</mo><mn>0</mn><mo separator=true >,</mo><mn>1</mn><mo stretchy=false >]</mo></mrow><annotation encoding="application/x-tex">[0, 1]</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >[</span><span class=mord >0</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >1</span><span class=mclose >]</span></span></span></span>.</p>
 <pre><code class="julia hljs"><span class=hljs-meta >@doc</span> <span class=hljs-string >&quot;&quot;&quot;
@@ -31,11 +28,11 @@ rand(glc::GLC) = rand(glc, <span class=hljs-number >0.0</span>, <span class=hljs
 <pre><code class="julia hljs">glc = GLC(<span class=hljs-number >1</span>)
 <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:<span class=hljs-number >5</span>
     println(i, <span class=hljs-string >&quot;: &quot;</span>, rand(glc))
-<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">1: 0.47291105054318905
-2: 0.7385413474403322
-3: 0.008484064601361752
-4: 0.40976652735844254
-5: 0.10108725726604462
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">1: 0.23645552527159452
+2: 0.3692706737201661
+3: 0.5042420323006809
+4: 0.7048832636792213
+5: 0.05054362863302231
 </code></pre>
 <p>Preoccupatevi quindi di creare una serie di <code>assert</code> nel vostro codice C&#43;&#43; che verifichino che ottenete gli stessi valori se partite dallo stesso seme &#40;<code>1</code>&#41;, possibilmente in una funzione <code>test_random_numbers&#40;&#41;</code> invocata all&#39;inizio del vostro <code>main</code>.</p>
 <p>Quando si implementano numeri pseudo-casuali, è sempre bene farsi un&#39;idea della distribuzione dei valori. Disegnamo quindi l&#39;istogramma della distribuzione di un gran numero di campioni, e verifichiamo che siano uniformemente distribuiti nell&#39;intervallo &#91;0, 1&#41;.</p>
@@ -54,11 +51,11 @@ randexp(glc::GLC, λ) = -log(<span class=hljs-number >1</span> - rand(glc)) / λ
 <pre><code class="julia hljs">glc = GLC(<span class=hljs-number >1</span>)
 <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:<span class=hljs-number >5</span>
     println(i, <span class=hljs-string >&quot;: &quot;</span>, randexp(glc, <span class=hljs-number >1</span>))
-<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">1: 0.6403859601352556
-2: 1.3414791243855002
-3: 0.008520259140710315
-4: 0.5272371040158115
-5: 0.10656930958385337
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">1: 0.26978390490222603
+2: 0.46087846840742835
+3: 0.7016674397006556
+4: 1.2203842845757569
+5: 0.05186569884606859
 </code></pre>
 <p>Questo è l&#39;istogramma</p>
 <pre><code class="julia hljs">histogram([randexp(glc, <span class=hljs-number >1</span>) <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:<span class=hljs-number >10000</span>], label=<span class=hljs-string >&quot;&quot;</span>);</code></pre>
@@ -85,11 +82,11 @@ Box-Müller algorithm.
 <pre><code class="julia hljs">glc = GLC(<span class=hljs-number >1</span>)
 <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:<span class=hljs-number >5</span>
     println(i, <span class=hljs-string >&quot;: &quot;</span>, randgauss(glc, <span class=hljs-number >2</span>, <span class=hljs-number >1</span>))
-<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">1: 1.9119660920460757
-2: -0.6053171651252578
-3: 1.8526405678280609
-4: 2.8326279901403026
-5: 1.5348644738998436
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">1: 0.8431656465550212
+2: 1.6726969052061536
+3: 0.332826743781228
+4: 1.3296417147047936
+5: 0.16318824383921404
 </code></pre>
 <p>Questo è l&#39;istogramma:</p>
 <pre><code class="julia hljs">histogram([randgauss(glc, <span class=hljs-number >2</span>, <span class=hljs-number >1</span>) <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:<span class=hljs-number >10000</span>], label=<span class=hljs-string >&quot;&quot;</span>);</code></pre>
@@ -115,11 +112,11 @@ accept-reject algorithm.
 <pre><code class="julia hljs">glc = GLC(<span class=hljs-number >1</span>)
 <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:<span class=hljs-number >5</span>
     println(i, <span class=hljs-string >&quot;: &quot;</span>, randgauss_ar(glc, <span class=hljs-number >2</span>, <span class=hljs-number >1</span>))
-<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">1: 1.7291105054318905
-2: 2.4952592495828867
-3: 2.009022830054164
-4: 0.6520544346421957
-5: 1.318840131163597
+<span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">1: 2.0424203230068088
+2: 2.828870958648622
+3: 3.8616447784006596
+4: 1.92200440261513
+5: 0.30638940911740065
 </code></pre>
 <p>Questo è l&#39;istogramma:</p>
 <pre><code class="julia hljs">histogram([randgauss_ar(glc, <span class=hljs-number >2</span>, <span class=hljs-number >1</span>) <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:<span class=hljs-number >10000</span>], label=<span class=hljs-string >&quot;&quot;</span>);</code></pre>
@@ -146,8 +143,8 @@ vec = <span class=hljs-built_in >Array</span>{<span class=hljs-built_in >Float64
 <span class=hljs-comment ># casuale nell&#x27;intervallo 0…5.</span>
 computesums!(glc, <span class=hljs-number >5</span>, vec)
 println(<span class=hljs-string >&quot;vec[1] = &quot;</span>, vec[<span class=hljs-number >1</span>])
-println(<span class=hljs-string >&quot;vec[2] = &quot;</span>, vec[<span class=hljs-number >2</span>])</code></pre><pre><code class="plaintext hljs">vec[1] = 1.7307902472093701
-vec[2] = 1.7124183257110417
+println(<span class=hljs-string >&quot;vec[2] = &quot;</span>, vec[<span class=hljs-number >2</span>])</code></pre><pre><code class="plaintext hljs">vec[1] = 1.865395123604685
+vec[2] = 2.356209162855521
 </code></pre>
 <p>Potete usare questi numeri in un <code>assert</code> per verificare la vostra implementazione di <code>compute_sums</code> &#40;mettete pure tutto nello stesso file del <code>main</code>&#41;:</p>
 <pre><code class="cpp hljs"><span class=hljs-function ><span class=hljs-type >void</span> <span class=hljs-title >test_compute_sums</span><span class=hljs-params >()</span> </span>{
@@ -281,18 +278,18 @@ using the hit-or-miss method with ``N`` points, assuming that
 <p>Verifichiamo che il codice compili, e che produca un risultato sensato. Teniamo presente che <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mo>∫</mo><mn>0</mn><mrow><mi>π</mi><mi mathvariant=normal >/</mi><mn>2</mn></mrow></msubsup><mi>x</mi><mi>sin</mi><mo>⁡</mo><mi>x</mi><mtext> </mtext><mi mathvariant=normal >d</mi><mi>x</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\int_0^{\pi/2} x \sin x\,\mathrm{d}x = 1</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1.43872em;vertical-align:-0.35582em;"></span><span class=mop ><span class="mop op-symbol small-op" style="margin-right:0.19445em;position:relative;top:-0.0005599999999999772em;">∫</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:1.0829em;"><span style="top:-2.34418em;margin-left:-0.19445em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span><span style="top:-3.2579000000000002em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">π</span><span class="mord mtight">/2</span></span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.35582em;"><span></span></span></span></span></span></span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">x</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mop >sin</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">x</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class="mord mathrm">d</span><span class="mord mathnormal">x</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >1</span></span></span></span>; inoltre, siccome <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mi>sin</mi><mo>⁡</mo><mo stretchy=false >(</mo><mi>x</mi><mo stretchy=false >)</mo></mrow><annotation encoding="application/x-tex">x \sin(x)</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">x</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mop >sin</span><span class=mopen >(</span><span class="mord mathnormal">x</span><span class=mclose >)</span></span></span></span> è una funzione limitata in <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy=false >[</mo><mn>0</mn><mo separator=true >,</mo><mn>1</mn><mo stretchy=false >]</mo></mrow><annotation encoding="application/x-tex">[0, 1]</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class=mopen >[</span><span class=mord >0</span><span class=mpunct >,</span><span class=mspace  style="margin-right:0.16666666666666666em;"></span><span class=mord >1</span><span class=mclose >]</span></span></span></span>, possiamo porre <code>fmax &#61; π/2</code> nella chiamata a <code>inthm</code>:</p>
 <pre><code class="julia hljs">xsinx(x) = x * sin(x)
 println(<span class=hljs-string >&quot;Integrale (metodo media):&quot;</span>, intmean(GLC(<span class=hljs-number >1</span>), xsinx, <span class=hljs-number >0</span>, <span class=hljs-literal >π</span>/<span class=hljs-number >2</span>, <span class=hljs-number >100</span>))
-println(<span class=hljs-string >&quot;Integrale (metodo hit-or-miss):&quot;</span>, inthm(GLC(<span class=hljs-number >1</span>), xsinx, <span class=hljs-number >0</span>, <span class=hljs-literal >π</span>/<span class=hljs-number >2</span>, <span class=hljs-literal >π</span>/<span class=hljs-number >2</span>, <span class=hljs-number >100</span>))</code></pre><pre><code class="plaintext hljs">Integrale (metodo media):1.104429136335655
-Integrale (metodo hit-or-miss):0.9376124181034889
+println(<span class=hljs-string >&quot;Integrale (metodo hit-or-miss):&quot;</span>, inthm(GLC(<span class=hljs-number >1</span>), xsinx, <span class=hljs-number >0</span>, <span class=hljs-literal >π</span>/<span class=hljs-number >2</span>, <span class=hljs-literal >π</span>/<span class=hljs-number >2</span>, <span class=hljs-number >100</span>))</code></pre><pre><code class="plaintext hljs">Integrale (metodo media):1.0178979999547204
+Integrale (metodo hit-or-miss):1.1596785171279995
 </code></pre>
 <p>Implementate degli <code>assert</code> che verifichino che ottenete gli stessi risultati nella vostra implementazione C&#43;&#43;. Come già ricordato sopra, fate molta attenzione ad inizializzare il generatore di numeri pseudo-casuali con lo stesso seme &#40;<code>1</code> in questo caso&#41;. Notate anche che il codice sopra usa <strong>due</strong> generatori di numeri casuali: uno per <code>intmean</code> e l&#39;altro per <code>inthm</code>. Se voi invece ne usate uno solo e chiamate <code>intmean</code> e poi <code>inthm</code> passando sempre quello, anche se avete implementato correttamente entrambi i metodi, per <code>intmean</code> lo stesso numero ma per <code>inthm</code> un numero diverso&#33;</p>
 <p>Eseguiamo ora il calcolo per 10.000 volte e facciamone l&#39;istogramma: osserviamo che la distribuzione è approssimativamente una Gaussiana, come previsto.</p>
-<pre><code class="julia hljs">glc = GLC(<span class=hljs-number >1</span>)
-mean_samples = [intmean(glc, xsinx, <span class=hljs-number >0</span>, <span class=hljs-literal >π</span> / <span class=hljs-number >2</span>, <span class=hljs-number >100</span>) <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:<span class=hljs-number >10_000</span>]
-histogram(mean_samples, label=<span class=hljs-string >&quot;Media&quot;</span>)
-
-glc = GLC(<span class=hljs-number >1</span>)  <span class=hljs-comment ># Reset the random generator</span>
+<pre><code class="julia hljs">glc = GLC(<span class=hljs-number >1</span>)  <span class=hljs-comment ># Reset the random generator</span>
 mean_hm = [inthm(glc, xsinx, <span class=hljs-number >0</span>, <span class=hljs-literal >π</span> / <span class=hljs-number >2</span>, <span class=hljs-literal >π</span> / <span class=hljs-number >2</span>, <span class=hljs-number >100</span>) <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:<span class=hljs-number >10_000</span>]
-histogram!(mean_hm, label=<span class=hljs-string >&quot;Hit-or-miss&quot;</span>);</code></pre>
+histogram(mean_hm, label=<span class=hljs-string >&quot;Hit-or-miss&quot;</span>);
+
+glc = GLC(<span class=hljs-number >1</span>)
+mean_samples = [intmean(glc, xsinx, <span class=hljs-number >0</span>, <span class=hljs-literal >π</span> / <span class=hljs-number >2</span>, <span class=hljs-number >100</span>) <span class=hljs-keyword >for</span> i <span class=hljs-keyword >in</span> <span class=hljs-number >1</span>:<span class=hljs-number >10_000</span>]
+histogram!(mean_samples, label=<span class=hljs-string >&quot;Media&quot;</span>)</code></pre>
 <img src="/tnds-notebooks/assets/lezione10/code/output/mc_integrals.svg" alt="">
 <p>Passiamo ora al punto 2: calcoliamo 10.000 volte il valore dell’integrale variando il valore di <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> e disegnamo gli istogrammi:</p>
 <pre><code class="julia hljs">list_of_N = [<span class=hljs-number >500</span>, <span class=hljs-number >1_000</span>, <span class=hljs-number >5_000</span>, <span class=hljs-number >10_000</span>, <span class=hljs-number >50_000</span>, <span class=hljs-number >100_000</span>]
@@ -321,12 +318,12 @@ plot(list_of_plots..., layout=(<span class=hljs-number >3</span>, <span class=hl
 <span class=hljs-keyword >for</span> (cur_n, cur_err) <span class=hljs-keyword >in</span> zip(list_of_N, list_of_errors)
     <span class=hljs-meta >@printf</span>(<span class=hljs-string >&quot;%d\t%.5f\n&quot;</span>, cur_n, cur_err)
 <span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">N       Errore
-500	0.03583
-1000	0.02528
-5000	0.01110
-10000	0.00800
+500	0.03541
+1000	0.02521
+5000	0.01128
+10000	0.00797
 50000	0.00352
-100000	0.00256
+100000	0.00253
 </code></pre>
 <p>Se l&#39;andamento dell&#39;errore è della forma <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ϵ</mi><mo stretchy=false >(</mo><mi>N</mi><mo stretchy=false >)</mo><mo>=</mo><mi>k</mi><mi mathvariant=normal >/</mi><msqrt><mi>N</mi></msqrt></mrow><annotation encoding="application/x-tex">\epsilon(N) = k/\sqrt{N}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">ϵ</span><span class=mopen >(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class=mclose >)</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:1.176665em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class=mord >/</span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.9266650000000001em;"><span class=svg-align  style="top:-3em;"><span class=pstrut  style="height:3em;"></span><span class=mord  style="padding-left:0.833em;"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span><span style="top:-2.886665em;"><span class=pstrut  style="height:3em;"></span><span class=hide-tail  style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
 c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
@@ -356,8 +353,8 @@ M834 80h400000v40h-400000z'/></svg></span></span></span><span class=vlist-s >​
 k_hm = √<span class=hljs-number >100</span> * std(mean_hm)
 
 println(<span class=hljs-string >&quot;K (media) = &quot;</span>, k_mean)
-println(<span class=hljs-string >&quot;K (hit-or-miss) = &quot;</span>, k_hm)</code></pre><pre><code class="plaintext hljs">K (media) = 0.7985677481765083
-K (hit-or-miss) = 1.231394840070226
+println(<span class=hljs-string >&quot;K (hit-or-miss) = &quot;</span>, k_hm)</code></pre><pre><code class="plaintext hljs">K (media) = 0.8028925606426461
+K (hit-or-miss) = 1.2294702831455502
 </code></pre>
 <p>A questo punto, per rispondere alla domanda del problema, è sufficiente risolvere l&#39;equazione <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0.001</mn><mo>=</mo><mi>k</mi><mi mathvariant=normal >/</mi><msqrt><mi>N</mi></msqrt></mrow><annotation encoding="application/x-tex">0.001 = k/\sqrt{N}</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.64444em;vertical-align:0em;"></span><span class=mord >0.001</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span><span class=mrel >=</span><span class=mspace  style="margin-right:0.2777777777777778em;"></span></span><span class=base ><span class=strut  style="height:1.176665em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class=mord >/</span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.9266650000000001em;"><span class=svg-align  style="top:-3em;"><span class=pstrut  style="height:3em;"></span><span class=mord  style="padding-left:0.833em;"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span><span style="top:-2.886665em;"><span class=pstrut  style="height:3em;"></span><span class=hide-tail  style="min-width:0.853em;height:1.08em;"><svg width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
 c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
@@ -379,8 +376,8 @@ noptim_mean = round(<span class=hljs-built_in >Int</span>, (k_mean / target_ε)^
 noptim_hm = round(<span class=hljs-built_in >Int</span>, (k_hm / target_ε)^<span class=hljs-number >2</span>)
 
 println(<span class=hljs-string >&quot;N (media) = &quot;</span>, noptim_mean)
-println(<span class=hljs-string >&quot;N (hit-or-miss) = &quot;</span>, noptim_hm)</code></pre><pre><code class="plaintext hljs">N (media) = 637710
-N (hit-or-miss) = 1516333
+println(<span class=hljs-string >&quot;N (hit-or-miss) = &quot;</span>, noptim_hm)</code></pre><pre><code class="plaintext hljs">N (media) = 644636
+N (hit-or-miss) = 1511597
 </code></pre>
 <p>Per verificare la correttezza del risultato, rifacciamo l&#39;istogramma. Siccome ci vuole molto tempo per ottenere il risultato, verifichiamo il risultato solo nel caso del metodo della media, e per un numero ridotto di realizzazioni &#40;1000 anziché 10.000&#41;:</p>
 <pre><code class="julia hljs">glc = GLC(<span class=hljs-number >1</span>)
@@ -388,7 +385,7 @@ values = [intmean(glc, xsinx, <span class=hljs-number >0</span>, <span class=hlj
 histogram(values, label=<span class=hljs-string >&quot;&quot;</span>);</code></pre>
 <img src="/tnds-notebooks/assets/lezione10/code/output/mc_intmean.svg" alt="">
 <p>Il risultato è effettivamente corretto:</p>
-<pre><code class="julia hljs">std(values)</code></pre><pre><code class="plaintext hljs">0.0010507793908427429</code></pre>
+<pre><code class="julia hljs">std(values)</code></pre><pre><code class="plaintext hljs">0.0009905890238285527</code></pre>
 <h1 id=lezione_12_simulazione_di_un_esperimento ><a href="#lezione_12_simulazione_di_un_esperimento" class=header-anchor >Lezione 12: Simulazione di un esperimento</a></h1>
 <p>L&#39;esercizio di questa lezione è <strong>estremamente</strong> importante, perché le tecniche Monte Carlo sono molto diffuse in fisica. &#40;E inoltre questo è un tipo di tema d&#39;esame che ricorre spesso&#33;&#41;</p>
 <p>Ne approfitto anche per mostrarvi un modo di scrivere codice che espliciti le unità di misura e faccia automaticamente un controllo dimensionale. In C&#43;&#43; questo sarebbe fattibile usando la programmazione template, che non è stata però quasi mai usata per lo svolgimento degli esercizi; tenete presente nei vostri futuri progetti che librerie come <a href="https://mpusz.github.io/mp-units/latest/">mp-units</a>, <a href="https://www.boost.org/doc/libs/1_65_0/doc/html/boost_units.html">Boost.units</a>, <a href="https://github.com/bernedom/SI">SI</a>, <a href="https://github.com/nholthaus/units">units</a>, etc. possono essere usate per specificare le unità di misura di variabili e costanti, e per verificarne la consistenza nel proprio codice.</p>
@@ -494,11 +491,11 @@ println(repeat(<span class=hljs-string >&#x27;-&#x27;</span>, <span class=hljs-n
             n1_simul[i], n2_simul[i], A_simul[i], ustrip(<span class=hljs-string >u&quot;nm^2&quot;</span>, B_simul[i]))
 <span class=hljs-keyword >end</span></code></pre><pre><code class="plaintext hljs">            n₁             n₂              A        B [nm²]
 --------------------------------------------------------------
-      1.696336       1.751088       2.697376   6.042476e+04
-      1.696530       1.751072       2.698717   6.019579e+04
-      1.697061       1.751154       2.701963   5.971105e+04
-      1.696581       1.750721       2.700224   5.974773e+04
-      1.696977       1.751137       2.701460   5.978394e+04
+      1.696868       1.751023       2.701121   5.977395e+04
+      1.696551       1.750981       2.699159   6.007132e+04
+      1.696920       1.750983       2.701600   5.967257e+04
+      1.697092       1.751081       2.702416   5.959529e+04
+      1.696702       1.751176       2.699506   6.012627e+04
 </code></pre>
 <pre><code class="julia hljs">histogram([n1_simul, n2_simul],
           label = [<span class=hljs-string >&quot;n₁&quot;</span> <span class=hljs-string >&quot;n₂&quot;</span>],
@@ -509,7 +506,7 @@ println(repeat(<span class=hljs-string >&#x27;-&#x27;</span>, <span class=hljs-n
 <p>Il package <code>Statistics</code> di Julia implementa il calcolo della covarianza tra due serie, che è uguale alla correlazione a meno di una normalizzazione. Definiamo quindi la funzione <code>corr</code>, che calcola il coefficiente di correlazione, analogamente a questa; nel vostro codice C&#43;&#43; dovrete invece implementarla usando la formula.</p>
 <pre><code class="julia hljs">corr(x, y) = cov(x, y) / (std(x) * std(y))</code></pre><pre><code class="plaintext hljs">corr (generic function with 1 method)</code></pre>
 <p>I valori di <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>n</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">n_1</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.58056em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">n</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> ed <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>n</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">n_2</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.58056em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal">n</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> sono correlati, perché sono entrambi stati ricavati dalla medesima stima di <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>θ</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\theta_0</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.84444em;vertical-align:-0.15em;"></span><span class=mord ><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span><span class=msupsub ><span class="vlist-t vlist-t2"><span class=vlist-r ><span class=vlist  style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02778em;margin-right:0.05em;"><span class=pstrut  style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class=vlist-s >​</span></span><span class=vlist-r ><span class=vlist  style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>.</p>
-<pre><code class="julia hljs">corr(n1_simul, n2_simul)</code></pre><pre><code class="plaintext hljs">0.5141392923977056</code></pre>
+<pre><code class="julia hljs">corr(n1_simul, n2_simul)</code></pre><pre><code class="plaintext hljs">0.502322551936178</code></pre>
 <p>Nel fare l&#39;istogramma di <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi></mrow><annotation encoding="application/x-tex">A</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal">A</span></span></span></span> e <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>B</mi></mrow><annotation encoding="application/x-tex">B</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span></span></span></span>, rimuoviamo le unità di misura da quest&#39;ultimo, perché altrimenti Julia segnalerebbe che <code>A_simul</code> e <code>B_simul</code> sono incompatibili &#40;essendo combinati nella stessa chiamata ad <code>histogram</code>&#41;:</p>
 <pre><code class="julia hljs">histogram([A_simul, ustrip.(<span class=hljs-string >u&quot;nm^2&quot;</span>, B_simul)],
           label = [<span class=hljs-string >&quot;A&quot;</span> <span class=hljs-string >&quot;B&quot;</span>],
@@ -522,8 +519,8 @@ println(repeat(<span class=hljs-string >&#x27;-&#x27;</span>, <span class=hljs-n
 <pre><code class="julia hljs">glc = GLC(<span class=hljs-number >1</span>)
 (n1_simul, n2_simul, A_simul, B_simul) = simulate_experiment(glc, <span class=hljs-number >10_000</span>)
 println(<span class=hljs-string >&quot;Correlazione tra n1 e n2: &quot;</span>, corr(n1_simul, n2_simul))
-println(<span class=hljs-string >&quot;Correlazione tra A e B: &quot;</span>, corr(A_simul, B_simul))</code></pre><pre><code class="plaintext hljs">Correlazione tra n1 e n2: 0.49893100194096596
-Correlazione tra A e B: -0.8706760061112578
+println(<span class=hljs-string >&quot;Correlazione tra A e B: &quot;</span>, corr(A_simul, B_simul))</code></pre><pre><code class="plaintext hljs">Correlazione tra n1 e n2: 0.504788364051966
+Correlazione tra A e B: -0.8667564419792286
 </code></pre>
 <h2 id=esercizio_121_attrito_viscoso_facoltativo ><a href="#esercizio_121_attrito_viscoso_facoltativo" class=header-anchor >Esercizio 12.1 — Attrito viscoso &#40;facoltativo&#41;</a></h2>
 <p>L&#39;esercizio 12.1 è preso da un vecchio tema d&#39;esame, e va svolto in modo molto simile al precedente. Si tratta di misurare il coefficiente di viscosità <span class=katex ><span class=katex-mathml ><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi></mrow><annotation encoding="application/x-tex">\eta</annotation></semantics></math></span><span class=katex-html  aria-hidden=true ><span class=base ><span class=strut  style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">η</span></span></span></span> partendo dalla velocità di caduta di una sferetta di metallo all&#39;interno di un cilindro pieno di glicerina, tramite la formula </p>
@@ -611,19 +608,19 @@ println(<span class=hljs-string >&quot;                    (R2) = &quot;</span>,
     (η<span class=hljs-number >1</span>[i], η<span class=hljs-number >2</span>[i]) = simulate(glc, δx, <span class=hljs-number >0.0</span>s, <span class=hljs-number >0.0</span>m)
 <span class=hljs-keyword >end</span>
 println(<span class=hljs-string >&quot;Solo δx:          δη(R1) = &quot;</span>, round(<span class=hljs-string >u&quot;kg/m/s&quot;</span>, std(η<span class=hljs-number >1</span>), digits = <span class=hljs-number >4</span>))
-println(<span class=hljs-string >&quot;                    (R2) = &quot;</span>, round(<span class=hljs-string >u&quot;kg/m/s&quot;</span>, std(η<span class=hljs-number >2</span>), digits = <span class=hljs-number >4</span>))</code></pre><pre><code class="plaintext hljs">Tutti gli errori: δη(R1) = 0.0192 kg m^-1 s^-1
-                    (R2) = 0.0333 kg m^-1 s^-1
-Solo δR:          δη(R1) = 0.0172 kg m^-1 s^-1
-                    (R2) = 0.034 kg m^-1 s^-1
-Solo δt:          δη(R1) = 0.0083 kg m^-1 s^-1
-                    (R2) = 0.002 kg m^-1 s^-1
-Solo δx:          δη(R1) = 0.003 kg m^-1 s^-1
-                    (R2) = 0.003 kg m^-1 s^-1
+println(<span class=hljs-string >&quot;                    (R2) = &quot;</span>, round(<span class=hljs-string >u&quot;kg/m/s&quot;</span>, std(η<span class=hljs-number >2</span>), digits = <span class=hljs-number >4</span>))</code></pre><pre><code class="plaintext hljs">Tutti gli errori: δη(R1) = 0.0188 kg m^-1 s^-1
+                    (R2) = 0.0339 kg m^-1 s^-1
+Solo δR:          δη(R1) = 0.017 kg m^-1 s^-1
+                    (R2) = 0.0338 kg m^-1 s^-1
+Solo δt:          δη(R1) = 0.0081 kg m^-1 s^-1
+                    (R2) = 0.0021 kg m^-1 s^-1
+Solo δx:          δη(R1) = 0.0029 kg m^-1 s^-1
+                    (R2) = 0.0029 kg m^-1 s^-1
 </code></pre>
 
 <div class=page-foot >
   <div class=copyright >
-    &copy; Maurizio Tomasi. Last modified: November 12, 2025. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
+    &copy; Maurizio Tomasi. Last modified: November 23, 2025. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
   </div>
 </div>
 </div>

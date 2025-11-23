@@ -7,10 +7,9 @@ using Statistics
 mutable struct GLC
     a::UInt32
     c::UInt32
-    m::UInt32
     seed::UInt32
 
-    GLC(myseed) = new(1664525, 1013904223, 1 << 31, myseed)
+    GLC(myseed) = new(1664525, 1013904223, myseed)
 end
 
 @doc """
@@ -20,8 +19,8 @@ Return a pseudo-random number uniformly distributed in the
 interval [xmin, xmax).
 """
 function rand(glc::GLC, xmin, xmax)
-    glc.seed = (glc.a * glc.seed + glc.c) % glc.m
-    xmin + (xmax - xmin) * glc.seed / glc.m
+    glc.seed = UInt32(glc.a * glc.seed + glc.c)
+    xmin + (xmax - xmin) * glc.seed / (2.0^32)
 end
 
 @doc """
@@ -180,13 +179,14 @@ xsinx(x) = x * sin(x)
 println("Integrale (metodo media):", intmean(GLC(1), xsinx, 0, π/2, 100))
 println("Integrale (metodo hit-or-miss):", inthm(GLC(1), xsinx, 0, π/2, π/2, 100))
 
-glc = GLC(1)
-mean_samples = [intmean(glc, xsinx, 0, π / 2, 100) for i in 1:10_000]
-histogram(mean_samples, label="Media")
-
 glc = GLC(1)  # Reset the random generator
 mean_hm = [inthm(glc, xsinx, 0, π / 2, π / 2, 100) for i in 1:10_000]
-histogram!(mean_hm, label="Hit-or-miss");
+histogram(mean_hm, label="Hit-or-miss");
+
+glc = GLC(1)
+mean_samples = [intmean(glc, xsinx, 0, π / 2, 100) for i in 1:10_000]
+histogram!(mean_samples, label="Media")
+
 savefig(joinpath(@OUTPUT, "mc_integrals.svg")); # hide
 
 list_of_N = [500, 1_000, 5_000, 10_000, 50_000, 100_000]

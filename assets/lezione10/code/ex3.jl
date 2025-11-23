@@ -6,6 +6,6 @@ Return a pseudo-random number uniformly distributed in the
 interval [xmin, xmax).
 """
 function rand(glc::GLC, xmin, xmax)
-    glc.seed = (glc.a * glc.seed + glc.c) % glc.m
-    xmin + (xmax - xmin) * glc.seed / glc.m
+    glc.seed = UInt32(glc.a * glc.seed + glc.c)
+    xmin + (xmax - xmin) * glc.seed / (2.0^32)
 end
