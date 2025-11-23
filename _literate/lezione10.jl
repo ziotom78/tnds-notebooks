@@ -21,41 +21,13 @@ using Statistics
 mutable struct GLC
     a::UInt32
     c::UInt32
-    m::UInt32
     seed::UInt32
 
-    GLC(myseed) = new(1664525, 1013904223, 1 << 31, myseed)
+    GLC(myseed) = new(1664525, 1013904223, myseed)
 end
 
 # Il tipo `UInt32` corrisponde a `std::uint32_t` in C++.
 #
-# La strana scrittura `1 << 31` è un'operazione di [bit
-# shift](https://en.wikipedia.org/wiki/Bitwise_operation#Bit_shifts):
-# dice di considerare il numero `1` in binario, e di spostarlo a
-# sinistra, aggiungendo quindi alla sua destra tanti zeri quanti il
-# secondo operando (31). Ecco alcuni esempi, dove i numeri che
-# iniziano con `0b` sono scritti in binario (è una convenzione del C++
-# e di Julia):
-#
-# ```text
-# 0b10010 << 1 == 0b100100    (uno zero aggiunto alla fine)
-# 0b10010 << 3 == 0b10010000  (tre zeri aggiunti alla fine)
-# 0b10010 >> 2 == 0b100       (due cifre tolte alla fine)
-# ```
-#
-# Potete comprendere il significato dell'operazione se pensate al caso
-# decimale: se sposto un numero come `1` a sinistra, aggiungendo 31
-# zeri, lo sto moltiplicando per $10^{31}$, ottenendo quindi il numero
-# `1e+31`. Analogamente, se tolgo $N$ cifre a destra di un numero, lo
-# sto *dividendo* per $10^N$.
-#
-# Nel caso binario, `1 << 31` vuol dire moltiplicare `1` per
-# $2^{31}$, ma quest'operazione è molto più rapida che usando `pow()`
-# in C++ o l'operatore `^` in Julia, perché il bit-shift viene fatto a
-# livello di singoli capacitori e induttanze nella CPU, che
-# “travasano” la carica di un bit nel bit accanto, ed è un'operazione
-# velocissima.
-
 # Definiamo ora una funzione `rand` che restituisca un numero casuale
 # floating-point compreso in un intervallo:
 
@@ -66,8 +38,8 @@ Return a pseudo-random number uniformly distributed in the
 interval [xmin, xmax).
 """
 function rand(glc::GLC, xmin, xmax)
-    glc.seed = (glc.a * glc.seed + glc.c) % glc.m
-    xmin + (xmax - xmin) * glc.seed / glc.m
+    glc.seed = UInt32(glc.a * glc.seed + glc.c)
+    xmin + (xmax - xmin) * glc.seed / (2.0^32)
 end
 
 # È molto comodo avere anche una funzione `rand` che usi l'intervallo
@@ -441,13 +413,14 @@ println("Integrale (metodo hit-or-miss):", inthm(GLC(1), xsinx, 0, π/2, π/2, 1
 # osserviamo che la distribuzione è approssimativamente una Gaussiana,
 # come previsto.
 
-glc = GLC(1)
-mean_samples = [intmean(glc, xsinx, 0, π / 2, 100) for i in 1:10_000]
-histogram(mean_samples, label="Media")
-
 glc = GLC(1)  # Reset the random generator
 mean_hm = [inthm(glc, xsinx, 0, π / 2, π / 2, 100) for i in 1:10_000]
-histogram!(mean_hm, label="Hit-or-miss");
+histogram(mean_hm, label="Hit-or-miss");
+
+glc = GLC(1)
+mean_samples = [intmean(glc, xsinx, 0, π / 2, 100) for i in 1:10_000]
+histogram!(mean_samples, label="Media")
+
 savefig(joinpath(@OUTPUT, "mc_integrals.svg")); # hide
 
 # \fig{mc_integrals.svg}
